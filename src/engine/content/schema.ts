@@ -180,4 +180,10 @@ export interface QuillLines {
   wrongPlace?: string;
   /** Said before the `solution` spell's breakdown. */
   solutionIntro?: string;
+  /** `duty skip`: said when a duty is abandoned. */
+  dutySkipped?: string;
+  /** `duty skip` with no duty to skip. */
+  noSkip?: string;
+  /** Added to hints on a duty once the last hint is reached. */
+  skipReminder?: string;
 }

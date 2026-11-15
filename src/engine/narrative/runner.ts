@@ -366,6 +366,10 @@ export class LessonRunner {
     return [
       ...(objective && objective !== hint ? [{ kind: 'quill' as const, text: objective }] : []),
       { kind: 'quill', text: hint },
+      // Stuck on a duty even at the last hint: offer the way out.
+      ...(cur.duty && i === 2 && this.lines.skipReminder
+        ? [{ kind: 'quill' as const, text: this.lines.skipReminder }]
+        : []),
     ];
   }
 
@@ -405,6 +409,19 @@ export class LessonRunner {
     const base = (p: string) => p.slice(p.lastIndexOf('/') + 1);
     const there = targets.find((t) => t !== here && base(t) === base(here));
     return there ? say.replace('{here}', here).replace('{there}', there) : null;
+  }
+
+  /**
+   * `duty skip`: abandon the current duty (say, its materials were lost) and
+   * take a fresh one. Nothing is earned for the skipped one.
+   */
+  skipDuty(): Narration[] {
+    if (!this.duty) return [{ kind: 'quill', text: this.lines.noSkip ?? this.lines.noDuty }];
+    this.cleanup(this.duty);
+    this.duty = null;
+    const out: Narration[] = [{ kind: 'quill', text: this.lines.dutySkipped ?? 'Fair enough.' }];
+    if (this.phase === 'free') return out;
+    return [...out, ...this.assignDuty()];
   }
 
   /** The `duty` spell: ask for restoration work during free play. */

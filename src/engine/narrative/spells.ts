@@ -39,9 +39,14 @@ export function createDutyCommand(getRunner: () => LessonRunner | null) {
     name: 'duty',
     unlockedInAct: 0,
     options: {},
-    run() {
+    run(o, io) {
       const runner = getRunner();
-      if (runner) runner.queue(runner.requestDuty());
+      const [what] = o.operands;
+      if (what && what !== 'skip') {
+        io.stderr.write(`duty: unknown request '${what}' (try duty, or duty skip)\n`);
+        return 1;
+      }
+      if (runner) runner.queue(what === 'skip' ? runner.skipDuty() : runner.requestDuty());
       return 0;
     },
   });

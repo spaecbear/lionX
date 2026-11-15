@@ -299,6 +299,12 @@ export const cp = defineCommand({
         status = 1;
         continue;
       }
+      // A trailing slash promises a directory: a file cannot be copied onto one that is not there.
+      if (!srcIsDir && dst.endsWith('/') && !isDirAt(ctx, dst)) {
+        io.stderr.write(`cp: cannot create regular file ${q(dst)}: Not a directory\n`);
+        status = 1;
+        continue;
+      }
       if (srcIsDir && !recursive) {
         io.stderr.write(`cp: -r not specified; omitting directory ${q(src)}\n`);
         status = 1;
@@ -364,6 +370,12 @@ export const mv = defineCommand({
         status = 1;
         continue;
       }
+      // `mv book room/` when room/ is not a directory: GNU refuses rather than renaming.
+      if (dst.endsWith('/') && !isDirAt(ctx, dst) && !isDirAt(ctx, src)) {
+        io.stderr.write(`mv: cannot move ${q(src)} to ${q(dst)}: Not a directory\n`);
+        status = 1;
+        continue;
+      }
       if (ctx.vfs.exists(dst) && ctx.vfs.resolve(dst) !== ctx.vfs.resolve(src)) {
         if (opts.has('n')) {
           io.stderr.write(`mv: not replacing ${q(dst)}\n`);
@@ -399,3 +411,11 @@ export const mv = defineCommand({
     return status;
   },
 });
+
+function isDirAt(ctx: { vfs: { stat(p: string): { type: string } } }, p: string): boolean {
+  try {
+    return ctx.vfs.stat(p).type === 'dir';
+  } catch {
+    return false;
+  }
+}

@@ -86,6 +86,17 @@ describe('sample wing: lessons', () => {
     expect(runner.known).toEqual(['pwd', 'ls', 'cat', 'cd']);
   });
 
+  it('duty skip sets aside a duty that can no longer be done and gives a fresh one', async () => {
+    const { runner, lessons, type } = play(sample());
+    await lessons();
+    const first = runner.current!.duty!;
+    const said = await type('duty skip');
+    expect(said[0]).toContain('Set that one aside');
+    const next = runner.current!.duty!;
+    expect(next.signature).not.toBe(first.signature);
+    expect(runner.progress.dutiesDone).toBe(0);
+  });
+
   it('plays the lessons with the exact commands, then moves to duties', async () => {
     const { runner, lessons, log } = play(sample());
     await lessons();

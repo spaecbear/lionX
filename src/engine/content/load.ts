@@ -582,6 +582,9 @@ export function loadQuillLines(yamlText: string, source = 'quill.yaml'): QuillLi
     galleryNew: o.galleryNew === undefined ? undefined : one('galleryNew'),
     wrongPlace: o.wrongPlace === undefined ? undefined : one('wrongPlace'),
     solutionIntro: o.solutionIntro === undefined ? undefined : one('solutionIntro'),
+    dutySkipped: o.dutySkipped === undefined ? undefined : one('dutySkipped'),
+    noSkip: o.noSkip === undefined ? undefined : one('noSkip'),
+    skipReminder: o.skipReminder === undefined ? undefined : one('skipReminder'),
   };
 }
 

@@ -452,6 +452,18 @@ export const commandCases: CommandCase[] = [
     cmd: 'mkdir dest && cp -r notes dest && ls dest dest/notes',
     out: 'dest:\nnotes\n\ndest/notes:\npage1\npage2\n',
   },
+  {
+    cmd: 'cp letter.txt nowhere/',
+    err: "cp: cannot create regular file 'nowhere/': Not a directory\n",
+    status: 1,
+  },
+  {
+    cmd: 'mv letter.txt nowhere/; ls letter.txt',
+    out: 'letter.txt\n',
+    err: "mv: cannot move 'letter.txt' to 'nowhere/': Not a directory\n",
+    status: 0,
+  },
+  { cmd: 'mv notes moved/ && ls moved', out: 'page1\npage2\n' },
   { cmd: 'cp ghost x', err: "cp: cannot stat 'ghost': No such file or directory\n", status: 1 },
   {
     cmd: 'cp letter.txt letter.txt',

@@ -15,3 +15,6 @@ resume: 'Back again. The candle held while you were away. Here is where we were.
 galleryNew: 'I hung that in your cell, by the way. Everything you mend leaves something behind. `ls ~/gallery` to see your collection. Once you learn to read pages, you can look at any of them again.'
 wrongPlace: 'Right name, wrong place. You are in {here}. The one I mean is {there}.'
 solutionIntro: 'Here is one way to do it. Each piece, and what it does:'
+dutySkipped: 'Set that one aside. Mishaps happen; the Archive has more work. Here is a fresh one.'
+noSkip: 'There is no duty to set aside right now.'
+skipReminder: 'If something went wrong and this one cannot be finished any more, `duty skip` sets it aside for a fresh one.'

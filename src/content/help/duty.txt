@@ -1,2 +1,3 @@
-Usage: duty
+Usage: duty [skip]
 Ask Quill for restoration work, or repeat the current task.
+duty skip sets aside a duty that can no longer be finished and gives you a fresh one.
