@@ -176,7 +176,7 @@ capstone:
         problem: 'Return the inner Vault and the seal to the Archivist, let your group read them, keep everyone else out, and read the seal.'
       hints:
         - 'Change who owns them, then change the wards, then read.'
-        - '`sudo chown -R archivist:apprentice`, then `sudo chmod` so the group can read and enter and others cannot.'
+        - '`sudo chown -R archivist:apprentice` (`-R` reaches every book inside the room too), then `sudo chmod` so the group can read and enter and others cannot.'
         - 'Type: sudo chown -R archivist:apprentice /archive/vault/inner   then: sudo chmod 750 /archive/vault/inner   then: sudo chmod 640 /archive/vault/inner/archivists-seal   then: cat /archive/vault/inner/archivists-seal'
       goal:
         all:

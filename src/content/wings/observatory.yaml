@@ -63,7 +63,7 @@ lessons:
         art: magnifier
         guide: exact
         guidance:
-          exact: 'Type `find /archive/observatory -name lens-cloth` to find where the lens cloth was hidden, then `cat` the path it prints.'
+          exact: 'Type `find /archive/observatory -name lens-cloth`. First comes where to start searching, then `-name` and the name to look for. Then `cat` the path it prints.'
         hints:
           - 'Search by name, starting from the top of the tower.'
           - '`find` with `-name`, then `cat` what it finds.'
@@ -75,7 +75,7 @@ lessons:
         guide: goal
         guidance:
           exact: 'Type `find /archive/observatory -type d` to list every room in the tower.'
-          goal: 'List every room (directory) in the Observatory, and nothing else.'
+          goal: 'List every room (directory) in the Observatory, and nothing else. `find` can search by kind with `-type`: `d` for directories, `f` for plain files.'
         hints:
           - 'There is a test for the kind of thing: book or room.'
           - '`find` with `-type d` lists only directories.'
@@ -122,7 +122,7 @@ lessons:
       - id: wc
         guide: exact
         guidance:
-          exact: 'Type `wc -l /archive/observatory/sightings` to count the lines.'
+          exact: 'Type `wc -l /archive/observatory/sightings`. `wc` counts words, lines and letters; `-l` asks for lines only.'
         hints:
           - 'Count, do not read.'
           - '`wc -l` counts lines.'
@@ -164,7 +164,7 @@ capstone:
         problem: "Gather every chart that still carries the Archivist's full name into /archive/observatory/true-name, before lionX finds them."
       hints:
         - 'Search all the charts for the full name, listing only the books that match. Then gather them.'
-        - '`grep -rl "Oriel Vane"` lists the charts. `mkdir` the room, then `mv` the charts into it.'
+        - '`grep -rl "Oriel Vane"` lists the charts: `-r` searches the whole room, `-l` prints only the names of books that match. `mkdir` the room, then `mv` the charts into it.'
         - 'Type: grep -rl "Oriel Vane" /archive/observatory/star-charts   then: mkdir /archive/observatory/true-name   then: mv /archive/observatory/star-charts/chart-7 /archive/observatory/star-charts/chart-23 /archive/observatory/star-charts/chart-41 /archive/observatory/star-charts/chart-58 /archive/observatory/true-name/'
       goal:
         all:

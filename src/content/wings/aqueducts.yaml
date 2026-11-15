@@ -76,7 +76,7 @@ lessons:
         art: faucet
         guide: exact
         guidance:
-          exact: "Type `grep -v lionX /archive/aqueducts/channels/north | wc -l` to count the lines that are not lionX's noise."
+          exact: "Type `grep -v lionX /archive/aqueducts/channels/north | wc -l`. `grep -v` keeps only the lines that do NOT match (v for reverse), `|` pours them into `wc`, and `wc -l` counts the lines."
         hints:
           - 'Filter out the noise, then count what remains, in one line.'
           - '`grep -v lionX` drops the noise; pipe it into `wc -l`.'
@@ -123,8 +123,8 @@ lessons:
         art: bucket
         guide: goal
         guidance:
-          exact: 'Type `grep -r flow /archive/aqueducts/channels 2> /dev/null`. `/dev/null` swallows whatever is poured into it.'
-          goal: 'Search every channel for "flow", but send the error about lionX''s sealed channel into /dev/null, so only real lines reach the glass.'
+          exact: 'Type `grep -r flow /archive/aqueducts/channels 2> /dev/null`. Errors flow in their own channel, number 2. `2>` sends that channel somewhere else, and `/dev/null` swallows whatever is poured into it.'
+          goal: 'Search every channel for "flow" with `grep -r`, but send the error about lionX''s sealed channel into /dev/null. Errors travel in channel 2, and `2>` redirects them.'
         hints:
           - 'The complaint about the sealed channel comes out of the error channel. Send it away.'
           - '`2>` redirects errors. `/dev/null` is where words go to vanish.'

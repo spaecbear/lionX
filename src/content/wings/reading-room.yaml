@@ -124,7 +124,7 @@ lessons:
       - id: head
         guide: exact
         guidance:
-          exact: 'Type `head -n 3 reading-desk-ledger` to read just the first three lines.'
+          exact: 'Type `head -n 3 reading-desk-ledger`. `head` reads the top of a book. `-n 3` is a flag: `-n` means "number of lines", and 3 is how many. Last comes the book to read.'
         hints:
           - 'You only want the top of the ledger.'
           - '`head` reads the first lines; `-n 3` says how many.'
@@ -132,12 +132,13 @@ lessons:
         goal: { all: [{ ran: head }, { read: /archive/reading-room/reading-desk-ledger }] }
         success:
           - 'Mira, Tobin, the Archivist. Nothing was ever returned.'
+          - '`head` has a twin for the other end: `tail` reads the last lines, and takes the same `-n` flag.'
       - id: tail
         art: quill
         guide: goal
         guidance:
           exact: 'Type `tail -n 2 the-long-catalogue` to read the last two entries.'
-          goal: 'Read only the last two entries of the long catalogue. There is a spell for endings.'
+          goal: 'Now read only the last two entries of the long catalogue. Use `tail`, with `-n` to say how many.'
         hints:
           - 'You want the end, not the beginning.'
           - '`tail` reads the last lines. `-n` says how many.'

@@ -191,7 +191,7 @@ lessons:
         guide: goal
         guidance:
           exact: 'Type `kill -STOP %1` to freeze job 1, then `bg %1` to let it run again in the background.'
-          goal: 'Freeze job 1 with the STOP signal, then resume it in the background.'
+          goal: 'Freeze job 1 with the STOP signal, then resume it in the background. `kill` sends any signal, as `-NAME`; `%1` means job 1 from the `jobs` list.'
         hints:
           - 'STOP freezes a spirit; another spell lets a stopped job run again in the background.'
           - '`kill -STOP %1`, then `bg %1`.'
@@ -219,7 +219,7 @@ lessons:
       - id: pgrep
         guide: exact
         guidance:
-          exact: 'Type `pgrep -l er` to list every spirit whose name contains "er", with its PID.'
+          exact: 'Type `pgrep -l er`. `pgrep` finds spirits by name and prints their PIDs; `-l` adds each name beside its PID. "er" matches any name containing it.'
         hints:
           - 'Find spirits by name instead of reading the whole list.'
           - '`pgrep -l` and part of a name.'
