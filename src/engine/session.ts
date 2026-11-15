@@ -78,6 +78,8 @@ export interface GameSession {
    * Marks the save as story-played, which turns achievements off for it.
    */
   nextStoryCommand(): StoryCommand | null;
+  /** Put a story command back (it was interrupted before it ran). */
+  unshiftStory(c: StoryCommand): void;
   /** Story mode switched on or off (secrets are not found while it is on). */
   setStoryActive(on: boolean): void;
 }
@@ -319,6 +321,7 @@ export function createSession(o: SessionOptions): GameSession {
       return runner;
     },
     nextStoryCommand,
+    unshiftStory: (c) => void storyQueue.unshift(c),
     setStoryActive: (on) => {
       if (on) runner.progress.storyMode = true;
     },

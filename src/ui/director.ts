@@ -10,7 +10,7 @@ import {
 import { Shell } from '../engine/shell';
 import { createSettingsCommand, type Settings } from '../engine/settings';
 import { Vfs } from '../engine/vfs';
-import { createStoryCommand, STORY_END } from './story';
+import { createStoryCommand, STORY_END, STORY_LINES } from './story';
 import { TerminalController, type TerminalLike } from './terminal/controller';
 
 /** Spells of the Lexicon itself, always available, shown last among the chips. */
@@ -146,9 +146,15 @@ export class Director {
 
   handleData(data: string): Promise<void> {
     if (this.story.on && this.session) {
-      // Any key stops auto play (and is not passed on).
-      if (this.story.auto) {
+      // Escape or Ctrl+C: story mode off, at once, from anywhere.
+      if (data === '\x1b' || data === '\x03') {
+        this.stopStory(STORY_LINES.off);
+        return Promise.resolve();
+      }
+      // Any key pauses auto play (and is not passed on), cancelling a half-typed command.
+      if (this.story.auto || this.story.busy) {
         this.story.auto = false;
+        this.story.cancel = true;
         return Promise.resolve();
       }
       // Space at an empty prompt (or in a pager or password prompt) takes the next story step.
@@ -164,7 +170,22 @@ export class Director {
     auto: false,
     password: undefined as string | undefined,
     busy: false,
+    /** Set by a key press: stop typing the current command. */
+    cancel: false,
   };
+
+  /** Turn story mode off, with a message once the screen is quiet. */
+  private stopStory(message: string) {
+    this.story.auto = false;
+    this.story.cancel = true;
+    this.story.on = false;
+    this.session?.setStoryActive(false);
+    const say = () => {
+      if (this.story.busy) return void setTimeout(say, 50);
+      if (this.controller.idle) this.controller.notice(message);
+    };
+    say();
+  }
 
   /** Type the next story command, as keystrokes, exactly as a player would. */
   async storyStep(): Promise<void> {
@@ -189,9 +210,19 @@ export class Director {
         await c.handleData('\r');
         return;
       }
+      this.story.cancel = false;
       for (const ch of next.line) {
+        if (this.story.cancel) break;
         await c.handleData(ch);
         await sleep(this.opts.typeDelay ? 25 : 0);
+      }
+      if (this.story.cancel) {
+        // Interrupted mid-command: take the half-typed line back, and run nothing.
+        this.story.cancel = false;
+        session.unshiftStory(next);
+        await c.handleData('\x15');
+        if (this.story.on) setTimeout(() => this.controller.notice(STORY_LINES.paused), 0);
+        return;
       }
       if (next.tab) await c.handleData('\t');
       this.story.password = next.password;
@@ -209,6 +240,11 @@ export class Director {
       await sleep(this.opts.typeDelay ? 500 : 0);
       if (!this.story.auto) break;
       await this.storyStep();
+    }
+    // Paused by a key between commands: say so.
+    if (this.story.on && this.story.cancel && !this.story.busy) {
+      this.story.cancel = false;
+      if (this.controller.idle) this.controller.notice(STORY_LINES.paused);
     }
   }
 

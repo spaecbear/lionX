@@ -351,6 +351,12 @@ export class TerminalController {
   }
 
   /** Start a fresh prompt. The cursor must be at column 0. */
+  /** Print a line above a fresh, empty prompt (for messages like "story mode paused"). */
+  notice(text: string): void {
+    this.term.write('\r\x1b[2K' + text.replace(/\n/g, '\r\n') + '\r\n');
+    this.showPrompt();
+  }
+
   private showPrompt() {
     this.line.set('');
     this.drawnOffset = 0;

@@ -7,13 +7,14 @@ note: |
 
       story on     press space at the prompt to take the next step
       story auto   let it play by itself (any key pauses)
-      story off    wake up
+      story off    wake up (Escape works too)
 
     It reads every page of the Book of Eco it comes across.
 
     A dreamed story earns no achievements. It reads the story as it
     goes, but the secrets are still yours to find.
 on: "Story mode. Press space at an empty prompt to take the next step. `story auto` plays by itself. This save will earn no achievements. Secrets are still yours to find.\n"
-auto: "Story mode is playing by itself. Press any key to pause; space steps again.\n"
+auto: "Story mode is playing by itself. Any key pauses; Escape stops it.\n"
 off: "Story mode is off.\n"
+paused: 'Story mode paused. Space takes the next step, `story auto` plays on, `story off` (or Escape) stops.'
 end: 'The dream has nothing more to show. The story so far is told.'

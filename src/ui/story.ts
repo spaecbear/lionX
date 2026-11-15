@@ -7,8 +7,12 @@ const lines = parse(storyYaml) as {
   on: string;
   auto: string;
   off: string;
+  paused: string;
   end: string;
 };
+
+/** Short messages for pausing and stopping. */
+export const STORY_LINES = { off: lines.off.trim(), paused: lines.paused.trim() };
 
 /** The narrator's line when story mode has nothing more to play. */
 export const STORY_END = lines.end;
