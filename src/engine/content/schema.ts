@@ -107,6 +107,8 @@ export interface Secret {
   song?: string;
   /** Art drawn when found, and hung in ~/gallery. */
   art?: string;
+  /** Quill points the player to it: story mode reads it too. */
+  guided?: boolean;
 }
 
 export interface Reward {
@@ -191,6 +193,4 @@ export interface QuillLines {
   untilTrial?: string;
   /** The same, in easy mode (hints count). */
   untilTrialEasy?: string;
-  /** A secret read while story mode is on. */
-  secretWaits?: string;
 }

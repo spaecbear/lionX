@@ -336,23 +336,20 @@ describe('story mode', () => {
     expect(session.runner.progress.wingsDone).toContain('root');
     expect(session.runner.progress.storyMode).toBe(true);
     expect(session.runner.progress.achievements ?? []).toEqual([]);
+    // Of the secrets, it found only the guided one (the music box).
+    expect(session.runner.progress.secrets).toEqual(['music-box']);
     // It read the Book of Eco along the way.
     expect(session.runner.progress.library).toHaveLength(loadGameContent().library!.pages.length);
   });
 });
 
 describe('story mode and secrets', () => {
-  it('finds no secrets while story mode is on, but they unlock again once it is off', async () => {
+  it('secrets you read yourself unlock even in story mode; achievements stay off', async () => {
     const s: GameSession = createSession({ content: loadGameContent(), seed: 1 });
     s.opening();
     const rain = loadGameContent().secrets!.find((x) => x.id === 'rain-on-the-window')!;
     expect(s.runner.vfs.exists(rain.file)).toBe(true);
     s.setStoryActive(true);
-    s.runner.vfs.readFile(rain.file);
-    const said = s.afterCommand('true', 0, '');
-    expect(s.runner.progress.secrets ?? []).toEqual([]);
-    expect(said.some((n) => n.kind === 'narrator' && n.text.includes('story off'))).toBe(true);
-    s.setStoryActive(false);
     s.runner.vfs.readFile(rain.file);
     s.afterCommand('true', 0, '');
     expect(s.runner.progress.secrets).toEqual(['rain-on-the-window']);

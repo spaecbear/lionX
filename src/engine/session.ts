@@ -225,7 +225,6 @@ export function createSession(o: SessionOptions): GameSession {
       now,
     });
     runner.shellState = shellState;
-    runner.storyActive = storyOn;
     return runner.start();
   };
 
@@ -269,7 +268,6 @@ export function createSession(o: SessionOptions): GameSession {
       () => undefined,
     );
 
-  let storyOn = false;
   let storyQueue: StoryCommand[] = [];
   let storyKey = '';
   const pagesTried = new Set<string>();
@@ -284,6 +282,18 @@ export function createSession(o: SessionOptions): GameSession {
       if (page) {
         pagesTried.add(page.id);
         return { line: `cat ${page.file}` };
+      }
+      // The guided secret (the one Quill points to) is part of the story; the rest are yours to find.
+      const secret = content.secrets?.find(
+        (s) =>
+          s.guided &&
+          !(runner.progress.secrets ?? []).includes(s.id) &&
+          !pagesTried.has(s.id) &&
+          runner.vfs.exists(s.file),
+      );
+      if (secret) {
+        pagesTried.add(secret.id);
+        return { line: `cat ${secret.file}` };
       }
     }
     const cur = runner.current;
@@ -310,8 +320,6 @@ export function createSession(o: SessionOptions): GameSession {
     },
     nextStoryCommand,
     setStoryActive: (on) => {
-      storyOn = on;
-      runner.storyActive = on;
       if (on) runner.progress.storyMode = true;
     },
     shell,
