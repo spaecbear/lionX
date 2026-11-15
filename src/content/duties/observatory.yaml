@@ -1,0 +1,183 @@
+# Duties for the Observatory: searching and counting.
+templates:
+  - id: find-by-name
+    spells: [find, cat]
+    params:
+      room: { pick: [north-dome, south-dome, map-loft, clock-room, lens-room] }
+      thing: { pick: [brass-key, lost-compass, keepers-glasses, spare-wick, star-chart-index] }
+      deep: { byDifficulty: ['shelf', 'shelf/box', 'shelf/box/false-bottom'] }
+    setup:
+      files:
+        '/archive/observatory/workroom/{room}/{deep}/{thing}': "The {thing}. Found at last.\n"
+        '/archive/observatory/workroom/{room}/decoy': "Not it.\n"
+    cleanup: ['/archive/observatory/workroom/{room}']
+    brief: 'The {thing} is somewhere under /archive/observatory/workroom/{room}. Find it and read it.'
+    hints:
+      - 'Search by name instead of looking room by room.'
+      - '`find` with `-name`, then `cat` the path it prints.'
+      - 'Type: find /archive/observatory/workroom/{room} -name {thing}   then: cat /archive/observatory/workroom/{room}/{deep}/{thing}'
+    goal: { read: '/archive/observatory/workroom/{room}/{deep}/{thing}' }
+    solution:
+      - 'find /archive/observatory/workroom/{room} -name {thing}'
+      - 'cat /archive/observatory/workroom/{room}/{deep}/{thing}'
+
+  - id: which-page
+    spells: [grep, cat]
+    params:
+      room: { pick: [north-dome, south-dome, map-loft, clock-room, lens-room] }
+      word: { pick: [eclipse, aurora, meteor, nova, conjunction] }
+      n: { int: [1, 20] }
+    setup:
+      corpus:
+        - dir: '/archive/observatory/workroom/{room}/pages'
+          count: 20
+          lines: 8
+          seed: 77
+          plant:
+            - { line: 'Tonight: a {word}, plain as day.', files: ['{n}'] }
+    cleanup: ['/archive/observatory/workroom/{room}']
+    brief: 'One of the twenty pages in /archive/observatory/workroom/{room}/pages mentions a {word}. Find that page and read it.'
+    hints:
+      - 'Search every page at once for the word.'
+      - '`grep -r` or `grep -l` names the page; then read it.'
+      - 'Type: grep -rl {word} /archive/observatory/workroom/{room}/pages   then: cat /archive/observatory/workroom/{room}/pages/page-{n}'
+    goal: { read: '/archive/observatory/workroom/{room}/pages/page-{n}' }
+    solution:
+      - 'grep -rl {word} /archive/observatory/workroom/{room}/pages'
+      - 'cat /archive/observatory/workroom/{room}/pages/page-{n}'
+
+  - id: grep-the-log
+    spells: [grep]
+    params:
+      room: { pick: [north-dome, south-dome, map-loft, clock-room, lens-room] }
+      place: { pick: [west-sky, east-sky, zenith, harbor] }
+      event: { pick: [a falling star, the moth comet, a lantern in the sky, the purring cloud] }
+    setup:
+      files:
+        '/archive/observatory/workroom/{room}/watch-log': "Watch 1: nothing in the {place}.\nWatch 2: nothing in the {place}.\nWatch 3: nothing in the {place}.\nWatch 4: nothing in the {place}.\nWatch 5: nothing in the {place}.\nWatch 6: nothing in the {place}.\nWatch 7: nothing in the {place}.\nWatch 8: nothing in the {place}.\nWatch 9: nothing in the {place}.\nWatch 10: nothing in the {place}.\nWatch 11: nothing in the {place}.\nWatch 12: nothing in the {place}.\nWatch 13: nothing in the {place}.\nWatch 14: nothing in the {place}.\nWatch 15: nothing in the {place}.\nWatch 16: nothing in the {place}.\nWatch 17: nothing in the {place}.\nWatch 18: nothing in the {place}.\nWatch 19: nothing in the {place}.\nWatch 20: nothing in the {place}.\nWatch 21: nothing in the {place}.\nWatch 22: nothing in the {place}.\nWatch 23: nothing in the {place}.\nWatch 24: nothing in the {place}.\nWatch 25: nothing in the {place}.\nWatch 26: nothing in the {place}.\nWatch 27: nothing in the {place}.\nWatch 28: nothing in the {place}.\nWatch 29: nothing in the {place}.\nWatch 30: nothing in the {place}.\nWatch 31: nothing in the {place}.\nWatch 32: nothing in the {place}.\nWatch 33: nothing in the {place}.\nWatch 34: nothing in the {place}.\nWatch 35: nothing in the {place}.\nWatch 36: nothing in the {place}.\nWatch 37: nothing in the {place}.\nWatch 38: nothing in the {place}.\nWatch 39: nothing in the {place}.\nWatch 40: {event} over the {place}.\n"
+    cleanup: ['/archive/observatory/workroom/{room}']
+    brief: 'Somewhere in the long watch log at /archive/observatory/workroom/{room}/watch-log, someone saw something. Use `grep` to pull out the lines that are not "nothing".'
+    hints:
+      - 'Search for the lines that do not match.'
+      - '`grep -v nothing` prints the lines without the word.'
+      - 'Type: grep -v nothing /archive/observatory/workroom/{room}/watch-log'
+    goal: { all: [{ ran: grep }, { read: '/archive/observatory/workroom/{room}/watch-log' }] }
+    solution: ['grep -v nothing /archive/observatory/workroom/{room}/watch-log']
+
+  - id: count-lines
+    spells: [wc]
+    params:
+      room: { pick: [north-dome, south-dome, map-loft, clock-room, lens-room] }
+      n: { int: [5, 40] }
+    setup:
+      corpus:
+        - {
+            dir: '/archive/observatory/workroom/{room}',
+            count: 1,
+            name: 'ledger',
+            lines: '{n}',
+            seed: 3,
+          }
+    cleanup: ['/archive/observatory/workroom/{room}']
+    brief: 'The ledger at /archive/observatory/workroom/{room}/ledger needs a line count for the records. Count its lines.'
+    hints:
+      - 'Count, do not read.'
+      - '`wc -l` counts lines.'
+      - 'Type: wc -l /archive/observatory/workroom/{room}/ledger'
+    goal: { all: [{ ran: wc }, { read: '/archive/observatory/workroom/{room}/ledger' }] }
+    solution: ['wc -l /archive/observatory/workroom/{room}/ledger']
+
+  - id: tally
+    spells: [sort, uniq]
+    params:
+      room: { pick: [north-dome, south-dome, map-loft, clock-room, lens-room] }
+    setup:
+      files:
+        '/archive/observatory/workroom/{room}/sightings': "owl\nmoth\nowl\nbat\nmoth\nowl\ncomet\nowl\nmoth\nbat\nowl\n"
+    cleanup: ['/archive/observatory/workroom/{room}']
+    brief: 'Tally the sightings in /archive/observatory/workroom/{room}/sightings: how many of each creature?'
+    hints:
+      - 'Put equal lines together, then count each run.'
+      - '`sort` the file, then pipe it to `uniq -c`.'
+      - 'Type: sort /archive/observatory/workroom/{room}/sightings | uniq -c'
+    goal:
+      {
+        all:
+          [
+            { ran: sort },
+            { ran: { command: uniq, args: ['-c'] } },
+            { read: '/archive/observatory/workroom/{room}/sightings' },
+          ],
+      }
+    solution: ['sort /archive/observatory/workroom/{room}/sightings | uniq -c']
+
+  - id: sort-roster
+    spells: [sort]
+    params:
+      room: { pick: [north-dome, south-dome, map-loft, clock-room, lens-room] }
+    setup:
+      files:
+        '/archive/observatory/workroom/{room}/roster': "Wren\nAsh\nMira\nTobin\nHolt\nBrill\n"
+    cleanup: ['/archive/observatory/workroom/{room}']
+    brief: "The keepers' roster in /archive/observatory/workroom/{room}/roster is out of order. Show it sorted."
+    hints:
+      - 'There is a spell that orders lines.'
+      - '`sort` the roster.'
+      - 'Type: sort /archive/observatory/workroom/{room}/roster'
+    goal: { all: [{ ran: sort }, { read: '/archive/observatory/workroom/{room}/roster' }] }
+    solution: ['sort /archive/observatory/workroom/{room}/roster']
+
+  - id: clear-blank-pages
+    spells: [find, rm]
+    params:
+      room: { pick: [north-dome, south-dome, map-loft, clock-room, lens-room] }
+    setup:
+      files:
+        '/archive/observatory/workroom/{room}/notes/blank-1': ''
+        '/archive/observatory/workroom/{room}/notes/blank-2': ''
+        '/archive/observatory/workroom/{room}/notes/real-note': "A real observation. Keep this.\n"
+    cleanup: ['/archive/observatory/workroom/{room}']
+    brief: 'lionX left blank pages among the notes in /archive/observatory/workroom/{room}/notes. Find the empty ones and remove them. Keep the real note.'
+    hints:
+      - 'There is a test for empty books.'
+      - '`find` with `-empty -type f` lists them; `rm` removes them.'
+      - 'Type: find /archive/observatory/workroom/{room}/notes -empty -type f   then: rm /archive/observatory/workroom/{room}/notes/blank-1 /archive/observatory/workroom/{room}/notes/blank-2'
+    goal:
+      all:
+        - { missing: '/archive/observatory/workroom/{room}/notes/blank-1' }
+        - { missing: '/archive/observatory/workroom/{room}/notes/blank-2' }
+        - { isFile: '/archive/observatory/workroom/{room}/notes/real-note' }
+    solution:
+      - 'find /archive/observatory/workroom/{room}/notes -empty -type f'
+      - 'rm /archive/observatory/workroom/{room}/notes/blank-1 /archive/observatory/workroom/{room}/notes/blank-2'
+
+  - id: gather-mentions
+    spells: [grep, mkdir, mv]
+    params:
+      room: { pick: [north-dome, south-dome, map-loft, clock-room, lens-room] }
+      word: { pick: [Mira, Tobin, the-keeper] }
+      a: { int: [1, 6] }
+      b: { int: [7, 12] }
+    setup:
+      corpus:
+        - dir: '/archive/observatory/workroom/{room}/letters'
+          count: 12
+          name: 'letter-{#}'
+          lines: 6
+          seed: 9
+          plant:
+            - { line: 'Signed, {word}.', files: ['{a}', '{b}'] }
+    cleanup: ['/archive/observatory/workroom/{room}']
+    brief: 'Two of the letters in /archive/observatory/workroom/{room}/letters were signed by {word}. Gather them into a new room there called from-{word}.'
+    hints:
+      - 'Search for the signature, listing only the letters. Then make a room and move them.'
+      - '`grep -l` lists the letters; `mkdir` and `mv` gather them.'
+      - 'Type: grep -l "Signed, {word}" -r /archive/observatory/workroom/{room}/letters   then: mkdir /archive/observatory/workroom/{room}/from-{word}   then: mv /archive/observatory/workroom/{room}/letters/letter-{a} /archive/observatory/workroom/{room}/letters/letter-{b} /archive/observatory/workroom/{room}/from-{word}/'
+    goal:
+      all:
+        - { isFile: '/archive/observatory/workroom/{room}/from-{word}/letter-{a}' }
+        - { isFile: '/archive/observatory/workroom/{room}/from-{word}/letter-{b}' }
+    solution:
+      - 'grep -l "Signed, {word}" -r /archive/observatory/workroom/{room}/letters'
+      - 'mkdir /archive/observatory/workroom/{room}/from-{word}'
+      - 'mv /archive/observatory/workroom/{room}/letters/letter-{a} /archive/observatory/workroom/{room}/letters/letter-{b} /archive/observatory/workroom/{room}/from-{word}/'

@@ -9,6 +9,8 @@ export const GUIDE_LEVELS: GuideLevel[] = ['exact', 'goal', 'problem'];
 export interface WorldPatch {
   dirs?: WorldSpec['dirs'];
   files?: WorldSpec['files'];
+  /** Generated files: many pages from a short description (see vfs/corpus.ts). */
+  corpus?: WorldSpec['corpus'];
 }
 
 /** A specific reply to a common mistake. Regexes match the typed line and/or the error output. */

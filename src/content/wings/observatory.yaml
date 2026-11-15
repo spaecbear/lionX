@@ -1,0 +1,203 @@
+# Wing 4: the Observatory. Spells: find, grep, wc, sort, uniq.
+# lionX beat: it scrubbed the Archivist's true name from most pages. Not all.
+id: observatory
+banner: observatory
+entrance: /archive/observatory
+next: aqueducts
+duties: [observatory, bindery, reading-room]
+gate: 60
+
+setup:
+  dirs:
+    - { path: /archive/observatory, owner: apprentice, group: apprentice }
+    - { path: /archive/observatory/workroom, owner: apprentice, group: apprentice }
+    - { path: /archive/observatory/star-charts, owner: apprentice, group: apprentice }
+  files:
+    /archive/observatory/telescope/eyepiece/drawer/lens-cloth: "A soft cloth for the great lens. Someone hid it well.\n"
+    /archive/observatory/comet-log: |
+      Night 1: clear skies, no comet.
+      Night 2: cloud.
+      Night 3: a faint smudge low in the west.
+      Night 4: the comet, bright as a lantern.
+      Night 5: the comet again, brighter.
+      Night 6: cloud.
+      Night 7: the comet is gone. So is the keeper.
+    /archive/observatory/sightings: |
+      owl
+      moth
+      owl
+      comet
+      moth
+      owl
+      bat
+      moth
+      owl
+  corpus:
+    - dir: /archive/observatory/star-charts
+      count: 60
+      name: 'chart-{#}'
+      lines: 12
+      seed: 404
+      plant:
+        - {
+            line: 'Recorded by the Archivist, Oriel Vane, in the first year of the quiet stacks.',
+            files: [7, 23, 41, 58],
+          }
+        - {
+            line: 'Recorded by the Archivist, [scrubbed], in the first year of the quiet stacks.',
+            files: [2, 11, 15, 19, 30, 33, 37, 44, 49, 52, 55],
+          }
+        - { line: 'A note in the margin: LIONX WAS HERE.', files: [16] }
+
+intro:
+  - 'The Observatory. From up here the old keepers charted every star, and every shelf of the Archive below.'
+  - 'There are sixty star charts in this tower. You could read them all. Or you could learn to search.'
+
+lessons:
+  - id: seeking
+    spells: [find]
+    intro:
+      - '`find` walks every room below a place and names what matches.'
+    steps:
+      - id: find-name
+        guide: exact
+        guidance:
+          exact: 'Type `find /archive/observatory -name lens-cloth` to find where the lens cloth was hidden, then `cat` the path it prints.'
+        hints:
+          - 'Search by name, starting from the top of the tower.'
+          - '`find` with `-name`, then `cat` what it finds.'
+          - 'Type: find /archive/observatory -name lens-cloth   then: cat /archive/observatory/telescope/eyepiece/drawer/lens-cloth'
+        goal: { read: /archive/observatory/telescope/eyepiece/drawer/lens-cloth }
+        success:
+          - 'Four rooms deep. You would have been at that all night with `cd` and `ls`.'
+      - id: find-type
+        guide: goal
+        guidance:
+          exact: 'Type `find /archive/observatory -type d` to list every room in the tower.'
+          goal: 'List every room (directory) in the Observatory, and nothing else.'
+        hints:
+          - 'There is a test for the kind of thing: book or room.'
+          - '`find` with `-type d` lists only directories.'
+          - 'Type exactly: find /archive/observatory -type d'
+        goal: { ran: { command: find, args: ['-type', 'd'] } }
+        success:
+          - "`-type f` would list only books. Quote patterns with wildcards, like `-name '*.lx'`, so the Lexicon passes them to find untouched."
+
+  - id: scrying
+    spells: [grep]
+    intro:
+      - '`grep` searches inside books and prints the lines that match.'
+    steps:
+      - id: grep
+        guide: exact
+        guidance:
+          exact: 'Type `grep comet /archive/observatory/comet-log` to see every night the comet was mentioned.'
+        hints:
+          - 'Search inside the log for a word.'
+          - '`grep` takes the word, then the book.'
+          - 'Type exactly: grep comet /archive/observatory/comet-log'
+        goal: { all: [{ ran: grep }, { read: /archive/observatory/comet-log }] }
+        success:
+          - '"The comet is gone. So is the keeper." Cheerful.'
+      - id: grep-r
+        guide: goal
+        guidance:
+          exact: 'Type `grep -ri lionx /archive/observatory/star-charts`. `-r` searches every book in the room; `-i` ignores case.'
+          goal: 'One of the star charts mentions lionX, but the writer was shouting. Search every chart, ignoring case.'
+        hints:
+          - 'Search a whole room, and do not let capital letters fool you.'
+          - '`grep -r` searches recursively; `-i` ignores case.'
+          - 'Type exactly: grep -ri lionx /archive/observatory/star-charts'
+        goal: { all: [{ ran: grep }, { read: /archive/observatory/star-charts/chart-16 }] }
+        success:
+          - '"LIONX WAS HERE." In the margin of a star chart. It wanted to be noticed.'
+
+  - id: counting
+    spells: [wc, sort, uniq]
+    intro:
+      - 'The keepers counted everything. Owls, moths, comets.'
+    steps:
+      - id: wc
+        guide: exact
+        guidance:
+          exact: 'Type `wc -l /archive/observatory/sightings` to count the lines.'
+        hints:
+          - 'Count, do not read.'
+          - '`wc -l` counts lines.'
+          - 'Type exactly: wc -l /archive/observatory/sightings'
+        goal: { all: [{ ran: wc }, { read: /archive/observatory/sightings }] }
+        success:
+          - 'Nine sightings. But nine of what?'
+      - id: tally
+        guide: goal
+        guidance:
+          exact: 'Type `sort /archive/observatory/sightings | uniq -c`. `sort` gathers equal lines together; `uniq -c` counts each run.'
+          goal: 'Tally the sightings: how many owls, moths, and the rest? `sort` then `uniq -c`, joined by a pipe.'
+        hints:
+          - '`uniq` only folds lines that are next to each other. Put them in order first.'
+          - '`sort` the sightings, then pipe them through `uniq -c`.'
+          - 'Type exactly: sort /archive/observatory/sightings | uniq -c'
+        goal: { all: [{ ran: sort }, { ran: { command: uniq, args: ['-c'] } }] }
+        success:
+          - 'Four owls. The owls are watching. The owls are always watching.'
+
+practice:
+  intro:
+    - "The Observatory's records are in a state. Search, count, and tidy while you practice."
+  gateOpens:
+    - 'You can find anything now. So find the one thing lionX most wants hidden.'
+
+capstone:
+  intro:
+    - "lionX scrubbed the Archivist's true name from the star charts. A name is power here; without it, nobody can call the Archivist back."
+    - 'But lionX is tidy, not careful. A few charts still carry the name. It begins: Oriel.'
+  steps:
+    - id: true-name
+      guide: problem
+      guidance:
+        exact: 'Type `grep -rl "Oriel Vane" /archive/observatory/star-charts` to list the charts. Then `mkdir /archive/observatory/true-name` and `mv` each chart it listed into that room.'
+        goal: 'Find every chart that still says "Oriel Vane", and move all of them, and only them, into a new room: /archive/observatory/true-name.'
+        problem: "Gather every chart that still carries the Archivist's full name into /archive/observatory/true-name, before lionX finds them."
+      hints:
+        - 'Search all the charts for the full name, listing only the books that match. Then gather them.'
+        - '`grep -rl "Oriel Vane"` lists the charts. `mkdir` the room, then `mv` the charts into it.'
+        - 'Type: grep -rl "Oriel Vane" /archive/observatory/star-charts   then: mkdir /archive/observatory/true-name   then: mv /archive/observatory/star-charts/chart-7 /archive/observatory/star-charts/chart-23 /archive/observatory/star-charts/chart-41 /archive/observatory/star-charts/chart-58 /archive/observatory/true-name/'
+      goal:
+        all:
+          - { isFile: /archive/observatory/true-name/chart-7 }
+          - { isFile: /archive/observatory/true-name/chart-23 }
+          - { isFile: /archive/observatory/true-name/chart-41 }
+          - { isFile: /archive/observatory/true-name/chart-58 }
+          - { isFile: /archive/observatory/star-charts/chart-2 }
+          - { isFile: /archive/observatory/star-charts/chart-16 }
+      success:
+        - 'Oriel Vane. Say it once, quietly. The stars seemed to lean in.'
+  outro:
+    - 'Something gave way below us when you said it. Water. The old aqueducts under the Archive are running again: `ls /archive`.'
+  unlocks:
+    dirs: [/archive/aqueducts]
+    files:
+      /archive/aqueducts/sign: "THE AQUEDUCTS. Every channel leads somewhere.\n"
+
+rewards:
+  - id: star-map
+    afterDuties: 2
+    say: 'A star map appeared in your cell: `cat ~/star-map`'
+    decoration:
+      file: star-map
+      content: "  .   *     .\n     *   .     *\n  .      *  .\n  A map of the night over the Archive.\n"
+  - id: lore-keeper
+    afterDuties: 4
+    say: "You found the comet keeper's last note: `cat ~/lore/the-comet-keeper`"
+    lore:
+      file: lore/the-comet-keeper
+      text: |
+        The comet was not a comet. It moved against the stars.
+        It purred when it passed overhead.
+  - id: green-phosphor
+    afterDuties: 6
+    say: 'The Lexicon learned to glow green from the starlight. You can choose it later.'
+    theme: green-phosphor
+
+outro:
+  - 'The Aqueducts wait below: `cd /archive/aqueducts`. You will need pipes for those. The other kind.'

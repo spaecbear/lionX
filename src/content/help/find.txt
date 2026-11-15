@@ -1,0 +1,10 @@
+Usage: find [path...] [expression]
+
+Default path is the current directory; default expression is -print.
+
+Tests:
+      -name PATTERN -iname PATTERN -path PATTERN -type [fd] -empty
+      -user NAME -maxdepth LEVELS -mindepth LEVELS
+
+Operators:
+      ! EXPR  -not EXPR  EXPR1 -a EXPR2

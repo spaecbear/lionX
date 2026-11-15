@@ -1,0 +1,18 @@
+NAME
+    uniq - fold repeated lines into one
+
+SYNOPSIS
+    uniq [OPTION]... [INPUT [OUTPUT]]
+
+DESCRIPTION
+    Uniq removes repeated lines, but only when they are next to each
+    other. Sort first if you want every repeat gone.
+
+    -c, --count        prefix each line with how many times it appeared
+    -d, --repeated     print only lines that were repeated
+    -u, --unique       print only lines that were never repeated
+    -i, --ignore-case  ignore case when comparing
+
+EXAMPLES
+    sort names | uniq
+    sort names | uniq -c

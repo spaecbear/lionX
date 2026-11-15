@@ -1,0 +1,24 @@
+NAME
+    find - seek books and rooms by name and kind
+
+SYNOPSIS
+    find [PATH]... [EXPRESSION]
+
+DESCRIPTION
+    Find walks every room under each PATH (the current room if none is
+    given) and prints each book and room that passes all the tests.
+
+    -name PATTERN    the name matches PATTERN; use quotes: -name '*.txt'
+    -iname PATTERN   like -name, ignoring case
+    -path PATTERN    the whole path matches PATTERN
+    -type f          books only;  -type d  rooms only
+    -empty           empty books and rooms
+    -user NAME       owned by NAME
+    -maxdepth N      go no more than N rooms deep
+    -mindepth N      skip things fewer than N rooms deep
+    ! TEST, -not TEST
+                     the opposite of TEST
+
+EXAMPLES
+    find /archive -name '*.lx'          every lionX fragment
+    find . -type d                      every room from here down

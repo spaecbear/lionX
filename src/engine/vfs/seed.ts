@@ -1,3 +1,4 @@
+import { generateCorpus, type CorpusSpec } from './corpus';
 import { Vfs } from './vfs';
 
 interface NodeMeta {
@@ -13,6 +14,8 @@ export interface WorldSpec {
   dirs?: (string | ({ path: string } & NodeMeta))[];
   /** Files by absolute path: plain content, or content plus metadata. */
   files?: Record<string, string | ({ content: string } & NodeMeta)>;
+  /** Generated files (search haystacks). */
+  corpus?: CorpusSpec[];
   /** Starting directory; defaults to the user's home. */
   cwd?: string;
 }
@@ -43,7 +46,7 @@ export function buildWorld(spec: WorldSpec, opts: { now?: () => number } = {}): 
  */
 export function applyPatch(
   vfs: Vfs,
-  patch: Pick<WorldSpec, 'dirs' | 'files'>,
+  patch: Pick<WorldSpec, 'dirs' | 'files' | 'corpus'>,
   user: WorldSpec['user'],
   opts: { ownedByPlayer?: boolean } = {},
 ): void {
@@ -78,7 +81,11 @@ export function applyPatch(
         },
       ]);
     }
-    for (const [path, f] of Object.entries(patch.files ?? {})) {
+    const generated: Record<string, string> = Object.assign(
+      {},
+      ...(patch.corpus ?? []).map((c) => generateCorpus(c)),
+    );
+    for (const [path, f] of Object.entries({ ...generated, ...(patch.files ?? {}) })) {
       const entry = typeof f === 'string' ? { content: f } : f;
       const parent = path.slice(0, path.lastIndexOf('/')) || '/';
       mkdirTracked(parent);

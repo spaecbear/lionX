@@ -1,0 +1,11 @@
+Usage: sort [OPTION]... [FILE]...
+Write sorted concatenation of all FILE(s) to standard output.
+
+With no FILE, or when FILE is -, read standard input.
+
+  -b, --ignore-leading-blanks  ignore leading blanks
+  -f, --ignore-case           fold lower case to upper case characters
+  -n, --numeric-sort          compare according to string numerical value
+  -r, --reverse               reverse the result of comparisons
+  -u, --unique              output only the first of an equal run
+      --help        display this help and exit

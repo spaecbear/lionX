@@ -1,0 +1,30 @@
+Usage: grep [OPTION]... PATTERNS [FILE]...
+Search for PATTERNS in each FILE.
+Example: grep -i 'hello world' menu.h main.c
+
+Pattern selection and interpretation:
+  -E, --extended-regexp     PATTERNS are extended regular expressions
+  -F, --fixed-strings       PATTERNS are strings
+  -G, --basic-regexp        PATTERNS are basic regular expressions
+  -e, --regexp=PATTERNS     use PATTERNS for matching
+  -i, --ignore-case         ignore case distinctions in patterns and data
+  -w, --word-regexp         match only whole words
+  -x, --line-regexp         match only whole lines
+
+Miscellaneous:
+  -s, --no-messages         suppress error messages
+  -v, --invert-match        select non-matching lines
+      --help                display this help text and exit
+
+Output control:
+  -n, --line-number         print line number with output lines
+  -H, --with-filename       print file name with output lines
+  -h, --no-filename         suppress the file name prefix on output
+  -o, --only-matching       show only nonempty parts of lines that match
+  -q, --quiet, --silent     suppress all normal output
+  -r, --recursive           search directories recursively
+  -l, --files-with-matches  print only names of FILEs with selected lines
+  -c, --count               print only a count of selected lines per FILE
+
+Exit status is 0 if any line is selected, 1 otherwise;
+if any error occurs and -q is not given, the exit status is 2.

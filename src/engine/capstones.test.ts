@@ -44,6 +44,22 @@ const solutions: Record<string, string[][]> = {
       'mv fragment-?.lx ../quarantine',
     ],
   ],
+  observatory: [
+    [
+      'grep -rl "Oriel Vane" /archive/observatory/star-charts',
+      'mkdir /archive/observatory/true-name',
+      'mv /archive/observatory/star-charts/chart-7 /archive/observatory/star-charts/chart-23 /archive/observatory/star-charts/chart-41 /archive/observatory/star-charts/chart-58 /archive/observatory/true-name/',
+    ],
+    [
+      // Search with -n and -w, then copy one at a time from inside the room.
+      'cd /archive/observatory/star-charts',
+      'grep -nw Vane *',
+      'mkdir ../true-name',
+      'cp chart-7 ../true-name',
+      'cp chart-23 chart-41 ../true-name/',
+      'cp chart-58 /archive/observatory/true-name',
+    ],
+  ],
 };
 
 describe('capstones can be solved more than one way', () => {

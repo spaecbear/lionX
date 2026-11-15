@@ -1,0 +1,11 @@
+Usage: uniq [OPTION]... [INPUT [OUTPUT]]
+Filter adjacent matching lines from INPUT (or standard input),
+writing to OUTPUT (or standard output).
+
+With no options, matching lines are merged to the first occurrence.
+
+  -c, --count           prefix lines by the number of occurrences
+  -d, --repeated        only print duplicate lines, one for each group
+  -i, --ignore-case     ignore differences in case when comparing
+  -u, --unique          only print unique lines
+      --help        display this help and exit

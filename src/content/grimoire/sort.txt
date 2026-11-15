@@ -1,0 +1,21 @@
+NAME
+    sort - put lines in order
+
+SYNOPSIS
+    sort [OPTION]... [FILE]...
+
+DESCRIPTION
+    Sort prints the lines of all FILEs, or standard input, in order.
+    By default the order is by character code: capitals before small
+    letters, and "10" before "9".
+
+    -n, --numeric-sort   order by number, so 9 comes before 10
+    -r, --reverse        largest or last first
+    -u, --unique         print each distinct line once
+    -f, --ignore-case    fold small letters into capitals
+    -b                   ignore leading blanks
+
+EXAMPLES
+    sort names
+    sort -rn scores
+    sort words | uniq -c | sort -rn     the most common words first

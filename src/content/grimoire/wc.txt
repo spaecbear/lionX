@@ -1,0 +1,18 @@
+NAME
+    wc - count lines, words, and bytes
+
+SYNOPSIS
+    wc [OPTION]... [FILE]...
+
+DESCRIPTION
+    Wc counts the lines, words, and bytes in each FILE, or in standard
+    input. With more than one FILE it also prints a total.
+
+    -l, --lines    only lines
+    -w, --words    only words
+    -c, --bytes    only bytes
+    -m, --chars    only characters
+
+EXAMPLES
+    wc -l journal              how many lines
+    grep lionX journal | wc -l how many lines mention lionX

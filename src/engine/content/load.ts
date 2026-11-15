@@ -158,7 +158,21 @@ function checkCoaching(c: Checker, v: unknown, path: string): CoachingRule[] | u
 function checkPatch(c: Checker, v: unknown, path: string): WorldPatch | undefined {
   if (v === undefined) return undefined;
   const o = c.obj(v, path);
-  c.noExtra(o, ['dirs', 'files'], path);
+  c.noExtra(o, ['dirs', 'files', 'corpus'], path);
+  if (o.corpus !== undefined) {
+    c.arr(o.corpus, `${path}.corpus`).forEach((x, i) => {
+      const p = `${path}.corpus[${i}]`;
+      const m = c.obj(x, p);
+      c.noExtra(m, ['dir', 'count', 'name', 'lines', 'seed', 'words', 'plant'], p);
+      c.str(m.dir, `${p}.dir`);
+      // Numbers may also be duty placeholders like '{n}', filled in before generation.
+      const placeholder = (v: unknown) => typeof v === 'string' && /^\{[A-Za-z_]\w*\}$/.test(v);
+      for (const k of ['count', 'lines', 'seed'] as const) {
+        if (!Number.isInteger(m[k]) && !placeholder(m[k]))
+          c.fail(`${p}.${k}`, 'expected a whole number');
+      }
+    });
+  }
   return o as WorldPatch;
 }
 

@@ -8,18 +8,18 @@ import { less } from './less';
 import { ls } from './ls';
 import { man } from './man';
 import { pwd } from './pwd';
-import { CommandRegistry } from './types';
+import { find, grep, sort, uniq, wc } from './textops';
+import { CommandRegistry, type Command } from './types';
 
 export * from './types';
-export { cat, cd, clear, cp, echo, head, less, ls, man, mkdir, mv, pwd, rm, rmdir, tail, touch };
-
-/** Every command implemented so far. */
-export const allCommands = [
+export {
   cat,
   cd,
   clear,
   cp,
   echo,
+  find,
+  grep,
   head,
   less,
   ls,
@@ -29,8 +29,36 @@ export const allCommands = [
   pwd,
   rm,
   rmdir,
+  sort,
   tail,
   touch,
+  uniq,
+  wc,
+};
+
+/** Every command implemented so far. */
+export const allCommands: Command[] = [
+  cat,
+  cd,
+  clear,
+  cp,
+  echo,
+  find,
+  grep,
+  head,
+  less,
+  ls,
+  man,
+  mkdir,
+  mv,
+  pwd,
+  rm,
+  rmdir,
+  sort,
+  tail,
+  touch,
+  uniq,
+  wc,
 ];
 
 export function createRegistry(): CommandRegistry {
