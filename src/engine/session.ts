@@ -272,8 +272,20 @@ export function createSession(o: SessionOptions): GameSession {
   let storyOn = false;
   let storyQueue: StoryCommand[] = [];
   let storyKey = '';
+  const pagesTried = new Set<string>();
   const nextStoryCommand = (): StoryCommand | null => {
     runner.progress.storyMode = true;
+    // It is a story mode: read any page of the Book of Eco that has turned up, once.
+    if (runner.knows('cat')) {
+      const found = runner.progress.library ?? [];
+      const page = content.library?.pages.find(
+        (p) => !found.includes(p.id) && !pagesTried.has(p.id) && runner.vfs.exists(p.file),
+      );
+      if (page) {
+        pagesTried.add(page.id);
+        return { line: `cat ${page.file}` };
+      }
+    }
     const cur = runner.current;
     if (!cur) {
       // Between wings: walk to the next one's door.

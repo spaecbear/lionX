@@ -336,6 +336,8 @@ describe('story mode', () => {
     expect(session.runner.progress.wingsDone).toContain('root');
     expect(session.runner.progress.storyMode).toBe(true);
     expect(session.runner.progress.achievements ?? []).toEqual([]);
+    // It read the Book of Eco along the way.
+    expect(session.runner.progress.library).toHaveLength(loadGameContent().library!.pages.length);
   });
 });
 

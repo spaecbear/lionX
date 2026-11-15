@@ -9,6 +9,8 @@ note: |
       story auto   let it play by itself (any key pauses)
       story off    wake up
 
+    It reads every page of the Book of Eco it comes across.
+
     A dreamed story earns no achievements, and finds no secrets while
     you dream (wake up to look for them yourself).
 on: "Story mode. Press space at an empty prompt to take the next step. `story auto` plays by itself. This save will earn no achievements, and secrets wait until you turn story mode off.\n"
