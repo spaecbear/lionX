@@ -96,6 +96,20 @@ describe('sample wing: lessons', () => {
     expect(runner.dutiesToGate()!.every((x) => x.left > 0)).toBe(true);
   });
 
+  it('easy mode: a task finished with hints still builds mastery like a clean one', async () => {
+    const run = async (easy: boolean) => {
+      const g = play(sample());
+      (g.runner as unknown as { opts: { easy: () => boolean } }).opts.easy = () => easy;
+      await g.type('hint');
+      await g.type('pwd');
+      return g.runner.progress.mastery.pwd ?? 0;
+    };
+    const normal = await run(false);
+    const easy = await run(true);
+    expect(easy).toBeGreaterThan(normal);
+    expect(easy).toBe(15);
+  });
+
   it('duty skip sets aside a duty that can no longer be done and gives a fresh one', async () => {
     const { runner, lessons, type } = play(sample());
     await lessons();

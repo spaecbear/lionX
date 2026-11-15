@@ -190,6 +190,7 @@ export class Director {
       save,
       now: this.now,
       onExit: () => (pendingExit = true),
+      easy: () => this.opts.settings?.get().easy ?? false,
     });
     this.clearScreen();
     this.session = session;

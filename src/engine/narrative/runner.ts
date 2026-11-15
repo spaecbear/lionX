@@ -82,6 +82,8 @@ export interface RunnerOptions {
   coaching?: CoachingRule[];
   /** What each spell and flag does, for the `solution` spell. */
   glossary?: Glossary;
+  /** Easy mode: hints no longer slow mastery (asked fresh at each task's end). */
+  easy?: () => boolean;
   /** Hidden notes that unlock cosmetics, placed as their wing begins. */
   secrets?: Secret[];
   /** The Book of Eco: pages filed in ~/library. */
@@ -462,6 +464,11 @@ export class LessonRunner {
       .filter((x) => x.left > 0);
   }
 
+  /** Easy mode is on right now. */
+  get easy(): boolean {
+    return this.opts.easy?.() ?? false;
+  }
+
   /** Whether the capstone is open (for the `status` spell). */
   gateIsOpen(): boolean {
     return (
@@ -575,7 +582,9 @@ export class LessonRunner {
       commands: this.commands.length,
       par,
     };
-    applyTask(this.progress.mastery, result);
+    // Easy mode: a task finished with hints counts as clean (but never as swift).
+    const easy = this.opts.easy?.() && this.hintsUsed > 0;
+    applyTask(this.progress.mastery, easy ? { ...result, hints: 0, par: undefined } : result);
     this.struggled = this.hintsUsed > 0;
     return result;
   }

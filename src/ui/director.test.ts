@@ -193,6 +193,7 @@ describe('settings and tints in the director', () => {
       music: true,
       volume: 4,
       song: 'auto',
+      easy: false,
     };
     const term = new Terminal({ cols: 80, rows: 40, allowProposedApi: true });
     const writes: Promise<void>[] = [];

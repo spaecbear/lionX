@@ -103,4 +103,12 @@ describe('settings', () => {
     expect(await shell.run('settings song auto')).toBe(0);
     expect(current.song).toBe('auto');
   });
+
+  it('turns easy mode on and off', async () => {
+    const g = setup(['candlelit']);
+    expect((await g.run('settings')).out).toContain('easy:    off');
+    expect((await g.run('settings easy on')).status).toBe(0);
+    expect(g.get().easy).toBe(true);
+    expect((await g.run('settings easy maybe')).status).toBe(1);
+  });
 });

@@ -18,6 +18,7 @@ export function loadSettings(): Settings {
           ? Math.round(s.volume)
           : DEFAULT_SETTINGS.volume,
       song: typeof s.song === 'string' ? s.song : 'auto',
+      easy: s.easy === true,
     };
   } catch {
     return { ...DEFAULT_SETTINGS };

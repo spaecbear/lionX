@@ -189,4 +189,6 @@ export interface QuillLines {
   skipReminder?: string;
   /** status, while practicing: {n} duties until the trial ({s}: y/ies). */
   untilTrial?: string;
+  /** The same, in easy mode (hints count). */
+  untilTrialEasy?: string;
 }

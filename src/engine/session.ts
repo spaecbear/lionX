@@ -48,6 +48,8 @@ export interface SessionOptions {
   now?: () => number;
   /** A fresh seed for a new game (ignored when loading a save). */
   seed?: number;
+  /** Easy mode: hints do not slow progress. */
+  easy?: () => boolean;
   /** Called by `exit`, after its command finishes. */
   onExit?: () => void;
 }
@@ -133,6 +135,7 @@ export function createSession(o: SessionOptions): GameSession {
     lines: content.lines,
     artText: content.artText,
     glossary: content.glossary,
+    easy: o.easy,
     secrets: content.secrets,
     achievements: content.achievements,
     library: content.library,
@@ -182,6 +185,7 @@ export function createSession(o: SessionOptions): GameSession {
       lines: content.lines,
       artText: content.artText,
       glossary: content.glossary,
+      easy: o.easy,
       secrets: content.secrets,
       achievements: content.achievements,
       library: content.library,

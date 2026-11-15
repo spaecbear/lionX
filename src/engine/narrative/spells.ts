@@ -29,7 +29,7 @@ export function createStatusCommand(getRunner: () => LessonRunner | null) {
       if (toGate?.length) {
         const most = Math.max(...toGate.map((x) => x.left));
         lines.push(
-          `  ${(runner.lines.untilTrial ?? 'Next trial: about {n} more dut{s}.').replace('{n}', String(most)).replace('{s}', most === 1 ? 'y' : 'ies')}`,
+          `  ${((runner.easy ? runner.lines.untilTrialEasy : runner.lines.untilTrial) ?? 'Next trial: about {n} more dut{s}.').replace('{n}', String(most)).replace('{s}', most === 1 ? 'y' : 'ies')}`,
         );
         lines.push(
           `    Still practicing: ${toGate.map((x) => `${x.spell} (about ${x.left})`).join(', ')}`,

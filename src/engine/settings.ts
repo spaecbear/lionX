@@ -13,6 +13,8 @@ export interface Settings {
   volume: number;
   /** A secret song to play everywhere, or auto (each wing's own). */
   song: string;
+  /** Easy mode: hints and solution do not slow progress. */
+  easy: boolean;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -22,6 +24,7 @@ export const DEFAULT_SETTINGS: Settings = {
   music: true,
   volume: 4,
   song: 'auto',
+  easy: false,
 };
 
 export interface SettingsHost {
@@ -54,10 +57,11 @@ export function createSettingsCommand(host: SettingsHost) {
         io.stdout.write(
           `  theme:   ${s.theme}\n    ${themes}\n  motion:  ${s.motion}\n  reader:  ${s.reader ? 'on' : 'off'}\n` +
             `  music:   ${s.music ? 'on' : 'off'}\n  volume:  ${s.volume}\n` +
-            `  song:    ${s.song}${songList(host, s)}\n\n` +
+            `  song:    ${s.song}${songList(host, s)}\n` +
+            `  easy:    ${s.easy ? 'on' : 'off'} (hints do not slow your progress)\n\n` +
             '  Change one with:\n' +
             '    settings theme NAME\n    settings motion on|off|auto\n    settings reader on|off\n' +
-            '    settings music on|off\n    settings volume 0-10\n    settings song NAME|auto\n' +
+            '    settings music on|off\n    settings volume 0-10\n    settings song NAME|auto\n    settings easy on|off\n' +
             '  ??? is still hidden somewhere in the Archive.\n',
         );
         return 0;
@@ -102,6 +106,10 @@ export function createSettingsCommand(host: SettingsHost) {
           return 1;
         }
         host.set({ ...s, song: song.name });
+        return 0;
+      }
+      if (key === 'easy' && (value === 'on' || value === 'off')) {
+        host.set({ ...s, easy: value === 'on' });
         return 0;
       }
       if (key === 'volume' && /^(10|[0-9])$/.test(value ?? '')) {

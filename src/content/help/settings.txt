@@ -1,1 +1,9 @@
-Usage: settings [theme NAME | motion on|off|auto | reader on|off]
+Usage: settings [NAME VALUE]
+Show your preferences, or change one:
+  settings theme NAME        the Lexicon's colors (??? are still hidden)
+  settings motion on|off|auto
+  settings reader on|off     screen-reader mode
+  settings music on|off
+  settings volume 0-10
+  settings song NAME|auto    a secret song you found, or each wing's own
+  settings easy on|off       hints and solution no longer slow your progress
