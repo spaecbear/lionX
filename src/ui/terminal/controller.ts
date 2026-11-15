@@ -209,10 +209,25 @@ export class TerminalController {
             }
           }
         } else if (item.kind === 'achievement') {
-          this.term.write(
-            `\r\n  ${QUILL_SGR.reward}* Achievement: ${item.title}${QUILL_SGR.reset}\r\n` +
-              `    ${QUILL_SGR.narrator}${item.says}${QUILL_SGR.reset}\r\n\r\n`,
-          );
+          // A small ribbon (art/ribbon) with the achievement beside it.
+          const S = QUILL_SGR;
+          const ribbon = (this.opts.artFor?.('ribbon', this.term.cols) ?? '')
+            .replace(/\n$/, '')
+            .split('\n')
+            .filter((l, k, all) => l || k < all.length - 1);
+          const width = Math.max(0, ...ribbon.map((l) => l.length)) + 2;
+          const text = [
+            `${S.reward}Achievement: ${item.title}${S.reset}`,
+            `${S.narrator}${item.says}${S.reset}`,
+          ];
+          const rows = Math.max(ribbon.length, text.length);
+          const lines: string[] = [];
+          for (let k = 0; k < rows; k++) {
+            const r = ribbon[k] ?? '';
+            const t = text[k - Math.max(0, Math.floor((ribbon.length - text.length) / 2))] ?? '';
+            lines.push(`${S.reward}${r.padEnd(width)}${S.reset}${t}`.trimEnd());
+          }
+          this.term.write('\r\n' + lines.join('\r\n') + '\r\n\r\n');
         } else if (item.kind === 'breakdown') {
           this.term.write(renderBreakdown(item.command, item.pieces, this.term.cols));
         } else if (item.kind === 'quill' || item.kind === 'narrator') {

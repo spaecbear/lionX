@@ -309,10 +309,7 @@ export class LessonRunner {
     for (const a of this.opts.achievements ?? []) {
       if (earned.includes(a.id) || !this.achieved(a)) continue;
       earned.push(a.id);
-      out.push(
-        { kind: 'art', name: 'ribbon', reward: true },
-        { kind: 'achievement', title: a.title, says: a.says },
-      );
+      out.push({ kind: 'achievement', title: a.title, says: a.says });
     }
     return out;
   }
