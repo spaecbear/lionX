@@ -15,7 +15,8 @@ const dutyFiles: Record<string, DutyTemplate[]> = Object.fromEntries(
 );
 /** The sample wing's templates, for the generator's unit tests. */
 const templates: DutyTemplate[] = dutyFiles['lantern-hall'];
-const ALL_SPELLS = createRegistry().names();
+import { CONSTRUCT_SPELLS } from '../shell/executor';
+const ALL_SPELLS = [...createRegistry().names(), ...CONSTRUCT_SPELLS];
 
 import { worldFor as worldForWing } from '../test-support';
 
@@ -69,9 +70,13 @@ describe('duty generator (done criterion)', () => {
         recent.push(duty.signature);
         const r = await solve(duty, file);
         expect(r.met, `${duty.signature} not solved by its solution`).toBe(true);
-        expect(r.failures, `${duty.signature} solution had failing commands`).toEqual([]);
-        for (const s of r.usedSpells)
+        if (!duty.solutionMayFail) {
+          expect(r.failures, `${duty.signature} solution had failing commands`).toEqual([]);
+        }
+        // Commands must be declared; constructs (| > && ...) are never locked, so they may appear freely.
+        for (const s of r.usedSpells.filter((x) => !CONSTRUCT_SPELLS.includes(x))) {
           expect(duty.spells, `${duty.signature} uses ${s}`).toContain(s);
+        }
       }
     },
   );

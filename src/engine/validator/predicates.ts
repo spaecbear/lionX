@@ -15,7 +15,7 @@ export type Predicate =
   | { owner: { path: string; owner?: string; group?: string } }
   | { cwdIs: string }
   | { processRunning: string }
-  | { ran: string | { command: string; status?: number; args?: string[] } }
+  | { ran: string | { command: string; status?: number | 'any'; args?: string[] } }
   | { read: string }
   | { all: Predicate[] }
   | { any: Predicate[] }
@@ -80,7 +80,7 @@ export function evaluate(p: Predicate, w: WorldView): boolean {
     return w.commands.some(
       (c) =>
         c.command === want.command &&
-        c.status === (want.status ?? 0) &&
+        (want.status === 'any' || c.status === (want.status ?? 0)) &&
         (want.args ?? []).every((a) => c.args.includes(a)),
     );
   }

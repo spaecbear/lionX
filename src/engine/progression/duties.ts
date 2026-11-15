@@ -20,6 +20,8 @@ export interface DutyTemplate {
   /** Commands expected for a swift solution; defaults to the solution's length. */
   par?: number;
   success?: string;
+  /** The tidy solution is expected to report an error (e.g. a duty about catching errors). */
+  solutionMayFail?: boolean;
 }
 
 /** One generated duty: a template with its parameters filled in. */
@@ -36,6 +38,7 @@ export interface Duty {
   solution: string[];
   par: number;
   success?: string;
+  solutionMayFail?: boolean;
 }
 
 export interface GenerateOptions {
@@ -73,6 +76,7 @@ export function instantiate(t: DutyTemplate, params: Params): Duty {
     solution,
     par: t.par ?? solution.length,
     success: t.success ? substitute(t.success, params) : undefined,
+    solutionMayFail: t.solutionMayFail,
   };
 }
 

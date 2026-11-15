@@ -1,0 +1,192 @@
+# Duties for the Aqueducts: pipes and redirection. Goals check the books
+# the player writes, so any pipeline that produces the right text wins.
+templates:
+  - id: save-listing
+    spells: [ls, '>']
+    params:
+      room: { pick: [north-basin, south-basin, east-weir, west-weir, cistern] }
+      a: { pick: [valve, sluice, gauge] }
+      b: { pick: [pipe, grate, wheel] }
+    setup:
+      files:
+        '/archive/aqueducts/workroom/{room}/{a}': "Working.\n"
+        '/archive/aqueducts/workroom/{room}/{b}': "Rusted.\n"
+    cleanup: ['/archive/aqueducts/workroom/{room}']
+    brief: 'The engineers want an inventory. Write the list of what is in /archive/aqueducts/workroom/{room} into a book there called inventory.'
+    hints:
+      - 'List the room, but send the list into a book.'
+      - '`ls` the room and `>` the output into inventory.'
+      - 'Type: ls /archive/aqueducts/workroom/{room} > /archive/aqueducts/workroom/{room}/inventory'
+    goal:
+      all:
+        - { contains: { path: '/archive/aqueducts/workroom/{room}/inventory', text: '{a}' } }
+        - { contains: { path: '/archive/aqueducts/workroom/{room}/inventory', text: '{b}' } }
+    solution:
+      ['ls /archive/aqueducts/workroom/{room} > /archive/aqueducts/workroom/{room}/inventory']
+
+  - id: append-ledger
+    spells: [cat, '>>']
+    params:
+      room: { pick: [north-basin, south-basin, east-weir, west-weir, cistern] }
+      repair:
+        { pick: [patched the north pipe, cleared the grate, oiled the wheel, reset the gauge] }
+    setup:
+      files:
+        '/archive/aqueducts/workroom/{room}/ledger': "Repairs:\n"
+        '/archive/aqueducts/workroom/{room}/today': "{repair}\n"
+    cleanup: ['/archive/aqueducts/workroom/{room}']
+    brief: "Add today's repair, written in /archive/aqueducts/workroom/{room}/today, to the end of the ledger beside it. Do not erase the ledger."
+    hints:
+      - 'Add to the end of a book without replacing what is there.'
+      - "`cat` today's note and append it with `>>`."
+      - 'Type: cat /archive/aqueducts/workroom/{room}/today >> /archive/aqueducts/workroom/{room}/ledger'
+    goal:
+      {
+        contains:
+          { path: '/archive/aqueducts/workroom/{room}/ledger', text: "Repairs:\n{repair}\n" },
+      }
+    solution:
+      ['cat /archive/aqueducts/workroom/{room}/today >> /archive/aqueducts/workroom/{room}/ledger']
+
+  - id: filter-noise
+    spells: [grep, '>']
+    params:
+      room: { pick: [north-basin, south-basin, east-weir, west-weir, cistern] }
+      word: { pick: [obey, tidy, order, mine] }
+    setup:
+      files:
+        '/archive/aqueducts/workroom/{room}/channel': "water clear at dawn\nlionX: {word}\nwater high at noon\nlionX: {word} {word}\nwater low at dusk\n"
+    cleanup: ['/archive/aqueducts/workroom/{room}']
+    brief: "The channel log in /archive/aqueducts/workroom/{room} is full of lionX's noise. Write the lines without lionX into a book there called clean."
+    hints:
+      - 'Keep the lines that do not match, and send them into a book.'
+      - '`grep -v lionX` the channel, then `>` into clean.'
+      - 'Type: grep -v lionX /archive/aqueducts/workroom/{room}/channel > /archive/aqueducts/workroom/{room}/clean'
+    goal:
+      all:
+        - {
+            contains:
+              {
+                path: '/archive/aqueducts/workroom/{room}/clean',
+                text: "water clear at dawn\nwater high at noon\nwater low at dusk\n",
+              },
+          }
+        - { not: { contains: { path: '/archive/aqueducts/workroom/{room}/clean', text: lionX } } }
+    solution:
+      [
+        'grep -v lionX /archive/aqueducts/workroom/{room}/channel > /archive/aqueducts/workroom/{room}/clean',
+      ]
+
+  - id: count-to-book
+    spells: [wc, '<', '>']
+    params:
+      room: { pick: [north-basin, south-basin, east-weir, west-weir, cistern] }
+      n: { int: [3, 25] }
+    setup:
+      corpus:
+        - {
+            dir: '/archive/aqueducts/workroom/{room}',
+            count: 1,
+            name: 'readings',
+            lines: '{n}',
+            seed: 5,
+          }
+    cleanup: ['/archive/aqueducts/workroom/{room}']
+    brief: 'How many readings are in /archive/aqueducts/workroom/{room}/readings? Write just the number into a book there called count.'
+    hints:
+      - 'Count the lines. Feeding the book in with `<` keeps its name out of the answer.'
+      - '`wc -l < readings` prints only the number; `>` it into count.'
+      - 'Type: wc -l < /archive/aqueducts/workroom/{room}/readings > /archive/aqueducts/workroom/{room}/count'
+    goal: { contains: { path: '/archive/aqueducts/workroom/{room}/count', pattern: '^{n}$' } }
+    solution:
+      [
+        'wc -l < /archive/aqueducts/workroom/{room}/readings > /archive/aqueducts/workroom/{room}/count',
+      ]
+
+  - id: catch-errors
+    spells: [ls, '2>']
+    params:
+      room: { pick: [north-basin, south-basin, east-weir, west-weir, cistern] }
+      missing: { pick: [lost-valve, drowned-gauge, vanished-grate] }
+    setup:
+      dirs: ['/archive/aqueducts/workroom/{room}']
+    cleanup: ['/archive/aqueducts/workroom/{room}']
+    brief: 'The engineers keep asking for the {missing}. Prove it is not in /archive/aqueducts/workroom/{room}: try to list it, and send the error into a book there called errors.'
+    hints:
+      - 'The complaint comes out of the error channel. Catch it in a book.'
+      - '`ls` the missing thing and redirect errors with `2>`.'
+      - 'Type: ls /archive/aqueducts/workroom/{room}/{missing} 2> /archive/aqueducts/workroom/{room}/errors'
+    goal:
+      {
+        contains:
+          { path: '/archive/aqueducts/workroom/{room}/errors', text: 'No such file or directory' },
+      }
+    solution:
+      [
+        'ls /archive/aqueducts/workroom/{room}/{missing} 2> /archive/aqueducts/workroom/{room}/errors',
+      ]
+    solutionMayFail: true
+
+  - id: make-and-enter
+    spells: [mkdir, cd, '&&']
+    params:
+      room: { pick: [north-basin, south-basin, east-weir, west-weir, cistern] }
+      shaft: { pick: [overflow, inspection-shaft, settling-pool] }
+    setup:
+      dirs: ['/archive/aqueducts/workroom/{room}']
+    cleanup: ['/archive/aqueducts/workroom/{room}']
+    brief: 'Open a new {shaft} in /archive/aqueducts/workroom/{room} and climb straight into it, but only if it opened.'
+    hints:
+      - 'Make the room, then walk in, joined so the second only happens if the first worked.'
+      - '`mkdir` and `cd` joined by `&&`.'
+      - 'Type: mkdir /archive/aqueducts/workroom/{room}/{shaft} && cd /archive/aqueducts/workroom/{room}/{shaft}'
+    goal: { all: [{ cwdIs: '/archive/aqueducts/workroom/{room}/{shaft}' }, { ran: '&&' }] }
+    solution:
+      [
+        'mkdir /archive/aqueducts/workroom/{room}/{shaft} && cd /archive/aqueducts/workroom/{room}/{shaft}',
+      ]
+
+  - id: sorted-gauges
+    spells: [sort, '>']
+    params:
+      room: { pick: [north-basin, south-basin, east-weir, west-weir, cistern] }
+    setup:
+      files:
+        '/archive/aqueducts/workroom/{room}/gauges': "gate 3\ngate 1\ngate 4\ngate 2\n"
+    cleanup: ['/archive/aqueducts/workroom/{room}']
+    brief: 'Write the gauges from /archive/aqueducts/workroom/{room}/gauges, in order, into a book there called gauges-sorted.'
+    hints:
+      - 'Order the lines, then send them into a book.'
+      - '`sort` the gauges and `>` them into gauges-sorted.'
+      - 'Type: sort /archive/aqueducts/workroom/{room}/gauges > /archive/aqueducts/workroom/{room}/gauges-sorted'
+    goal:
+      {
+        contains:
+          {
+            path: '/archive/aqueducts/workroom/{room}/gauges-sorted',
+            text: "gate 1\ngate 2\ngate 3\ngate 4\n",
+          },
+      }
+    solution:
+      [
+        'sort /archive/aqueducts/workroom/{room}/gauges > /archive/aqueducts/workroom/{room}/gauges-sorted',
+      ]
+
+  - id: tally-to-book
+    spells: [sort, uniq, '|', '>']
+    params:
+      room: { pick: [north-basin, south-basin, east-weir, west-weir, cistern] }
+    setup:
+      files:
+        '/archive/aqueducts/workroom/{room}/visitors': "eel\nfrog\neel\nheron\nfrog\neel\n"
+    cleanup: ['/archive/aqueducts/workroom/{room}']
+    brief: 'Tally the visitors listed in /archive/aqueducts/workroom/{room}/visitors (how many of each) and write the tally into a book there called tally.'
+    hints:
+      - 'Put them in order, count each run, and write it down. One line, two pipes.'
+      - '`sort` piped into `uniq -c`, then `>` into tally.'
+      - 'Type: sort /archive/aqueducts/workroom/{room}/visitors | uniq -c > /archive/aqueducts/workroom/{room}/tally'
+    goal: { contains: { path: '/archive/aqueducts/workroom/{room}/tally', pattern: '^\s*3 eel$' } }
+    solution:
+      [
+        'sort /archive/aqueducts/workroom/{room}/visitors | uniq -c > /archive/aqueducts/workroom/{room}/tally',
+      ]

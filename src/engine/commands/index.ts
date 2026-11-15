@@ -9,6 +9,7 @@ import { ls } from './ls';
 import { man } from './man';
 import { pwd } from './pwd';
 import { find, grep, sort, uniq, wc } from './textops';
+import { falseCmd, trueCmd } from './truefalse';
 import { CommandRegistry, type Command } from './types';
 
 export * from './types';
@@ -38,27 +39,8 @@ export {
 
 /** Every command implemented so far. */
 export const allCommands: Command[] = [
-  cat,
-  cd,
-  clear,
-  cp,
-  echo,
-  find,
-  grep,
-  head,
-  less,
-  ls,
-  man,
-  mkdir,
-  mv,
-  pwd,
-  rm,
-  rmdir,
-  sort,
-  tail,
-  touch,
-  uniq,
-  wc,
+  ...[cat, cd, clear, cp, echo, falseCmd, find, grep, head, less, ls, man],
+  ...[mkdir, mv, pwd, rm, rmdir, sort, tail, touch, trueCmd, uniq, wc],
 ];
 
 export function createRegistry(): CommandRegistry {

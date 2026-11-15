@@ -124,7 +124,8 @@ export function checkPredicate(c: Checker, v: unknown, path: string): Predicate 
       return {
         ran: {
           command: c.str(m.command, `${p}.command`),
-          status: m.status === undefined ? undefined : Number(m.status),
+          status:
+            m.status === undefined ? undefined : m.status === 'any' ? 'any' : Number(m.status),
           args:
             m.args === undefined
               ? undefined
@@ -434,6 +435,7 @@ export function loadDuties(yamlText: string, source = 'duties.yaml'): DutyTempla
         'solution',
         'par',
         'success',
+        'solutionMayFail',
       ],
       p,
     );
@@ -467,6 +469,7 @@ export function loadDuties(yamlText: string, source = 'duties.yaml'): DutyTempla
       solution,
       par: o.par === undefined ? undefined : Number(o.par),
       success: c.optStr(o.success, `${p}.success`),
+      solutionMayFail: o.solutionMayFail === true ? true : undefined,
     };
   });
   uniqueIds(c, templates, 'templates');

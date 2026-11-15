@@ -1,0 +1,9 @@
+NAME
+    true - succeed at nothing
+
+SYNOPSIS
+    true
+
+DESCRIPTION
+    True does nothing and reports success (exit status 0). It is handy
+    for seeing how && and || behave: `true && echo yes` says yes.

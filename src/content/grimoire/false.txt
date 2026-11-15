@@ -1,0 +1,9 @@
+NAME
+    false - fail at nothing
+
+SYNOPSIS
+    false
+
+DESCRIPTION
+    False does nothing and reports failure (exit status 1). Try
+    `false || echo rescued` to see || at work.

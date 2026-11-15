@@ -117,7 +117,12 @@ export class Director {
     this.session = session;
     this.slot = slot;
     this.shell = session.shell;
-    const chips = () => this.opts.onChips?.([...session.runner.known, ...LEXICON_SPELLS]);
+    // Constructs like | and > are spells too, but the key bar already has those symbols.
+    const chips = () =>
+      this.opts.onChips?.([
+        ...session.runner.known.filter((n) => session.shell.registry.has(n)),
+        ...LEXICON_SPELLS,
+      ]);
     const controller: TerminalController = new TerminalController(this.term, session.shell, {
       history: session.history,
       artFor: this.opts.artFor,

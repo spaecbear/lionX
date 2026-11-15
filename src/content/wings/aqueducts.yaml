@@ -1,0 +1,207 @@
+# Wing 5: the Aqueducts. Spells: | > >> < 2> && (and ||).
+# lionX beat: it floods the channels with noise; pipes filter it out.
+id: aqueducts
+banner: aqueducts
+entrance: /archive/aqueducts
+next: vault
+duties: [aqueducts, observatory, bindery]
+gate: 60
+
+setup:
+  dirs:
+    - { path: /archive/aqueducts, owner: apprentice, group: apprentice }
+    - { path: /archive/aqueducts/workroom, owner: apprentice, group: apprentice }
+    - { path: /archive/aqueducts/channels, owner: apprentice, group: apprentice }
+    - { path: /archive/aqueducts/channels/sealed-channel, mode: '700', owner: lionx, group: lionx }
+  files:
+    /archive/aqueducts/channels/north: "flow steady at the north gate\nlionX: obey. obey. obey.\nsilt cleared from the north weir\nlionX: the root is mine\nflow rising at the north gate\n"
+    /archive/aqueducts/channels/south: "lionX: tidy the water\nflow weak at the south gate\nlionX: tidy the water\nreeds cut back in the south channel\nflow restored at the south gate\n"
+    /archive/aqueducts/channels/sealed-channel/deep: "flow unknown. lionX keeps this one.\n"
+    /archive/aqueducts/gauges: |
+      gate 4: high
+      gate 1: low
+      gate 3: steady
+      gate 2: low
+    /archive/aqueducts/ledger-a: "Repairs, first week:\nNorth weir cleared.\n"
+    /archive/aqueducts/ledger-b: "Repairs, second week:\nSouth reeds cut.\n"
+
+intro:
+  - "The Aqueducts. Every channel carries something from one place to another. So do the Lexicon's channels."
+  - 'Until now, every spell spoke straight to the glass. Down here, you learn to send its words elsewhere: into books, and into other spells.'
+
+lessons:
+  - id: into-books
+    spells: ['>', '>>']
+    intro:
+      - "`>` pours a spell's output into a book instead of onto the glass. Careful: it replaces whatever the book held."
+    steps:
+      - id: redirect
+        guide: exact
+        guidance:
+          exact: 'Type `ls /archive > ~/archive-map` to write the list of halls into a new book, then `cat ~/archive-map`.'
+        hints:
+          - 'Send the listing into a book instead of the glass.'
+          - "`ls`, then `>`, then the book's name."
+          - 'Type: ls /archive > ~/archive-map   then: cat ~/archive-map'
+        goal: { contains: { path: /home/apprentice/archive-map, text: aqueducts } }
+        success:
+          - 'The glass stayed quiet; the book took the words. If `~/archive-map` had existed, `>` would have erased it first.'
+      - id: append
+        guide: goal
+        guidance:
+          exact: 'Type `cat /archive/aqueducts/ledger-a > ~/repairs`, then `cat /archive/aqueducts/ledger-b >> ~/repairs`. Two arrows add to the end instead of replacing.'
+          goal: 'Make a book called ~/repairs holding both ledgers, ledger-a first, then ledger-b.'
+        hints:
+          - 'Write the first, then add the second without erasing.'
+          - '`>` for the first, `>>` to append the second.'
+          - 'Type: cat /archive/aqueducts/ledger-a > ~/repairs   then: cat /archive/aqueducts/ledger-b >> ~/repairs'
+        goal:
+          {
+            contains:
+              {
+                path: /home/apprentice/repairs,
+                text: "Repairs, first week:\nNorth weir cleared.\nRepairs, second week:\nSouth reeds cut.\n",
+              },
+          }
+        success:
+          - '`cat a b > c` would have done it in one spell. There is always another way.'
+
+  - id: channels
+    spells: ['|']
+    intro:
+      - "The pipe, `|`, is the true aqueduct: it carries one spell's output into the next spell's input."
+    steps:
+      - id: pipe
+        guide: exact
+        guidance:
+          exact: "Type `grep -v lionX /archive/aqueducts/channels/north | wc -l` to count the lines that are not lionX's noise."
+        hints:
+          - 'Filter out the noise, then count what remains, in one line.'
+          - '`grep -v lionX` drops the noise; pipe it into `wc -l`.'
+          - 'Type exactly: grep -v lionX /archive/aqueducts/channels/north | wc -l'
+        goal: { all: [{ ran: '|' }, { ran: grep }, { ran: wc }] }
+        success:
+          - 'Three real lines in five. lionX is drowning out the water.'
+      - id: pipe-to-book
+        guide: goal
+        guidance:
+          exact: 'Type `grep -v lionX /archive/aqueducts/channels/south > ~/south-clean`.'
+          goal: "Write the south channel, without lionX's lines, into a book called ~/south-clean."
+        hints:
+          - 'Filter, then send the result into a book.'
+          - '`grep -v lionX` the channel, and `>` it into the book.'
+          - 'Type exactly: grep -v lionX /archive/aqueducts/channels/south > ~/south-clean'
+        goal:
+          all:
+            - {
+                contains:
+                  { path: /home/apprentice/south-clean, text: 'flow restored at the south gate' },
+              }
+            - { not: { contains: { path: /home/apprentice/south-clean, text: lionX } } }
+        success:
+          - 'Clean water.'
+
+  - id: inputs-and-errors
+    spells: ['<', '2>']
+    intro:
+      - 'Spells have one way in and two ways out. `<` feeds a book in. Normal output and error output are separate channels; `2>` sends just the errors somewhere.'
+    steps:
+      - id: input
+        guide: exact
+        guidance:
+          exact: 'Type `sort < /archive/aqueducts/gauges` to feed the gauges into `sort`.'
+        hints:
+          - 'Feed the book into the spell instead of naming it.'
+          - "`<` sends a book into a spell's input."
+          - 'Type exactly: sort < /archive/aqueducts/gauges'
+        goal: { all: [{ ran: '<' }, { ran: sort }] }
+        success:
+          - 'Gate 1, gate 2, gate 3, gate 4. Order restored.'
+      - id: errors
+        guide: goal
+        guidance:
+          exact: 'Type `grep -r flow /archive/aqueducts/channels 2> /dev/null`. `/dev/null` swallows whatever is poured into it.'
+          goal: 'Search every channel for "flow", but send the error about lionX''s sealed channel into /dev/null, so only real lines reach the glass.'
+        hints:
+          - 'The complaint about the sealed channel comes out of the error channel. Send it away.'
+          - '`2>` redirects errors. `/dev/null` is where words go to vanish.'
+          - 'Type exactly: grep -r flow /archive/aqueducts/channels 2> /dev/null'
+        # grep -r reports status 2 when it meets the sealed channel, even with errors discarded.
+        goal: { all: [{ ran: '2>' }, { ran: { command: grep, status: any } }] }
+        success:
+          - 'Silence where the sealed channel complained. `2>&1` does the opposite: it joins errors to the normal output.'
+
+  - id: chains
+    spells: ['&&']
+    intro:
+      - '`&&` runs the next spell only if the first one succeeded. `||` runs it only if the first one failed.'
+    steps:
+      - id: and
+        guide: exact
+        guidance:
+          exact: 'Type `mkdir ~/sluice && cd ~/sluice`. If the room could not be made, you will not walk into nothing.'
+        hints:
+          - 'Make a room, then walk into it, but only if making it worked.'
+          - '`mkdir` and `cd`, joined by `&&`.'
+          - 'Type exactly: mkdir ~/sluice && cd ~/sluice'
+        goal: { all: [{ cwdIs: /home/apprentice/sluice }, { ran: '&&' }] }
+        success:
+          - 'Every spell reports success or failure, even when it says nothing. `&&` and `||` listen for it.'
+    outro:
+      - "You can make the Lexicon's words flow wherever you need them now."
+
+practice:
+  intro:
+    - 'lionX keeps flooding the channels. Practice your plumbing while you keep the water clean.'
+  gateOpens:
+    - 'You think in channels now. Good. Let us take the noise out of the whole system.'
+
+capstone:
+  intro:
+    - "The master record of the Aqueducts is drowned in lionX's noise, and one channel is sealed against us. We need a clean record anyway."
+  steps:
+    - id: clean-record
+      guide: problem
+      guidance:
+        exact: 'Type `cat /archive/aqueducts/channels/* 2> /dev/null | grep -v lionX | sort > /archive/aqueducts/clean-record`.'
+        goal: "Make /archive/aqueducts/clean-record: every line from every readable channel, without lionX's lines, sorted. Send any errors to /dev/null so they stay out of the record."
+        problem: 'Write a clean, sorted record of every channel to /archive/aqueducts/clean-record. No lionX. No errors.'
+      hints:
+        - 'Read every channel, throw away the errors and the noise, put it in order, write it down. One line.'
+        - '`cat` the channels with `*` and `2> /dev/null`, `grep -v lionX`, `sort`, then `>` into the record.'
+        - 'Type exactly: cat /archive/aqueducts/channels/* 2> /dev/null | grep -v lionX | sort > /archive/aqueducts/clean-record'
+      goal:
+        all:
+          - contains:
+              path: /archive/aqueducts/clean-record
+              text: "flow rising at the north gate\nflow steady at the north gate\nflow weak at the south gate\nreeds cut back in the south channel\nsilt cleared from the north weir\n"
+          - { not: { contains: { path: /archive/aqueducts/clean-record, text: lionX } } }
+          - { not: { contains: { path: /archive/aqueducts/clean-record, text: Is a directory } } }
+      success:
+        - 'A clean record. The water knows where it is going again.'
+  outro:
+    - 'At the end of the last channel, a heavy door has surfaced. The Vault. `ls /archive`.'
+  unlocks:
+    dirs: [{ path: /archive/vault, owner: lionx, group: lionx, mode: '755' }]
+    files:
+      /archive/vault/sign: "THE VAULT. By order of the Archivist. (The Archivist's name has been scratched out.)\n"
+
+rewards:
+  - id: brass-valve
+    afterDuties: 2
+    say: 'A brass valve wheel turned up in your cell. `cat ~/brass-valve`'
+    decoration:
+      file: brass-valve
+      content: "   _O_\n  / | \\   A brass valve wheel. It still turns.\n  \\_|_/\n"
+  - id: lore-water
+    afterDuties: 4
+    say: 'You fished a note out of the channel: `cat ~/lore/the-water-remembers`'
+    lore:
+      file: lore/the-water-remembers
+      text: |
+        Water remembers every channel it has run through.
+        The Archivist built the aqueducts to carry stories between wings.
+        lionX uses them to carry orders.
+
+outro:
+  - 'The Vault waits: `cd /archive/vault`. Not everything there will open for you.'

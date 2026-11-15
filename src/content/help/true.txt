@@ -1,0 +1,2 @@
+Usage: true [ignored command line arguments]
+Exit with a status code indicating success.

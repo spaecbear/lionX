@@ -118,6 +118,9 @@ export class Shell {
         this.lastStatus = await this.runPipeline(pipeline);
       }
     }
+    // Report && and || as spells too, so lessons and mastery can see them.
+    // The chain itself worked, whatever its parts reported.
+    for (const op of new Set(node.rest.map((r) => r.op))) this.onCommandRun?.(op, [], 0);
   }
 
   private async runPipeline(p: Pipeline): Promise<number> {
@@ -133,6 +136,7 @@ export class Shell {
       });
       input = pipe ? pipe.text : null;
     }
+    if (p.commands.length > 1) this.onCommandRun?.('|', [], 0);
     return status;
   }
 
@@ -145,10 +149,15 @@ export class Shell {
     const argv = cmd.words.flatMap((w) => expandWord(w, ex));
     const status = await this.runExpanded(cmd, argv, fds);
     if (argv.length) this.onCommandRun?.(argv[0], argv.slice(1), status);
+    // A redirect succeeded if it was applied, even when the command itself then failed.
+    for (const op of redirectSpells(cmd)) this.onCommandRun?.(op, [], this.redirectFailed ? 1 : 0);
     return status;
   }
 
+  private redirectFailed = false;
+
   private async runExpanded(cmd: SimpleCommand, argv: string[], fds: Fds): Promise<number> {
+    this.redirectFailed = false;
     const ex = this.expandEnv();
     const assigned = cmd.assignments.map((a) => [a.name, expandWordToString(a.value, ex)] as const);
 
@@ -156,6 +165,7 @@ export class Shell {
       fds = this.applyRedirects(cmd.redirects, fds);
     } catch (e) {
       if (e instanceof RedirectError) {
+        this.redirectFailed = true;
         fds.err.write(`${this.shellName}: ${e.message}\n`);
         return 1;
       }
@@ -266,4 +276,19 @@ export class Shell {
 /** The word roughly as typed, for error messages (`$MANY`, `*.txt`). */
 function wordSource(w: Word): string {
   return w.parts.map((p) => (p.kind === 'var' ? `$${p.name}` : p.text)).join('');
+}
+
+/** Shell constructs reported as spells (never locked; lessons teach them in the Aqueducts). */
+export const CONSTRUCT_SPELLS = ['|', '>', '>>', '<', '2>', '2>>', '&&', '||'];
+
+/** The redirection "spells" a command used: >, >>, <, 2>, 2>> (and 2>&1 counts as 2>). */
+function redirectSpells(cmd: SimpleCommand): string[] {
+  const out = new Set<string>();
+  for (const r of cmd.redirects) {
+    if (r.op === '<') out.add('<');
+    else if (r.op === '>&') {
+      if (r.fd === 2) out.add('2>');
+    } else out.add(r.fd === 2 ? (r.op === '>>' ? '2>>' : '2>') : r.op);
+  }
+  return [...out];
 }

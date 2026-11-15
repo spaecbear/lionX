@@ -60,6 +60,18 @@ const solutions: Record<string, string[][]> = {
       'cp chart-58 /archive/observatory/true-name',
     ],
   ],
+  aqueducts: [
+    [
+      'cat /archive/aqueducts/channels/* 2> /dev/null | grep -v lionX | sort > /archive/aqueducts/clean-record',
+    ],
+    [
+      // Channel by channel into a scratch book, then sort it into place.
+      'cd /archive/aqueducts/channels',
+      'grep -v lionX north > /tmp-clean 2>/dev/null || grep -v lionX north > ~/scratch',
+      'grep -v lionX south >> ~/scratch',
+      'sort < ~/scratch > /archive/aqueducts/clean-record',
+    ],
+  ],
 };
 
 describe('capstones can be solved more than one way', () => {
