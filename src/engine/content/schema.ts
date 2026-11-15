@@ -119,4 +119,6 @@ export interface QuillLines {
   galleryNew?: string;
   /** Said when the player stands in a room with the right name in the wrong place. {here}, {there}. */
   wrongPlace?: string;
+  /** Said before the `solution` spell's breakdown. */
+  solutionIntro?: string;
 }

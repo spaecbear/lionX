@@ -4,7 +4,7 @@ import { KEY, splitKeys } from './keys';
 import { LineBuffer } from './lineBuffer';
 import { normalizeSmartPunctuation } from '../mobile/input';
 import type { Narration } from '../../engine/narrative';
-import { QUILL_SGR, renderQuill } from './narration';
+import { QUILL_SGR, renderBreakdown, renderQuill } from './narration';
 
 /** The part of xterm.js the controller needs, so tests can use a fake. */
 export interface TerminalLike {
@@ -208,6 +208,8 @@ export class TerminalController {
               );
             }
           }
+        } else if (item.kind === 'breakdown') {
+          this.term.write(renderBreakdown(item.command, item.pieces, this.term.cols));
         } else if (item.kind === 'quill' || item.kind === 'narrator') {
           const pieces = renderQuill(
             item.text,

@@ -1,2 +1,3 @@
 Usage: hint
-Ask Quill for help: a nudge, then the spell's name, then the full syntax.
+Ask Quill for help: the objective again, then a nudge, the spell's name,
+and the full syntax. Still stuck? solution explains a whole command.

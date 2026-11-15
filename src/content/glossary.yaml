@@ -1,0 +1,128 @@
+# What each spell, flag and symbol does, used by the `solution` spell to
+# explain a command piece by piece. Flags with `takes` read the next word too.
+commands:
+  pwd: { says: 'names the room you stand in' }
+  ls:
+    says: 'lists what a room holds'
+    flags:
+      -a: 'shows all, even hidden names that start with a dot'
+      -l: 'the long listing: wards, owner, size, date'
+  cd: { says: 'walks you into another room' }
+  cat: { says: 'reads books out in full' }
+  less: { says: 'reads a book one screen at a time (q to leave)' }
+  head:
+    says: 'reads the first lines of a book'
+    flags:
+      -n: { says: 'how many lines', takes: true }
+  tail:
+    says: 'reads the last lines of a book'
+    flags:
+      -n: { says: 'how many lines', takes: true }
+  man: { says: 'opens the grimoire page for a spell' }
+  mkdir:
+    says: 'makes a new room'
+    flags:
+      -p: 'makes every missing room along the way'
+  touch: { says: 'makes a blank book (or updates its date)' }
+  cp:
+    says: 'copies a book: first what, then where'
+    flags:
+      -r: 'copies a whole room, and everything inside it'
+  mv: { says: 'moves or renames: first what, then where' }
+  rm: { says: 'removes a book, with no undo' }
+  rmdir: { says: 'removes an empty room' }
+  find:
+    says: 'searches every room below a starting place'
+    flags:
+      -name: { says: 'match by name', takes: true }
+      -type: { says: 'match by kind: d for rooms, f for books', takes: true }
+      -empty: 'match only empty books and rooms'
+  grep:
+    says: 'finds lines that contain a word'
+    flags:
+      -v: 'keeps the lines that do NOT match instead'
+      -r: 'searches every book in a room, and the rooms inside it'
+      -i: 'ignores upper and lower case'
+      -l: 'prints only the names of books that match'
+  wc:
+    says: 'counts lines, words and letters'
+    flags:
+      -l: 'counts lines only'
+  sort: { says: 'puts lines in order' }
+  uniq:
+    says: 'squeezes repeated neighbouring lines into one'
+    flags:
+      -c: 'counts how many times each line repeated'
+  echo: { says: 'says the words that follow' }
+  whoami: { says: 'names who you are' }
+  id: { says: 'names who you are and every group you belong to' }
+  chmod: { says: "changes a book's wards (who may read, write, run)" }
+  chown:
+    says: 'gives a book to a new owner (owner:group)'
+    flags:
+      -R: 'reaches every book inside the room too'
+  sudo: { says: "casts the rest of the line with root's authority" }
+  ps: { says: 'lists the spirits (processes) running' }
+  top:
+    says: 'watches spirits live, busiest first'
+    flags:
+      -b: 'prints plainly instead of redrawing'
+      -n: { says: 'how many times to look', takes: true }
+  kill:
+    says: 'sends a signal to a spirit, by PID or %job'
+    flags:
+      -9: 'KILL: the signal no spirit can refuse'
+      -STOP: 'STOP: freezes the spirit where it stands'
+  pgrep:
+    says: 'finds spirits by name and prints their PIDs'
+    flags:
+      -l: 'shows each name beside its PID'
+      -x: 'the whole name must match exactly'
+  pkill:
+    says: 'sends a signal to spirits by name'
+    flags:
+      -9: 'KILL: the signal no spirit can refuse'
+      -STOP: 'STOP: freezes the spirit where it stands'
+      -x: 'the whole name must match exactly'
+  sleep: { says: 'waits for a number of seconds' }
+  jobs: { says: 'lists the jobs started from this terminal' }
+  bg: { says: 'lets a stopped job run on in the background' }
+  fg: { says: 'brings a job back to the front' }
+  export: { says: 'shares a variable with every spell you cast' }
+  printenv: { says: 'prints the shared (exported) variables' }
+  alias: { says: 'gives a long spell a short name' }
+  source: { says: 'reads a book of spells into the Lexicon right now' }
+  which: { says: 'names the file a spell comes from' }
+  type: { says: 'says what answers to a name: builtin, alias or file' }
+  nano: { says: 'opens a book in the editor' }
+  crontab:
+    says: 'reads or sets a schedule of spells'
+    flags:
+      -l: 'lists the schedule'
+      -r: 'removes the schedule'
+      -u: { says: 'whose schedule', takes: true }
+      '-': 'reads the new schedule from the pipe'
+  for: { says: 'repeats spells once for each word in a list' }
+  do: { says: 'begins the spells to repeat' }
+  done: { says: 'ends the loop' }
+  bash: { says: 'runs a book of spells' }
+  spellbook: { says: 'the new spell, found by searching your PATH' }
+  ll: { says: 'your own alias for ls -l' }
+symbols:
+  '|': 'the pipe: pours the output of the spell before into the spell after'
+  '>': 'writes the output into a book (replacing what was there)'
+  '>>': 'adds the output to the end of a book'
+  '<': 'feeds a book into the spell as its input'
+  '2>': 'sends errors (channel 2) somewhere else'
+  '&&': 'casts the next spell only if this one succeeded'
+  ';': 'then, whatever happened, the next spell'
+  '&': 'runs the spell in the background'
+words:
+  help: 'asks any spell for its own short guide'
+  dev-null: '/dev/null swallows whatever is poured into it'
+  absolute: 'a path from the top of the Archive'
+  home: 'a path starting at your cell'
+  relative: 'a path starting where you stand'
+  job: 'a job number from the jobs list'
+  variable: "a variable's value"
+  word: 'what the spell works on'

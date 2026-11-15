@@ -15,6 +15,7 @@ import {
   type TaskResult,
 } from '../progression';
 import { evaluate, type CommandEvent } from '../validator';
+import { commandsFromHint, explain, type Glossary } from './explain';
 import { applyPatch, buildWorld, Vfs, type VfsSnapshot } from '../vfs';
 import type { ProcessTable } from '../processes';
 import type { WorldPatch } from '../content';
@@ -25,6 +26,8 @@ export type Narration =
   | { kind: 'quill'; text: string }
   /** The narrator: what happens around the player, not anyone's speech. */
   | { kind: 'narrator'; text: string }
+  /** A command, explained piece by piece (the `solution` spell). */
+  | { kind: 'breakdown'; command: string; pieces: [string, string][] }
   /** An ASCII art piece by name; the UI picks the narrow or wide variant. */
   | { kind: 'art'; name: string; reward?: boolean }
   /** Quiet marker for progress (no text). */
@@ -61,6 +64,8 @@ export interface RunnerSnapshot {
 export interface RunnerOptions {
   /** Shared coaching for common mistakes, checked after the wing's own rules. */
   coaching?: CoachingRule[];
+  /** What each spell and flag does, for the `solution` spell. */
+  glossary?: Glossary;
   /** Every loaded duty template, by file id. The wing names which files it draws from. */
   dutyFiles?: Record<string, DutyTemplate[]>;
   /** Quill's fixed lines for duties, swift casting, and the gate. */
@@ -274,7 +279,7 @@ export class LessonRunner {
       out.push(...this.completeTask());
       return out;
     }
-    if (/^\s*(hint|status|duty)\b/.test(line)) return out;
+    if (/^\s*(hint|solution|status|duty)\b/.test(line)) return out;
     const advice = this.coach(cur.step, line, status, stderr) ?? this.nearMiss(cur.step);
     if (advice) out.push({ kind: 'quill', text: advice });
     return out;
@@ -293,6 +298,26 @@ export class LessonRunner {
     return [
       ...(objective && objective !== hint ? [{ kind: 'quill' as const, text: objective }] : []),
       { kind: 'quill', text: hint },
+    ];
+  }
+
+  /** The `solution` spell: one way to finish the task, each piece explained. Counts as full help. */
+  solution(): Narration[] {
+    const cur = this.current;
+    if (!cur) return [{ kind: 'quill', text: this.lines.idle }];
+    const commands = cur.duty ? cur.duty.solution : commandsFromHint(cur.step.hints.at(-1) ?? '');
+    const glossary = this.opts.glossary;
+    if (!commands.length || !glossary) return this.hint();
+    this.hintsUsed = 3;
+    this.hintLog.set(cur.step.id, (this.hintLog.get(cur.step.id) ?? 0) + 1);
+    return [
+      ...this.repeat(),
+      { kind: 'quill', text: this.lines.solutionIntro ?? 'Here is one way, piece by piece:' },
+      ...commands.map((command) => ({
+        kind: 'breakdown' as const,
+        command,
+        pieces: explain(command, glossary),
+      })),
     ];
   }
 

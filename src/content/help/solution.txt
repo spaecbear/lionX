@@ -1,0 +1,3 @@
+Usage: solution
+Ask Quill for one way to finish the task, with every piece of the command
+explained. The strongest help there is: use hint first if you only need a nudge.

@@ -1,6 +1,7 @@
 import { loadCoaching, loadDuties, loadQuillLines, loadWing } from '../engine/content';
+import { loadGlossary } from '../engine/narrative';
 import type { GameContent } from '../engine/session';
-import { art, coachingSource, dutySources, quillSource, wingSources } from '.';
+import { art, glossarySource, coachingSource, dutySources, quillSource, wingSources } from '.';
 import sideQuests from './side-quests.txt?raw';
 
 /** The wing a new game begins in. (lantern-hall is a small sample wing kept for tests.) */
@@ -20,5 +21,6 @@ export function loadGameContent(): GameContent {
     startWing: START_WING,
     sideQuests,
     artText: (name) => art(name, 'narrow'),
+    glossary: loadGlossary(glossarySource),
   };
 }

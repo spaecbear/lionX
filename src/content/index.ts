@@ -3,6 +3,9 @@
  * and coaching, .txt for art. Nothing is game logic.
  */
 import coachingYaml from './coaching.yaml?raw';
+import glossaryYaml from './glossary.yaml?raw';
+
+export const glossarySource = glossaryYaml;
 
 const wingFiles = import.meta.glob<string>('./wings/*.yaml', {
   query: '?raw',

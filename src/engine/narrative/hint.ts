@@ -14,3 +14,17 @@ export function createHintCommand(getRunner: () => LessonRunner | null) {
     },
   });
 }
+
+/** `solution`: the strongest hint. Quill shows one way and explains every piece. */
+export function createSolutionCommand(getRunner: () => LessonRunner | null) {
+  return defineCommand({
+    name: 'solution',
+    unlockedInAct: 0,
+    options: {},
+    run() {
+      const runner = getRunner();
+      if (runner) runner.queue(runner.solution());
+      return 0;
+    },
+  });
+}

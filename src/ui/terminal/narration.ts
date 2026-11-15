@@ -114,3 +114,36 @@ export function plainQuill(text: string, cols: number, voice: Voice = 'quill'): 
       .replace(/\x1b\[[0-9;]*m/g, '')
   );
 }
+
+/**
+ * The `solution` breakdown: the command, then each piece beside what it does.
+ * Wide screens put them side by side; narrow ones put the meaning underneath.
+ */
+export function renderBreakdown(command: string, pieces: [string, string][], cols: number): string {
+  const S = QUILL_SGR;
+  const out: string[] = [`  ${S.code}${command}${S.reset}`];
+  const col = Math.min(24, Math.max(...pieces.map(([p]) => p.length)) + 2);
+  const wrap = (text: string, width: number) => {
+    const rows: string[] = [];
+    let row = '';
+    for (const w of text.split(' ')) {
+      if (row && row.length + 1 + w.length > width) {
+        rows.push(row);
+        row = w;
+      } else row = row ? `${row} ${w}` : w;
+    }
+    return [...rows, row];
+  };
+  const sideBySide = cols >= 60;
+  for (const [piece, says] of pieces) {
+    if (sideBySide && piece.length < col) {
+      const rows = wrap(says, cols - 4 - col);
+      out.push(`    ${S.code}${piece.padEnd(col)}${S.reset}${S.text}${rows[0]}${S.reset}`);
+      for (const r of rows.slice(1)) out.push(`    ${' '.repeat(col)}${S.text}${r}${S.reset}`);
+    } else {
+      out.push(`    ${S.code}${piece}${S.reset}`);
+      for (const r of wrap(says, cols - 8)) out.push(`        ${S.text}${r}${S.reset}`);
+    }
+  }
+  return out.join('\r\n') + '\r\n\r\n';
+}

@@ -4,6 +4,8 @@ import {
   createDutyCommand,
   createQuestsCommand,
   createHintCommand,
+  createSolutionCommand,
+  type Glossary,
   createStatusCommand,
   LessonRunner,
   type Narration,
@@ -30,6 +32,8 @@ export interface GameContent {
   sideQuests?: string;
   /** The narrow text of an art piece (for ~/gallery). */
   artText?: (name: string) => string | undefined;
+  /** What each spell and flag does, for `solution`. */
+  glossary?: Glossary;
 }
 
 export interface SessionOptions {
@@ -122,6 +126,7 @@ export function createSession(o: SessionOptions): GameSession {
     dutyFiles: content.dutyFiles,
     lines: content.lines,
     artText: content.artText,
+    glossary: content.glossary,
     progress: save
       ? structuredClone(save.progress)
       : newProgress(o.seed ?? Math.floor(now() % 2 ** 32)),
@@ -133,6 +138,7 @@ export function createSession(o: SessionOptions): GameSession {
     vfs: runner.vfs,
     registry: createRegistry().register(
       createHintCommand(() => runner),
+      createSolutionCommand(() => runner),
       createStatusCommand(() => runner),
       createDutyCommand(() => runner),
       createQuestsCommand(() => runner, content.sideQuests ?? ''),
@@ -164,6 +170,7 @@ export function createSession(o: SessionOptions): GameSession {
       dutyFiles: content.dutyFiles,
       lines: content.lines,
       artText: content.artText,
+      glossary: content.glossary,
       progress: runner.progress,
       vfs: runner.vfs,
       now,

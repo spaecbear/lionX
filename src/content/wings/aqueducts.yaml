@@ -76,7 +76,7 @@ lessons:
         art: faucet
         guide: exact
         guidance:
-          exact: "Type `grep -v lionX /archive/aqueducts/channels/north | wc -l`. `grep -v` keeps only the lines that do NOT match (v for reverse), `|` pours them into `wc`, and `wc -l` counts the lines."
+          exact: 'Type `grep -v lionX /archive/aqueducts/channels/north | wc -l`. `grep -v` keeps only the lines that do NOT match (v for reverse), `|` pours them into `wc`, and `wc -l` counts the lines.'
         hints:
           - 'Filter out the noise, then count what remains, in one line.'
           - '`grep -v lionX` drops the noise; pipe it into `wc -l`.'

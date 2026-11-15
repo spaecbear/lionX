@@ -4,7 +4,14 @@ import { Shell } from '../shell';
 import { createHintCommand } from './hint';
 import { createDutyCommand, createStatusCommand, wrapIndented } from './spells';
 import { LessonRunner, type Narration } from './runner';
-import { coachingSource, dutySources, quillSource, wingSources } from '../../content';
+import { loadGlossary } from './explain';
+import {
+  glossarySource,
+  coachingSource,
+  dutySources,
+  quillSource,
+  wingSources,
+} from '../../content';
 import { newProgress } from '../progression';
 
 const dutyFiles = Object.fromEntries(
@@ -148,6 +155,20 @@ describe('sample wing: lessons', () => {
     expect(await type('hint')).toEqual([goal.text, 'Type exactly: pwd']);
     expect(await type('hint')).toEqual([goal.text, 'Type exactly: pwd']);
     expect(runner.hintLog.get('pwd')).toBe(4);
+  });
+
+  it('solution restates the goal and explains the command piece by piece', async () => {
+    const { runner } = play(sample());
+    (runner as unknown as { opts: { glossary: unknown } }).opts.glossary =
+      loadGlossary(glossarySource);
+    const said = runner.solution();
+    const b = said.find((n) => n.kind === 'breakdown') as {
+      command: string;
+      pieces: [string, string][];
+    };
+    expect(b.command).toBe('pwd');
+    expect(b.pieces).toEqual([['pwd', 'names the room you stand in']]);
+    expect(runner.current!.hintsUsed).toBe(3);
   });
 
   it('notices a room with the right name in the wrong place', async () => {
