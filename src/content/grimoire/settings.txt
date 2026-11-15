@@ -1,0 +1,20 @@
+NAME
+    settings - how the Lexicon looks and moves
+
+SYNOPSIS
+    settings
+    settings theme NAME
+    settings motion on|off|auto
+    settings reader on|off
+
+DESCRIPTION
+    With nothing after it, settings shows your preferences.
+
+    theme    candlelit (amber), high-contrast, and themes you earn in play:
+             green-phosphor and parchment
+    motion   off stops Quill's typing and the drifting spirits; auto
+             follows your device's reduced-motion setting
+    reader   on is for screen readers: no ASCII art, no animation, and
+             new output is announced
+
+    Settings is a spell of the Lexicon itself, available everywhere.

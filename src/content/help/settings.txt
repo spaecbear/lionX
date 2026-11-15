@@ -1,0 +1,1 @@
+Usage: settings [theme NAME | motion on|off|auto | reader on|off]
