@@ -8,6 +8,8 @@ export const QUILL_SGR = {
   text: '\x1b[96m',
   code: '\x1b[1;93m',
   art: '\x1b[33m',
+  /** Reward art glows a little brighter than banners. */
+  reward: '\x1b[1;93m',
   reset: '\x1b[0m',
 };
 

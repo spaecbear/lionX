@@ -20,6 +20,8 @@ export interface DutyTemplate {
   /** Commands expected for a swift solution; defaults to the solution's length. */
   par?: number;
   success?: string;
+  /** Art shown when the duty is done (variants picked at random). */
+  art?: string[];
   /** The tidy solution is expected to report an error (e.g. a duty about catching errors). */
   solutionMayFail?: boolean;
 }
@@ -38,6 +40,7 @@ export interface Duty {
   solution: string[];
   par: number;
   success?: string;
+  art?: string[];
   solutionMayFail?: boolean;
 }
 
@@ -77,6 +80,7 @@ export function instantiate(t: DutyTemplate, params: Params): Duty {
     par: t.par ?? solution.length,
     success: t.success ? substitute(t.success, params) : undefined,
     solutionMayFail: t.solutionMayFail,
+    art: t.art,
   };
 }
 

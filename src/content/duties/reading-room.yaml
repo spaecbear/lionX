@@ -3,6 +3,7 @@
 # spell in their goal, so practice strengthens it; others accept any way to read.
 templates:
   - id: misplaced-book
+    art: [book, book-closed]
     spells: [cd, ls, cat]
     params:
       carrel: { pick: [carrel-1, carrel-2, carrel-3, carrel-4, carrel-5, carrel-6] }
@@ -24,6 +25,7 @@ templates:
     solution: ['cd /archive/reading-room/carrels/{carrel}', 'ls', 'cat {book}']
 
   - id: last-entry
+    art: [quill]
     spells: [tail]
     params:
       carrel: { pick: [carrel-1, carrel-2, carrel-3, carrel-4, carrel-5, carrel-6] }
@@ -41,6 +43,7 @@ templates:
     solution: ['tail -n 1 /archive/reading-room/carrels/{carrel}/watch-log']
 
   - id: ledger-heading
+    art: [ledger]
     spells: [head]
     params:
       carrel: { pick: [carrel-1, carrel-2, carrel-3, carrel-4, carrel-5, carrel-6] }
@@ -59,6 +62,7 @@ templates:
     solution: ['head -n 3 /archive/reading-room/carrels/{carrel}/ledger']
 
   - id: hidden-slip
+    art: [envelope]
     spells: [ls, cat]
     params:
       carrel: { pick: [carrel-1, carrel-2, carrel-3, carrel-4, carrel-5, carrel-6] }
@@ -81,6 +85,7 @@ templates:
       ]
 
   - id: long-scroll
+    art: [scroll]
     spells: [less]
     params:
       carrel: { pick: [carrel-1, carrel-2, carrel-3, carrel-4, carrel-5, carrel-6] }
@@ -101,6 +106,7 @@ templates:
     solution: ['less /archive/reading-room/carrels/{carrel}/scroll-of-{scroll}']
 
   - id: biggest-book
+    art: [tomes]
     spells: [ls, cat]
     params:
       carrel: { pick: [carrel-1, carrel-2, carrel-3, carrel-4, carrel-5, carrel-6] }
@@ -127,6 +133,7 @@ templates:
       ]
 
   - id: grimoire-page
+    art: [grimoire]
     spells: [man]
     params:
       spell: { pick: [ls, cd, pwd, cat, head, tail, less] }
@@ -139,6 +146,7 @@ templates:
     solution: ['man {spell}']
 
   - id: two-halves
+    art: [letter]
     spells: [cd, cat]
     params:
       carrel: { pick: [carrel-1, carrel-2, carrel-3, carrel-4, carrel-5, carrel-6] }
@@ -161,6 +169,7 @@ templates:
       ['cd /archive/reading-room/carrels/{carrel}', 'cat letter-first-half letter-second-half']
 
   - id: help-reminder
+    art: [candle, candle-pair]
     spells: [cat, head, tail, ls]
     params:
       spell: { pick: [cat, head, tail, ls] }

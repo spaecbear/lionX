@@ -24,7 +24,7 @@ export type Narration =
   /** A line spoken by Quill (typewriter effect in the UI). */
   | { kind: 'quill'; text: string }
   /** An ASCII art piece by name; the UI picks the narrow or wide variant. */
-  | { kind: 'art'; name: string }
+  | { kind: 'art'; name: string; reward?: boolean }
   /** Quiet marker for progress (no text). */
   | {
       kind: 'event';
@@ -69,6 +69,8 @@ export interface RunnerOptions {
   processes?: ProcessTable;
   /** Continue in an existing world (entering a later wing). */
   vfs?: Vfs;
+  /** The narrow (40 column) text of an art piece, for hanging it in ~/gallery. */
+  artText?: (name: string) => string | undefined;
   /** Resume from a save instead of starting the wing fresh. */
   restore?: { vfs: VfsSnapshot; runner: RunnerSnapshot };
   now?: () => number;
@@ -415,6 +417,7 @@ export class LessonRunner {
     const step = lesson.steps[this.stepIndex];
     this.recordMastery(lesson.spells.filter((s) => this.spellsUsed().includes(s)));
     const out: Narration[] = [
+      ...this.reward(step.art),
       ...quill(step.success),
       { kind: 'event', event: 'step-complete', id: step.id },
     ];
@@ -472,6 +475,7 @@ export class LessonRunner {
     this.cleanup(duty);
     this.duty = null;
     const out: Narration[] = [
+      ...this.reward(duty.art),
       { kind: 'quill', text: duty.success ?? this.rng.pick(this.lines.dutyDone) },
       ...(isSwift(result)
         ? [{ kind: 'quill' as const, text: this.rng.pick(this.lines.swift) }]
@@ -506,6 +510,25 @@ export class LessonRunner {
     } finally {
       this.vfs.credentials = saved;
     }
+  }
+
+  /**
+   * Reward art for a finished task: one of the named variants, drawn in the
+   * terminal, and hung in ~/gallery the first time it is earned.
+   */
+  private reward(art: string[] | undefined): Narration[] {
+    if (!art?.length) return [];
+    const name = this.rng.pick(art);
+    const out: Narration[] = [{ kind: 'art', name, reward: true }];
+    const gallery = (this.progress.gallery ??= []);
+    const text = this.opts.artText?.(name);
+    if (!gallery.includes(name) && text) {
+      gallery.push(name);
+      this.patch({ files: { [`${this.user.home}/gallery/${name}`]: text } });
+      if (gallery.length === 1 && this.lines.galleryNew)
+        out.push({ kind: 'quill', text: this.lines.galleryNew });
+    }
+    return out;
   }
 
   private giveRewards(): Narration[] {
@@ -555,6 +578,7 @@ export class LessonRunner {
     const step = cap.steps[this.stepIndex];
     this.recordMastery(this.wingSpells.filter((s) => this.spellsUsed().includes(s)));
     const out: Narration[] = [
+      ...this.reward(step.art),
       ...quill(step.success),
       { kind: 'event', event: 'step-complete', id: step.id },
     ];

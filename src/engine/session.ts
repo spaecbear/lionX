@@ -28,6 +28,8 @@ export interface GameContent {
   startWing: string;
   /** Text of the post-game side quests list. */
   sideQuests?: string;
+  /** The narrow text of an art piece (for ~/gallery). */
+  artText?: (name: string) => string | undefined;
 }
 
 export interface SessionOptions {
@@ -119,6 +121,7 @@ export function createSession(o: SessionOptions): GameSession {
     coaching: content.coaching,
     dutyFiles: content.dutyFiles,
     lines: content.lines,
+    artText: content.artText,
     progress: save
       ? structuredClone(save.progress)
       : newProgress(o.seed ?? Math.floor(now() % 2 ** 32)),
@@ -160,6 +163,7 @@ export function createSession(o: SessionOptions): GameSession {
       coaching: content.coaching,
       dutyFiles: content.dutyFiles,
       lines: content.lines,
+      artText: content.artText,
       progress: runner.progress,
       vfs: runner.vfs,
       now,

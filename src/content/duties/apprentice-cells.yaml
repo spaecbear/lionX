@@ -2,6 +2,7 @@
 # Everything is placed under /archive/halls so duties never touch story rooms.
 templates:
   - id: bell-rings
+    art: [bell, bell-swing]
     spells: [cd]
     params:
       hall: { pick: [north-hall, south-hall, lamp-hall, quill-hall, salt-hall] }
@@ -18,6 +19,7 @@ templates:
     solution: ['cd /archive/halls/{hall}/{room}']
 
   - id: name-the-room
+    art: [signpost]
     spells: [cd, pwd]
     params:
       hall: { pick: [north-hall, south-hall, lamp-hall, quill-hall, salt-hall] }
@@ -34,6 +36,7 @@ templates:
     solution: ['cd /archive/halls/{hall}/{room}', 'pwd']
 
   - id: survey
+    art: [map]
     spells: [cd, ls]
     params:
       hall: { pick: [north-hall, south-hall, lamp-hall, quill-hall, salt-hall] }
@@ -53,6 +56,7 @@ templates:
     solution: ['cd /archive/halls/{hall}', 'ls']
 
   - id: next-door
+    art: [door]
     spells: [cd]
     params:
       hall: { pick: [north-hall, south-hall, lamp-hall, quill-hall, salt-hall] }
@@ -71,6 +75,7 @@ templates:
     par: 2
 
   - id: deep-room
+    art: [stairs]
     spells: [cd]
     params:
       hall: { pick: [north-hall, south-hall, lamp-hall, quill-hall, salt-hall] }
@@ -87,6 +92,7 @@ templates:
     solution: ['cd /archive/halls/{hall}/{path}']
 
   - id: find-the-room
+    art: [candle, candle-pair]
     spells: [cd, ls]
     params:
       hall: { pick: [north-hall, south-hall, lamp-hall, quill-hall, salt-hall] }
@@ -108,6 +114,7 @@ templates:
     solution: ['ls /archive/halls/{hall}/{wing}', 'cd /archive/halls/{hall}/{wing}/{room}']
 
   - id: parent-hall
+    art: [key]
     spells: [cd, ls]
     params:
       hall: { pick: [north-hall, south-hall, lamp-hall, quill-hall, salt-hall] }
@@ -130,6 +137,7 @@ templates:
     solution: ['ls /archive/halls/{hall}/{keeper}', 'cd /archive/halls/{hall}/{keeper}']
 
   - id: home-and-report
+    art: [lamp, lantern-tall]
     spells: [cd, pwd]
     params:
       hall: { pick: [north-hall, south-hall, lamp-hall, quill-hall, salt-hall] }

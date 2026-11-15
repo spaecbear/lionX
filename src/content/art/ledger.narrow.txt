@@ -1,0 +1,9 @@
+      ________________
+     | LEDGER         |
+     |----------------|
+     | Mira      ok   |
+     | Tobin     ok   |
+     | Archivist ok   |
+     |________________|
+
+  The ledger balances again.

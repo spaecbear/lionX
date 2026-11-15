@@ -1,0 +1,8 @@
+       \     _
+        \   / \
+         \ /   \
+          |     |
+         /_______\
+            o     ~ ding ~
+
+  Ding. Somewhere, a pigeon leaves.

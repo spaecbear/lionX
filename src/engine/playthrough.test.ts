@@ -112,3 +112,16 @@ describe('the opening wings', () => {
     expect(await s.shell.run('cat cell-rules.txt')).toBe(127);
   });
 });
+
+describe('reward art', () => {
+  it('draws the piece, hangs it in ~/gallery once, and Quill mentions the gallery the first time', async () => {
+    const s: GameSession = createSession({ content: loadGameContent(), seed: 1 });
+    s.opening();
+    await s.shell.run('pwd');
+    const first = s.afterCommand('pwd', 0, '');
+    expect(first).toContainEqual({ kind: 'art', name: 'candle', reward: true });
+    const home = s.runner.vfs.home;
+    expect(s.runner.vfs.readFile(`${home}/gallery/candle`)).toContain('A small flame.');
+    expect(first.some((n) => n.kind === 'quill' && n.text.includes('~/gallery'))).toBe(true);
+  });
+});

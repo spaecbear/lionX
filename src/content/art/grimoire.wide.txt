@@ -1,0 +1,9 @@
+                   *            _____________
+                               / * GRIMOIRE * \     .
+                   +          |   _________    |
+                              |  | NAME    |   |    .
+                   *          |  | SYNOPSIS|   |
+                              |  |_________|   |    .
+                   +          |________________|
+
+                  The   Lexicon   remembers   its   spells.

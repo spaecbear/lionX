@@ -44,6 +44,7 @@ lessons:
       - 'First: where are you? Lost apprentices ask the Lexicon before anything else.'
     steps:
       - id: pwd
+        art: candle
         guide: exact
         guidance:
           exact: 'Type `pwd` and press Enter. It prints the room you stand in.'
@@ -75,6 +76,7 @@ lessons:
       - "Rooms are inside other rooms. Your cell sits inside `home`, along with the other apprentices' cells."
     steps:
       - id: up
+        art: door
         guide: exact
         guidance:
           exact: 'Type `cd ..` to step out of your cell into the room that holds it. Two dots always mean one room up.'
@@ -131,6 +133,7 @@ lessons:
       - 'Climbing one room at a time is fine for neighbors. For the far reaches of the Archive, there is a better way.'
     steps:
       - id: absolute
+        art: stairs
         guide: exact
         guidance:
           exact: 'Type `cd /archive`. A path that begins with `/` starts at the Foundation Stone, wherever you are.'
@@ -179,6 +182,7 @@ lessons:
       - 'Some rooms have absurd names. The Lexicon will finish them for you, if you ask.'
     steps:
       - id: corridor
+        art: lantern-tall
         guide: exact
         guidance:
           exact: 'Type `cd an` and then press the Tab key. The Lexicon fills in the rest. Then press Enter.'
@@ -250,6 +254,7 @@ capstone:
         - 'Type exactly: cd echo-hall'
       goal: { cwdIs: /archive/echo-hall }
     - id: atrium
+      art: signpost
       guide: problem
       guidance:
         exact: 'Type `cd atrium`, then `ls`.'

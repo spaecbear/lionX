@@ -67,6 +67,7 @@ lessons:
       - 'The plainest reading spell is `cat`. It pours a whole book onto the glass at once.'
     steps:
       - id: card
+        art: book
         guide: exact
         guidance:
           exact: 'Type `cat welcome-card` and press Enter.'
@@ -101,6 +102,7 @@ lessons:
       - 'The catalogue here is sixty entries long. `cat` would dump it all at once and you would see only the end.'
     steps:
       - id: catalogue
+        art: scroll
         guide: exact
         guidance:
           exact: 'Type `less the-long-catalogue`. Press space for the next page, `b` to go back, and `q` to close it.'
@@ -131,6 +133,7 @@ lessons:
         success:
           - 'Mira, Tobin, the Archivist. Nothing was ever returned.'
       - id: tail
+        art: quill
         guide: goal
         guidance:
           exact: 'Type `tail -n 2 the-long-catalogue` to read the last two entries.'
@@ -151,6 +154,7 @@ lessons:
       - 'Plain `ls` keeps a few secrets. It has options, called flags, that change what it shows.'
     steps:
       - id: dotfiles
+        art: envelope
         guide: exact
         guidance:
           exact: 'Type `ls -a` to show everything, even names that start with a dot. Then `cat .dust-under-the-rug`.'
@@ -182,6 +186,7 @@ lessons:
       - 'Nobody remembers every flag. The Grimoire holds a page for every spell, and the Lexicon will open it for you.'
     steps:
       - id: man-ls
+        art: grimoire
         guide: exact
         guidance:
           exact: 'Type `man ls` to open the Grimoire at the page for `ls`. Press `q` to close it.'
@@ -231,6 +236,7 @@ capstone:
       success:
         - '"The tome is behind the back shelf, and its name begins with a dot." Go on, then.'
     - id: sealed-tome
+      art: book-closed
       guide: problem
       guidance:
         exact: 'Type `ls -a /archive/reading-room/back-shelf`, then `cat` the hidden tome you find.'

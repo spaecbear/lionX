@@ -18,6 +18,19 @@ describe('content files', () => {
     if (wing.banner) expect(artNames()).toContain(wing.banner);
   });
 
+  it('every reward art a step or duty names exists', () => {
+    const names: string[] = [];
+    for (const [id, src] of Object.entries(wingSources)) {
+      const w = loadWing(src, id);
+      for (const l of w.lessons) for (const s of l.steps) names.push(...(s.art ?? []));
+      for (const s of w.capstone?.steps ?? []) names.push(...(s.art ?? []));
+    }
+    for (const [id, src] of Object.entries(dutySources))
+      for (const d of loadDuties(src, id)) names.push(...(d.art ?? []));
+    expect(names.length).toBeGreaterThan(20);
+    for (const n of names) expect(artNames(), n).toContain(n);
+  });
+
   it.each(Object.keys(dutySources))('duty file %s loads', (id) => {
     expect(loadDuties(dutySources[id], `${id}.yaml`).length).toBeGreaterThan(0);
   });

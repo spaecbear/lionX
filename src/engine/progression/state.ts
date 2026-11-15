@@ -15,6 +15,8 @@ export interface ProgressState {
   rewardsGiven: string[];
   /** Wings whose capstone is solved. */
   wingsDone: string[];
+  /** Art pieces earned and hung in ~/gallery. */
+  gallery?: string[];
 }
 
 export function newProgress(seed = 1): ProgressState {

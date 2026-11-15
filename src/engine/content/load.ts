@@ -253,7 +253,7 @@ function checkSay(c: Checker, v: unknown, path: string): string[] | undefined {
 
 function checkStep(c: Checker, v: unknown, path: string): Step {
   const o = c.obj(v, path);
-  c.noExtra(o, ['id', 'goal', 'guide', 'guidance', 'hints', 'success', 'coaching'], path);
+  c.noExtra(o, ['id', 'goal', 'guide', 'guidance', 'hints', 'success', 'coaching', 'art'], path);
   const guide = (o.guide ?? 'exact') as GuideLevel;
   if (!GUIDE_LEVELS.includes(guide))
     c.fail(`${path}.guide`, `expected one of ${GUIDE_LEVELS.join(', ')}`);
@@ -280,7 +280,17 @@ function checkStep(c: Checker, v: unknown, path: string): Step {
     }) as Step['hints'],
     success: checkSay(c, o.success, `${path}.success`),
     coaching: checkCoaching(c, o.coaching, `${path}.coaching`),
+    art: checkArt(c, o.art, `${path}.art`),
   };
+}
+
+/** One art name or a list of variants. */
+function checkArt(c: Checker, v: unknown, path: string): string[] | undefined {
+  if (v === undefined) return undefined;
+  if (typeof v === 'string') return [c.str(v, path)];
+  const list = c.arr(v, path).map((x, i) => c.str(x, `${path}[${i}]`));
+  if (list.length === 0) c.fail(path, 'expected at least one art name');
+  return list;
 }
 
 function checkLesson(c: Checker, v: unknown, path: string): Lesson {
@@ -506,6 +516,7 @@ export function loadDuties(yamlText: string, source = 'duties.yaml'): DutyTempla
         'par',
         'success',
         'solutionMayFail',
+        'art',
       ],
       p,
     );
@@ -540,6 +551,7 @@ export function loadDuties(yamlText: string, source = 'duties.yaml'): DutyTempla
       par: o.par === undefined ? undefined : Number(o.par),
       success: c.optStr(o.success, `${p}.success`),
       solutionMayFail: o.solutionMayFail === true ? true : undefined,
+      art: checkArt(c, o.art, `${p}.art`),
     };
   });
   uniqueIds(c, templates, 'templates');
@@ -564,6 +576,7 @@ export function loadQuillLines(yamlText: string, source = 'quill.yaml'): QuillLi
     gateSealed: one('gateSealed'),
     gateOpen: one('gateOpen'),
     resume: one('resume'),
+    galleryNew: o.galleryNew === undefined ? undefined : one('galleryNew'),
   };
 }
 

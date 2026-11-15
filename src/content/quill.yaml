@@ -12,3 +12,4 @@ idle: 'Nothing needs mending here right now. Wander as you like, or cast `duty` 
 gateSealed: 'The way forward is still sealed. Keep practicing.'
 gateOpen: 'Something stirs at the far end of the hall. The way forward is open.'
 resume: 'Back again. The candle held while you were away. Here is where we were.'
+galleryNew: 'I hung that in your cell, by the way. Everything you mend leaves something behind: `ls ~/gallery`, then `cat` whatever you like.'

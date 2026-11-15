@@ -182,8 +182,31 @@ export class TerminalController {
         if (item.kind === 'art') {
           const art = this.opts.artFor?.(item.name, this.term.cols);
           if (art) {
-            const body = art.replace(/\n+$/, '').split('\n').join('\r\n');
-            this.term.write(QUILL_SGR.art + body + QUILL_SGR.reset + '\r\n\r\n');
+            const lines = art.replace(/\n+$/, '').split('\n');
+            if (item.reward && delay > 0 && !this.skipSpeechFlag) {
+              // Reward art draws in line by line, like a lamp catching; a key finishes it.
+              this.term.write('\r\n');
+              for (let i = 0; i < lines.length; i++) {
+                if (this.skipSpeechFlag) {
+                  this.term.write(
+                    QUILL_SGR.reward + lines.slice(i).join('\r\n') + QUILL_SGR.reset + '\r\n',
+                  );
+                  break;
+                }
+                this.term.write(QUILL_SGR.reward + lines[i] + QUILL_SGR.reset + '\r\n');
+                await new Promise((r) => setTimeout(r, delay * 3));
+              }
+              this.term.write('\r\n');
+            } else {
+              const color = item.reward ? QUILL_SGR.reward : QUILL_SGR.art;
+              this.term.write(
+                (item.reward ? '\r\n' : '') +
+                  color +
+                  lines.join('\r\n') +
+                  QUILL_SGR.reset +
+                  '\r\n\r\n',
+              );
+            }
           }
         } else if (item.kind === 'quill') {
           const pieces = renderQuill(item.text, this.term.cols);

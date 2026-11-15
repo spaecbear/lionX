@@ -34,6 +34,8 @@ export interface Step {
   /** Exactly three: a nudge, the spell's name, then the full syntax. */
   hints: [string, string, string];
   success?: string[];
+  /** Art shown when the step is done (one name, or variants picked at random). */
+  art?: string[];
   coaching?: CoachingRule[];
 }
 
@@ -113,4 +115,6 @@ export interface QuillLines {
   gateSealed: string;
   gateOpen: string;
   resume: string;
+  /** Said the first time a piece of art is added to ~/gallery. */
+  galleryNew?: string;
 }
