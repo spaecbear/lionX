@@ -1,2 +1,6 @@
-// Phase stub: see docs/BUILD_PLAN.md
-export {};
+export * from './ast';
+export * from './lexer';
+export * from './parser';
+export * from './glob';
+export * from './expand';
+export * from './executor';
