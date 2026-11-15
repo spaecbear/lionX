@@ -2,6 +2,7 @@ import { loadGameContent } from '../content/game';
 import type { Narration } from './narrative';
 import { createSession, type GameSession } from './session';
 import { complete } from './shell';
+import { wingChain } from './test-support';
 
 /**
  * Done criterion for the first two wings: a new player can go from boot to
@@ -67,13 +68,17 @@ async function playToBindery(seed: number) {
   return { session, said, out, wingsSeen, commands };
 }
 
-describe('boot to the Bindery with no outside help (done criterion)', () => {
+describe('boot to the end of every written wing with no outside help (done criterion)', () => {
+  const chain = wingChain();
   it.each([1, 2, 3])('seed %i', async (seed) => {
     const { session, said, wingsSeen } = await playToBindery(seed);
-    expect(wingsSeen).toEqual(['apprentice-cells', 'reading-room']);
-    expect(session.runner.progress.wingsDone).toEqual(['apprentice-cells', 'reading-room']);
-    expect(session.runner.vfs.cwd).toBe('/archive/bindery');
-    // The story beats landed along the way.
+    expect(wingsSeen).toEqual(chain.map((w) => w.id));
+    expect(session.runner.progress.wingsDone).toEqual(chain.map((w) => w.id));
+    // Standing in the door Quill pointed to at the end.
+    const last = chain[chain.length - 1];
+    const door = /`cd (\/archive\/[\w-]+)`/.exec(last.outro!.join(' '))![1];
+    expect(session.runner.vfs.cwd).toBe(door);
+    // Story beats landed along the way.
     expect(said.join('\n')).toContain('The root is closed for rewriting.');
     expect(said).toContain('lionX.');
   });

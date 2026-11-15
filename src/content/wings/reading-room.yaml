@@ -3,6 +3,7 @@
 id: reading-room
 banner: reading-room
 entrance: /archive/reading-room
+next: bindery
 duties: [reading-room, apprentice-cells]
 gate: 60
 

@@ -1,0 +1,15 @@
+NAME
+    touch - bring a blank page into being, or wake an old one
+
+SYNOPSIS
+    touch [OPTION]... FILE...
+
+DESCRIPTION
+    Touch creates each FILE as an empty book if it does not exist. If it
+    does exist, touch only updates the time it was last changed.
+
+    -c, --no-create
+           never create books, only wake existing ones
+
+EXAMPLES
+    touch page-1 page-2       two empty pages

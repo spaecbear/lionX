@@ -427,7 +427,8 @@ export class LessonRunner {
     }
     this.duty = duty;
     this.progress.recentDuties = [...this.progress.recentDuties, duty.signature].slice(-30);
-    if (duty.setup) applyPatch(this.vfs, duty.setup, this.user);
+    // Duty material is the player's to work with: they own what the duty creates.
+    if (duty.setup) applyPatch(this.vfs, duty.setup, this.user, { ownedByPlayer: true });
     this.stepIndex = 0;
     return this.beginStep();
   }

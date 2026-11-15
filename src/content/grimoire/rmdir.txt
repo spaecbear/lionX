@@ -1,0 +1,18 @@
+NAME
+    rmdir - remove empty rooms
+
+SYNOPSIS
+    rmdir [OPTION]... DIRECTORY...
+
+DESCRIPTION
+    Rmdir removes each DIRECTORY, but only if it is empty. It is the safe
+    way to tidy: it cannot destroy anything you meant to keep.
+
+    -p, --parents
+           also remove each now-empty parent named in the path
+    -v, --verbose
+           say what is being removed
+
+EXAMPLES
+    rmdir empty-shelf
+    rmdir -p a/b/c            removes c, then b, then a

@@ -1,0 +1,23 @@
+NAME
+    mv - move or rename books and rooms
+
+SYNOPSIS
+    mv [OPTION]... SOURCE DEST
+    mv [OPTION]... SOURCE... DIRECTORY
+
+DESCRIPTION
+    Mv renames SOURCE to DEST, or moves every SOURCE into DIRECTORY if
+    the last name is an existing room. Moving a room moves everything
+    inside it. Unlike cp, nothing is left behind.
+
+    -n, --no-clobber
+           never overwrite an existing book
+    -i     ask before overwriting
+    -v, --verbose
+           say what is being moved
+    -t, --target-directory=DIRECTORY
+           move every SOURCE into DIRECTORY
+
+EXAMPLES
+    mv draft.txt final.txt    rename
+    mv page-* shelf           move every page into shelf

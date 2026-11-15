@@ -1,10 +1,10 @@
 import { parse as parseLine } from '../shell';
 import { createRegistry } from '../commands';
-import { loadDuties, loadWing } from '../content';
+import { loadDuties } from '../content';
 import { Shell } from '../shell';
 import { evaluate } from '../validator';
-import { applyPatch, buildWorld } from '../vfs';
-import { dutySources, wingSources } from '../../content';
+import { applyPatch } from '../vfs';
+import { dutySources } from '../../content';
 import { generateDuty, instantiate, type Duty, type DutyTemplate } from './duties';
 import { applyTask, gateOpen, GAIN, isSwift, masteryPhrase, nextDifficulty } from './mastery';
 import { Rng } from './rng';
@@ -15,31 +15,20 @@ const dutyFiles: Record<string, DutyTemplate[]> = Object.fromEntries(
 );
 /** The sample wing's templates, for the generator's unit tests. */
 const templates: DutyTemplate[] = dutyFiles['lantern-hall'];
-const ALL_SPELLS = ['pwd', 'ls', 'cd', 'cat', 'head', 'tail', 'less', 'man'];
+const ALL_SPELLS = createRegistry().names();
 
-const wings = Object.fromEntries(
-  Object.entries(wingSources).map(([id, src]) => [id, loadWing(src, id)]),
-);
+import { worldFor as worldForWing } from '../test-support';
 
-/** The world as it stands when a duty file's duties are handed out. */
-function worldFor(dutyFile: string) {
-  if (dutyFile === 'lantern-hall') return buildWorld(wings['lantern-hall'].world!);
-  const cells = wings['apprentice-cells'];
-  const vfs = buildWorld(cells.world!);
-  applyPatch(vfs, cells.capstone!.unlocks!, cells.world!.user);
-  if (dutyFile === 'reading-room') applyPatch(vfs, wings['reading-room'].setup!, cells.world!.user);
-  return vfs;
-}
+/** The world as it stands when a duty file's duties are handed out (files are named for wings). */
+const worldFor = (dutyFile: string) => worldForWing(dutyFile);
 
 /** Run a duty's solution in its world and report whether its goal is met. */
 async function solve(duty: Duty, dutyFile: string) {
   const vfs = worldFor(dutyFile);
-  if (duty.setup)
-    applyPatch(vfs, duty.setup, {
-      name: 'apprentice',
-      groups: ['apprentice'],
-      home: '/home/apprentice',
-    });
+  if (duty.setup) {
+    const user = { name: 'apprentice', groups: ['apprentice'], home: '/home/apprentice' };
+    applyPatch(vfs, duty.setup, user, { ownedByPlayer: true });
+  }
   const reads = new Set<string>();
   vfs.onRead = (p) => reads.add(p);
   const commands: { command: string; args: string[]; status: number }[] = [];

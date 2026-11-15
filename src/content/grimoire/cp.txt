@@ -1,0 +1,25 @@
+NAME
+    cp - copy books and rooms
+
+SYNOPSIS
+    cp [OPTION]... SOURCE DEST
+    cp [OPTION]... SOURCE... DIRECTORY
+
+DESCRIPTION
+    Cp makes a copy of SOURCE named DEST. If the last name is an existing
+    room, every SOURCE is copied into it, keeping its name.
+
+    -r, -R, --recursive
+           copy rooms and everything inside them
+    -n, --no-clobber
+           never overwrite an existing book
+    -i     ask before overwriting
+    -v, --verbose
+           say what is being copied
+    -t, --target-directory=DIRECTORY
+           copy every SOURCE into DIRECTORY
+
+EXAMPLES
+    cp letter.txt copy.txt    a second copy, side by side
+    cp *.txt shelf            every .txt book into shelf
+    cp -r shelf backup        a whole room

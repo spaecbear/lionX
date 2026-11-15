@@ -45,6 +45,7 @@ export function applyPatch(
   vfs: Vfs,
   patch: Pick<WorldSpec, 'dirs' | 'files'>,
   user: WorldSpec['user'],
+  opts: { ownedByPlayer?: boolean } = {},
 ): void {
   const saved = vfs.credentials;
   vfs.credentials = { user: 'root', groups: ['root'] };
@@ -53,11 +54,21 @@ export function applyPatch(
       if (m.owner !== undefined || m.group !== undefined) vfs.chown(path, m.owner, m.group);
       if (m.mode !== undefined) vfs.chmod(path, parseMode(m.mode));
     };
-    const inHome = (path: string) => path.startsWith(user.home + '/');
+    const inHome = (path: string) => opts.ownedByPlayer || path.startsWith(user.home + '/');
+    // Every directory this patch creates (including implied parents), for ownedByPlayer.
+    const created: string[] = [];
+    const mkdirTracked = (path: string) => {
+      const parts = vfs.resolve(path).split('/').filter(Boolean);
+      for (let i = 1; i <= parts.length; i++) {
+        const p = '/' + parts.slice(0, i).join('/');
+        if (!vfs.exists(p)) created.push(p);
+      }
+      vfs.mkdir(path, { parents: true });
+    };
     const deferredDirMeta: [string, NodeMeta][] = [];
     for (const d of patch.dirs ?? []) {
       const entry = typeof d === 'string' ? { path: d } : d;
-      vfs.mkdir(entry.path, { parents: true });
+      mkdirTracked(entry.path);
       deferredDirMeta.push([
         entry.path,
         {
@@ -70,13 +81,16 @@ export function applyPatch(
     for (const [path, f] of Object.entries(patch.files ?? {})) {
       const entry = typeof f === 'string' ? { content: f } : f;
       const parent = path.slice(0, path.lastIndexOf('/')) || '/';
-      vfs.mkdir(parent, { parents: true });
+      mkdirTracked(parent);
       vfs.writeFile(path, entry.content);
       meta(path, {
         owner: entry.owner ?? (inHome(path) ? user.name : undefined),
         group: entry.group ?? (inHome(path) ? user.groups[0] : undefined),
         mode: entry.mode,
       });
+    }
+    if (opts.ownedByPlayer) {
+      for (const d of created) vfs.chown(d, user.name, user.groups[0] ?? user.name);
     }
     // Directory modes last, so locking a directory doesn't block filling it.
     for (const [path, m] of deferredDirMeta) meta(path, m);

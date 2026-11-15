@@ -1,0 +1,189 @@
+# Duties for the Bindery: making, copying, moving, and unmaking.
+# Each duty works in its own bench under /archive/bindery/work.
+templates:
+  - id: make-shelf
+    spells: [mkdir]
+    params:
+      bench: { pick: [bench-a, bench-b, bench-c, bench-d, bench-e] }
+      path: { byDifficulty: ['shelf', 'shelf/upper', 'shelf/upper/left'] }
+    setup:
+      dirs: ['/archive/bindery/work/{bench}']
+    cleanup: ['/archive/bindery/work/{bench}']
+    brief: 'The binders need a new shelf at /archive/bindery/work/{bench}/{path}. Raise it.'
+    hints:
+      - 'Make the room, and any missing rooms along the way.'
+      - '`mkdir -p` makes parents as needed.'
+      - 'Type: mkdir -p /archive/bindery/work/{bench}/{path}'
+    goal: { isDir: '/archive/bindery/work/{bench}/{path}' }
+    solution: ['mkdir -p /archive/bindery/work/{bench}/{path}']
+
+  - id: blank-pages
+    spells: [touch]
+    params:
+      bench: { pick: [bench-a, bench-b, bench-c, bench-d, bench-e] }
+      book: { pick: [moth-book, salt-book, bell-book, rain-book] }
+    setup:
+      dirs: ['/archive/bindery/work/{bench}']
+    cleanup: ['/archive/bindery/work/{bench}']
+    brief: 'The {book} needs two blank pages: page-1 and page-2, in /archive/bindery/work/{bench}.'
+    hints:
+      - 'Bring two empty pages into being. One spell can make both.'
+      - '`touch` makes empty files, as many as you name.'
+      - 'Type: touch /archive/bindery/work/{bench}/page-1 /archive/bindery/work/{bench}/page-2'
+    goal:
+      all:
+        - { isFile: '/archive/bindery/work/{bench}/page-1' }
+        - { isFile: '/archive/bindery/work/{bench}/page-2' }
+    solution: ['touch /archive/bindery/work/{bench}/page-1 /archive/bindery/work/{bench}/page-2']
+
+  - id: copy-page
+    spells: [cp]
+    params:
+      bench: { pick: [bench-a, bench-b, bench-c, bench-d, bench-e] }
+      page: { pick: [title-page, map-page, index-page, dedication] }
+    setup:
+      files:
+        '/archive/bindery/work/{bench}/{page}': "The {page}, freshly inked.\n"
+    cleanup: ['/archive/bindery/work/{bench}']
+    brief: 'Before the {page} in /archive/bindery/work/{bench} goes to the press, make a copy of it there named {page}-copy.'
+    hints:
+      - 'Copy, do not move. The original must stay.'
+      - '`cp` the page to its new name.'
+      - 'Type: cp /archive/bindery/work/{bench}/{page} /archive/bindery/work/{bench}/{page}-copy'
+    goal:
+      all:
+        - { isFile: '/archive/bindery/work/{bench}/{page}' }
+        - { contains: { path: '/archive/bindery/work/{bench}/{page}-copy', text: 'freshly inked' } }
+    solution: ['cp /archive/bindery/work/{bench}/{page} /archive/bindery/work/{bench}/{page}-copy']
+
+  - id: rename-page
+    spells: [mv]
+    params:
+      bench: { pick: [bench-a, bench-b, bench-c, bench-d, bench-e] }
+      wrong: { pick: [untitled, nameless, draft-final-final, page-x] }
+      right: { pick: [the-moth-tale, the-salt-tale, the-bell-tale, the-rain-tale] }
+    setup:
+      files:
+        '/archive/bindery/work/{bench}/{wrong}': "This is {right}, mislabeled.\n"
+    cleanup: ['/archive/bindery/work/{bench}']
+    brief: 'The page called {wrong} in /archive/bindery/work/{bench} is really {right}. Rename it.'
+    hints:
+      - 'A rename is a move to a new name.'
+      - '`mv` the old name to the new one.'
+      - 'Type: mv /archive/bindery/work/{bench}/{wrong} /archive/bindery/work/{bench}/{right}'
+    goal:
+      all:
+        - { isFile: '/archive/bindery/work/{bench}/{right}' }
+        - { missing: '/archive/bindery/work/{bench}/{wrong}' }
+    solution: ['mv /archive/bindery/work/{bench}/{wrong} /archive/bindery/work/{bench}/{right}']
+
+  - id: tidy-stray
+    spells: [rm]
+    params:
+      bench: { pick: [bench-a, bench-b, bench-c, bench-d, bench-e] }
+      stray: { pick: [ink-blot, tea-stain, crumpled-note, old-receipt] }
+      keep: { pick: [chapter-one, chapter-two, epilogue] }
+    setup:
+      files:
+        '/archive/bindery/work/{bench}/{stray}': "Not a story.\n"
+        '/archive/bindery/work/{bench}/{keep}': "A story. Keep this.\n"
+    cleanup: ['/archive/bindery/work/{bench}']
+    brief: 'Someone left a {stray} among the pages in /archive/bindery/work/{bench}. Remove it, and only it.'
+    hints:
+      - 'Unmake the stray. Leave the story alone.'
+      - '`rm` the stray by name.'
+      - 'Type: rm /archive/bindery/work/{bench}/{stray}'
+    goal:
+      all:
+        - { missing: '/archive/bindery/work/{bench}/{stray}' }
+        - { isFile: '/archive/bindery/work/{bench}/{keep}' }
+    solution: ['rm /archive/bindery/work/{bench}/{stray}']
+
+  - id: empty-shelf
+    spells: [rmdir]
+    params:
+      bench: { pick: [bench-a, bench-b, bench-c, bench-d, bench-e] }
+      shelf: { pick: [broken-shelf, old-shelf, warped-shelf] }
+    setup:
+      dirs: ['/archive/bindery/work/{bench}/{shelf}']
+    cleanup: ['/archive/bindery/work/{bench}']
+    brief: 'The {shelf} in /archive/bindery/work/{bench} is empty and useless now. Take it down.'
+    hints:
+      - 'An empty room can be removed safely.'
+      - '`rmdir` removes empty rooms.'
+      - 'Type: rmdir /archive/bindery/work/{bench}/{shelf}'
+    goal: { missing: '/archive/bindery/work/{bench}/{shelf}' }
+    solution: ['rmdir /archive/bindery/work/{bench}/{shelf}']
+
+  - id: gather-by-pattern
+    spells: [mkdir, mv]
+    params:
+      bench: { pick: [bench-a, bench-b, bench-c, bench-d, bench-e] }
+      kind: { pick: [tale, poem, letter, map] }
+    setup:
+      files:
+        '/archive/bindery/work/{bench}/{kind}-1': "One.\n"
+        '/archive/bindery/work/{bench}/{kind}-2': "Two.\n"
+        '/archive/bindery/work/{bench}/{kind}-3': "Three.\n"
+        '/archive/bindery/work/{bench}/index': "Stays where it is.\n"
+    cleanup: ['/archive/bindery/work/{bench}']
+    brief: 'Gather every {kind} page in /archive/bindery/work/{bench} into a new room there called {kind}s. Leave the index where it is.'
+    hints:
+      - 'Make the room, then move every {kind} page with one wildcard.'
+      - '`mkdir` the room, then `mv` with `{kind}-*`.'
+      - 'Type: mkdir /archive/bindery/work/{bench}/{kind}s   then: mv /archive/bindery/work/{bench}/{kind}-* /archive/bindery/work/{bench}/{kind}s/'
+    goal:
+      all:
+        - { isFile: '/archive/bindery/work/{bench}/{kind}s/{kind}-1' }
+        - { isFile: '/archive/bindery/work/{bench}/{kind}s/{kind}-2' }
+        - { isFile: '/archive/bindery/work/{bench}/{kind}s/{kind}-3' }
+        - { isFile: '/archive/bindery/work/{bench}/index' }
+    solution:
+      - 'mkdir /archive/bindery/work/{bench}/{kind}s'
+      - 'mv /archive/bindery/work/{bench}/{kind}-* /archive/bindery/work/{bench}/{kind}s/'
+
+  - id: quarantine-fragment
+    spells: [mkdir, mv]
+    params:
+      bench: { pick: [bench-a, bench-b, bench-c, bench-d, bench-e] }
+      n: { int: [4, 99] }
+    setup:
+      files:
+        '/archive/bindery/work/{bench}/fragment-{n}.lx': "lionX: tidy. tidy. tidy.\n"
+        '/archive/bindery/work/{bench}/real-page': "A real page.\n"
+    cleanup: ['/archive/bindery/work/{bench}']
+    brief: "Another of lionX's fragments turned up in /archive/bindery/work/{bench}. Shut it in a room there called quarantine. Do not destroy it."
+    hints:
+      - 'Make a quarantine room, then move the fragment in.'
+      - '`mkdir` the quarantine, then `mv` the .lx fragment into it.'
+      - 'Type: mkdir /archive/bindery/work/{bench}/quarantine   then: mv /archive/bindery/work/{bench}/fragment-{n}.lx /archive/bindery/work/{bench}/quarantine/'
+    goal:
+      all:
+        - { isFile: '/archive/bindery/work/{bench}/quarantine/fragment-{n}.lx' }
+        - { missing: '/archive/bindery/work/{bench}/fragment-{n}.lx' }
+    solution:
+      - 'mkdir /archive/bindery/work/{bench}/quarantine'
+      - 'mv /archive/bindery/work/{bench}/fragment-{n}.lx /archive/bindery/work/{bench}/quarantine/'
+
+  - id: backup-room
+    spells: [cp]
+    params:
+      bench: { pick: [bench-a, bench-b, bench-c, bench-d, bench-e] }
+      room: { pick: [chapter-room, map-room, index-room] }
+    setup:
+      files:
+        '/archive/bindery/work/{bench}/{room}/leaf-1': "Leaf one.\n"
+        '/archive/bindery/work/{bench}/{room}/leaf-2': "Leaf two.\n"
+    cleanup: ['/archive/bindery/work/{bench}']
+    brief: 'Before the press runs, back up the whole {room} in /archive/bindery/work/{bench} as {room}-backup.'
+    hints:
+      - 'Copying a room and all it holds needs a flag.'
+      - '`cp -r` copies a room recursively.'
+      - 'Type: cp -r /archive/bindery/work/{bench}/{room} /archive/bindery/work/{bench}/{room}-backup'
+    goal:
+      all:
+        - { isFile: '/archive/bindery/work/{bench}/{room}-backup/leaf-1' }
+        - { isFile: '/archive/bindery/work/{bench}/{room}-backup/leaf-2' }
+        - { isFile: '/archive/bindery/work/{bench}/{room}/leaf-1' }
+    solution:
+      ['cp -r /archive/bindery/work/{bench}/{room} /archive/bindery/work/{bench}/{room}-backup']

@@ -1,0 +1,20 @@
+NAME
+    mkdir - raise a new room
+
+SYNOPSIS
+    mkdir [OPTION]... DIRECTORY...
+
+DESCRIPTION
+    Mkdir creates each DIRECTORY, if it does not already exist.
+
+    -p, --parents
+           make any missing rooms along the way, and do not complain if
+           the room already exists
+    -v, --verbose
+           announce each room as it is made
+    -m, --mode=MODE
+           set the new room's wards (permissions), like 755
+
+EXAMPLES
+    mkdir shelf               one new room
+    mkdir -p shelf/fiction    a room, and the room inside it

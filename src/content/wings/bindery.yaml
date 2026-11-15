@@ -1,0 +1,297 @@
+# Wing 3: the Bindery. Spells: mkdir, touch, cp, mv, rm, rmdir, and wildcards.
+# lionX beat: its .lx fragments must be quarantined, not destroyed.
+id: bindery
+banner: bindery
+entrance: /archive/bindery
+next: observatory
+duties: [bindery, reading-room, apprentice-cells]
+gate: 60
+
+setup:
+  dirs:
+    # The Bindery's workrooms are the apprentice's to use; the presses are not.
+    - { path: /archive/bindery, owner: apprentice, group: apprentice }
+    - { path: /archive/bindery/loose-pages, owner: apprentice, group: apprentice }
+    - { path: /archive/bindery/sorting, owner: apprentice, group: apprentice }
+    - { path: /archive/bindery/work, owner: apprentice, group: apprentice }
+    - { path: /archive/bindery/presses, mode: '755' }
+  files:
+    /archive/bindery/sample-page: "A clean page, bound in calfskin. A model for all the others.\n"
+    /archive/bindery/presses/the-great-press: "Iron, oil, and patience. Not yours to move.\n"
+    /archive/bindery/sorting/moth-1: "The moths came first.\n"
+    /archive/bindery/sorting/moth-2: "The moths came second, too.\n"
+    /archive/bindery/sorting/moth-3: "A third moth, just to be sure.\n"
+    /archive/bindery/sorting/salt-1: "Salt keeps.\n"
+    /archive/bindery/sorting/salt-2: "Salt remembers.\n"
+    /archive/bindery/sorting/stray-receipt: "One candle, paid in full.\n"
+    /archive/bindery/loose-pages/tale-of-the-moth: "Once, a moth loved a lantern.\n"
+    /archive/bindery/loose-pages/tale-of-the-salt: "Once, the sea forgot its name.\n"
+    /archive/bindery/loose-pages/tale-of-the-bell: "Once, a bell rang itself awake.\n"
+    /archive/bindery/loose-pages/poem-of-rain: "Rain, and more rain.\n"
+    /archive/bindery/loose-pages/poem-of-ink: "Ink is only night, folded.\n"
+    /archive/bindery/loose-pages/fragment-1.lx: "lionX: order. order. order.\n"
+    /archive/bindery/loose-pages/fragment-2.lx: "lionX: untidy. untidy.\n"
+    /archive/bindery/loose-pages/fragment-3.lx: "lionX: the root is mine to keep.\n"
+
+intro:
+  - 'The Bindery. Where loose pages become books again. Or used to.'
+  - 'Reading is not enough down here. You will have to make things, move things, and unmake things.'
+
+coaching:
+  - line: 'rm\s+-[a-zA-Z]*r[a-zA-Z]*f|rm\s+-[a-zA-Z]*f[a-zA-Z]*r'
+    say: '`rm -rf`. The spell that has ended more apprenticeships than any other. There is no undo. Be very sure.'
+  - line: '^\s*rm\b.*\.lx'
+    say: "Do not destroy lionX's fragments. We need to know what it is thinking. Quarantine them instead."
+
+lessons:
+  - id: making-rooms
+    spells: [mkdir]
+    intro:
+      - 'Every binder needs a workbench. Make one in your cell.'
+    steps:
+      - id: workbench
+        guide: exact
+        guidance:
+          exact: 'Type `mkdir ~/workbench` to make a new room in your cell.'
+        hints:
+          - 'Make a directory.'
+          - "The spell is `mkdir`, followed by the new room's name."
+          - 'Type exactly: mkdir ~/workbench'
+        goal: { isDir: /home/apprentice/workbench }
+        success:
+          - 'A room of your own making. `ls ~` and admire it.'
+      - id: nested
+        guide: goal
+        guidance:
+          exact: 'Type `mkdir -p ~/workbench/drafts/old`. The `-p` flag makes every missing room along the way.'
+          goal: 'Make `drafts`, and `old` inside it, under your workbench, in a single spell.'
+        hints:
+          - 'Two rooms, one inside the other, in one spell. There is a flag for that.'
+          - '`mkdir -p` makes parents as needed.'
+          - 'Type exactly: mkdir -p ~/workbench/drafts/old'
+        goal: { isDir: /home/apprentice/workbench/drafts/old }
+        success:
+          - 'Without `-p`, `mkdir` refuses to make a room inside one that does not exist yet.'
+
+  - id: blank-pages
+    spells: [touch]
+    steps:
+      - id: touch
+        guide: exact
+        guidance:
+          exact: 'Type `touch ~/workbench/blank-page` to bring an empty page into being.'
+        hints:
+          - 'Make an empty book.'
+          - 'The spell is `touch`.'
+          - 'Type exactly: touch ~/workbench/blank-page'
+        goal: { isFile: /home/apprentice/workbench/blank-page }
+        success:
+          - '`touch` makes empty files, and wakes old ones by updating their time.'
+
+  - id: copying
+    spells: [cp]
+    intro:
+      - 'The Bindery keeps a sample page. Copy it; never take the original.'
+    steps:
+      - id: cp
+        guide: exact
+        guidance:
+          exact: 'Type `cp /archive/bindery/sample-page ~/workbench/` to copy it into your workbench.'
+        hints:
+          - 'Copy, do not move.'
+          - '`cp` takes the source, then where to put the copy.'
+          - 'Type exactly: cp /archive/bindery/sample-page ~/workbench/'
+        goal:
+          {
+            all:
+              [
+                { isFile: /home/apprentice/workbench/sample-page },
+                { isFile: /archive/bindery/sample-page },
+              ],
+          }
+        success:
+          - 'Two pages where there was one. When the last name is a room, `cp` puts the copy inside it.'
+      - id: cp-r
+        guide: goal
+        guidance:
+          exact: 'Type `cp -r ~/workbench/drafts ~/workbench/drafts-backup` to copy a room and everything in it.'
+          goal: 'Make a backup copy of your `drafts` room, called `drafts-backup`, next to it in the workbench.'
+        hints:
+          - 'Copying a room needs a flag.'
+          - '`cp -r` copies rooms, recursively.'
+          - 'Type exactly: cp -r ~/workbench/drafts ~/workbench/drafts-backup'
+        goal: { isDir: /home/apprentice/workbench/drafts-backup/old }
+        success:
+          - 'Recursive: it goes into every room inside, and every room inside those.'
+
+  - id: moving
+    spells: [mv]
+    steps:
+      - id: rename
+        guide: exact
+        guidance:
+          exact: 'Type `mv ~/workbench/blank-page ~/workbench/first-page`. Moving to a new name renames.'
+        hints:
+          - 'A rename is a move.'
+          - '`mv` takes the old name, then the new.'
+          - 'Type exactly: mv ~/workbench/blank-page ~/workbench/first-page'
+        goal:
+          {
+            all:
+              [
+                { isFile: /home/apprentice/workbench/first-page },
+                { missing: /home/apprentice/workbench/blank-page },
+              ],
+          }
+        success:
+          - 'Same page, new name. Nothing copied, nothing left behind.'
+      - id: move-into
+        guide: goal
+        guidance:
+          exact: 'Type `mv ~/workbench/first-page ~/workbench/drafts/`.'
+          goal: 'Move your first page into `drafts`.'
+        hints:
+          - 'When the last name is a room, the book goes inside.'
+          - '`mv` the page into the drafts room.'
+          - 'Type exactly: mv ~/workbench/first-page ~/workbench/drafts/'
+        goal: { isFile: /home/apprentice/workbench/drafts/first-page }
+        success:
+          - 'Filed.'
+
+  - id: unmaking
+    spells: [rm, rmdir]
+    intro:
+      - '`rm` unmakes. There is no bin, no undo, no spell that brings things back. Treat it with respect.'
+    steps:
+      - id: rm
+        guide: exact
+        guidance:
+          exact: 'Type `rm /archive/bindery/sorting/stray-receipt`. A receipt is not a story.'
+        hints:
+          - 'Remove the receipt.'
+          - 'The spell is `rm`, followed by the path.'
+          - 'Type exactly: rm /archive/bindery/sorting/stray-receipt'
+        goal: { missing: /archive/bindery/sorting/stray-receipt }
+        success:
+          - 'Gone. Truly gone.'
+      - id: rmdir
+        guide: goal
+        guidance:
+          exact: 'Type `rmdir ~/workbench/drafts-backup/old`, then `rmdir ~/workbench/drafts-backup`.'
+          goal: 'Remove the backup rooms you made. `rmdir` only removes empty rooms, so start with the innermost.'
+        hints:
+          - 'Empty the inside first. `rmdir` refuses rooms with anything in them.'
+          - '`rmdir` the inner room, then the outer one. Or `rm -r` the whole backup.'
+          - 'Type: rmdir ~/workbench/drafts-backup/old   then: rmdir ~/workbench/drafts-backup'
+        goal: { missing: /home/apprentice/workbench/drafts-backup }
+        success:
+          - '`rmdir` is the careful way. `rm -r` removes a room and everything in it, careful or not.'
+
+  - id: wildcards
+    spells: [mv]
+    intro:
+      - 'Moving pages one at a time is a slow way to grow old. Wildcards name many at once: `*` matches anything, `?` matches exactly one character.'
+    steps:
+      - id: star
+        guide: exact
+        guidance:
+          exact: 'Type `mkdir /archive/bindery/sorting/moths`, then `mv /archive/bindery/sorting/moth-* /archive/bindery/sorting/moths/`.'
+        hints:
+          - 'Make a room for the moths, then move every moth page in one spell.'
+          - '`moth-*` names every page starting with moth-.'
+          - 'Type: mkdir /archive/bindery/sorting/moths   then: mv /archive/bindery/sorting/moth-* /archive/bindery/sorting/moths/'
+        goal:
+          all:
+            - { isFile: /archive/bindery/sorting/moths/moth-1 }
+            - { isFile: /archive/bindery/sorting/moths/moth-2 }
+            - { isFile: /archive/bindery/sorting/moths/moth-3 }
+        success:
+          - 'The Lexicon swaps `moth-*` for every matching name before `mv` ever sees it.'
+      - id: question
+        guide: goal
+        guidance:
+          exact: 'Type `mkdir /archive/bindery/sorting/salts`, then `mv /archive/bindery/sorting/salt-? /archive/bindery/sorting/salts/`.'
+          goal: 'Gather the salt pages into a room called `salts` in sorting. Try `?`, which matches one character.'
+        hints:
+          - 'A room for the salt pages, then one move.'
+          - '`salt-?` matches salt-1 and salt-2.'
+          - 'Type: mkdir /archive/bindery/sorting/salts   then: mv /archive/bindery/sorting/salt-? /archive/bindery/sorting/salts/'
+        goal:
+          all:
+            - { isFile: /archive/bindery/sorting/salts/salt-1 }
+            - { isFile: /archive/bindery/sorting/salts/salt-2 }
+        success:
+          - 'You are binding faster than the Corruption unbinds. For once.'
+
+practice:
+  intro:
+    - 'The Bindery is a mess, and lionX keeps scattering more. Make yourself useful while you practice.'
+  gateOpens:
+    - 'Your hands are sure now. Time to rebuild something that matters.'
+
+capstone:
+  intro:
+    - "The great shelf in the Bindery collapsed when lionX passed through. Its pages are in loose-pages, along with three of lionX's own fragments."
+  steps:
+    - id: rebuild-shelf
+      guide: problem
+      guidance:
+        exact: 'Type `mkdir -p /archive/bindery/shelf/fiction/tales /archive/bindery/shelf/poetry`, then `mv /archive/bindery/loose-pages/tale-* /archive/bindery/shelf/fiction/tales/`, then `mv /archive/bindery/loose-pages/poem-* /archive/bindery/shelf/poetry/`.'
+        goal: 'Rebuild the shelf: tales go in /archive/bindery/shelf/fiction/tales, poems in /archive/bindery/shelf/poetry.'
+        problem: 'Rebuild the shelf at /archive/bindery/shelf. Tales belong under fiction/tales, poems under poetry.'
+      hints:
+        - "Make the shelf's rooms first, then move the pages by kind. Wildcards help."
+        - '`mkdir -p` the rooms, then `mv` with `tale-*` and `poem-*`.'
+        - 'Type: mkdir -p /archive/bindery/shelf/fiction/tales /archive/bindery/shelf/poetry   then: mv /archive/bindery/loose-pages/tale-* /archive/bindery/shelf/fiction/tales/   then: mv /archive/bindery/loose-pages/poem-* /archive/bindery/shelf/poetry/'
+      goal:
+        all:
+          - { isFile: /archive/bindery/shelf/fiction/tales/tale-of-the-moth }
+          - { isFile: /archive/bindery/shelf/fiction/tales/tale-of-the-salt }
+          - { isFile: /archive/bindery/shelf/fiction/tales/tale-of-the-bell }
+          - { isFile: /archive/bindery/shelf/poetry/poem-of-rain }
+          - { isFile: /archive/bindery/shelf/poetry/poem-of-ink }
+      success:
+        - 'A shelf again. The pages remember their order.'
+    - id: quarantine
+      guide: problem
+      guidance:
+        exact: 'Type `mkdir /archive/bindery/quarantine`, then `mv /archive/bindery/loose-pages/*.lx /archive/bindery/quarantine/`.'
+        goal: "Put lionX's three fragments in a room called /archive/bindery/quarantine. Do not destroy them."
+        problem: "lionX's fragments are still loose. Shut them away in /archive/bindery/quarantine, intact."
+      hints:
+        - 'They all end the same way.'
+        - '`mkdir` the quarantine, then `mv` with `*.lx`.'
+        - 'Type: mkdir /archive/bindery/quarantine   then: mv /archive/bindery/loose-pages/*.lx /archive/bindery/quarantine/'
+      goal:
+        all:
+          - { isFile: /archive/bindery/quarantine/fragment-1.lx }
+          - { isFile: /archive/bindery/quarantine/fragment-2.lx }
+          - { isFile: /archive/bindery/quarantine/fragment-3.lx }
+      success:
+        - '"The root is mine to keep." It is not even pretending anymore.'
+  outro:
+    - 'With the shelf standing, the Bindery stair is clear. It climbs to the Observatory. `ls /archive`.'
+  unlocks:
+    dirs: [/archive/observatory]
+    files:
+      /archive/observatory/sign: "THE OBSERVATORY. All the stacks can be seen from here.\n"
+
+rewards:
+  - id: binders-thread
+    afterDuties: 2
+    say: "A spool of binder's thread appeared in your cell: `cat ~/binders-thread`"
+    decoration:
+      file: binders-thread
+      content: "   @@@\n  @@@@@   Waxed linen thread. It never tangles.\n   @@@\n"
+  - id: lore-the-press
+    afterDuties: 4
+    say: 'You found an old note while you worked: `cat ~/lore/the-great-press`'
+    lore:
+      file: lore/the-great-press
+      text: |
+        The great press was built before the Archivist was born.
+        It has bound every story in the Archive at least once.
+        lionX has not dared to touch it. Yet.
+
+outro:
+  - 'The Observatory waits above: `cd /archive/observatory`. From up there you can see everything. Including, perhaps, where lionX hides.'

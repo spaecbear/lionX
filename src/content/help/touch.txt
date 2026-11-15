@@ -1,0 +1,7 @@
+Usage: touch [OPTION]... FILE...
+Update the access and modification times of each FILE to the current time.
+
+A FILE argument that does not exist is created empty, unless -c is supplied.
+
+  -c, --no-create        do not create any files
+      --help        display this help and exit

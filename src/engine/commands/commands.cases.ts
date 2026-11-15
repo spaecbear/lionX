@@ -316,4 +316,219 @@ export const commandCases: CommandCase[] = [
     game: true,
   },
   { cmd: 'man lionX', err: 'No manual entry for lionX\n', status: 16, game: true },
+  // mkdir
+  { cmd: 'mkdir shelf && ls -d shelf', out: 'shelf\n' },
+  { cmd: 'mkdir notes', err: "mkdir: cannot create directory 'notes': File exists\n", status: 1 },
+  {
+    cmd: 'mkdir a/b',
+    err: "mkdir: cannot create directory 'a/b': No such file or directory\n",
+    status: 1,
+  },
+  { cmd: 'mkdir -p a/b/c && ls a/b', out: 'c\n' },
+  { cmd: 'mkdir -p notes && echo ok', out: 'ok\n' },
+  { cmd: 'mkdir -v x y', out: "mkdir: created directory 'x'\nmkdir: created directory 'y'\n" },
+  {
+    cmd: 'mkdir -pv a/b',
+    out: "mkdir: created directory 'a'\nmkdir: created directory 'a/b'\n",
+    game: true,
+  },
+  {
+    cmd: 'mkdir',
+    err: "mkdir: missing operand\nTry 'mkdir --help' for more information.\n",
+    status: 1,
+  },
+  {
+    cmd: 'mkdir letter.txt/x',
+    err: "mkdir: cannot create directory 'letter.txt/x': Not a directory\n",
+    status: 1,
+  },
+  {
+    cmd: 'mkdir /vault/x',
+    err: "mkdir: cannot create directory '/vault/x': Permission denied\n",
+    status: 1,
+    game: true,
+  },
+
+  // touch
+  { cmd: 'touch fresh && ls fresh', out: 'fresh\n' },
+  { cmd: 'touch a b && ls a b', out: 'a\nb\n' },
+  {
+    cmd: 'touch nope/x',
+    err: "touch: cannot touch 'nope/x': No such file or directory\n",
+    status: 1,
+  },
+  {
+    cmd: 'touch -c ghost; ls ghost',
+    err: "ls: cannot access 'ghost': No such file or directory\n",
+    status: 2,
+  },
+  {
+    cmd: 'touch',
+    err: "touch: missing file operand\nTry 'touch --help' for more information.\n",
+    status: 1,
+  },
+
+  // rmdir
+  {
+    cmd: 'mkdir e && rmdir e && ls -d e',
+    err: "ls: cannot access 'e': No such file or directory\n",
+    status: 2,
+  },
+  { cmd: 'rmdir notes', err: "rmdir: failed to remove 'notes': Directory not empty\n", status: 1 },
+  {
+    cmd: 'rmdir ghost',
+    err: "rmdir: failed to remove 'ghost': No such file or directory\n",
+    status: 1,
+  },
+  {
+    cmd: 'rmdir letter.txt',
+    err: "rmdir: failed to remove 'letter.txt': Not a directory\n",
+    status: 1,
+  },
+  {
+    cmd: 'mkdir -p a/b/c && rmdir -p a/b/c && ls -d a',
+    err: "ls: cannot access 'a': No such file or directory\n",
+    status: 2,
+  },
+  {
+    cmd: 'rmdir',
+    err: "rmdir: missing operand\nTry 'rmdir --help' for more information.\n",
+    status: 1,
+  },
+
+  // rm
+  {
+    cmd: 'rm letter.txt && ls letter.txt',
+    err: "ls: cannot access 'letter.txt': No such file or directory\n",
+    status: 2,
+  },
+  { cmd: 'rm ghost', err: "rm: cannot remove 'ghost': No such file or directory\n", status: 1 },
+  { cmd: 'rm -f ghost', status: 0 },
+  { cmd: 'rm -f', status: 0 },
+  { cmd: 'rm', err: "rm: missing operand\nTry 'rm --help' for more information.\n", status: 1 },
+  { cmd: 'rm notes', err: "rm: cannot remove 'notes': Is a directory\n", status: 1 },
+  {
+    cmd: 'rm -r notes && ls -d notes',
+    err: "ls: cannot access 'notes': No such file or directory\n",
+    status: 2,
+  },
+  { cmd: 'rm -rf notes ghost && echo gone', out: 'gone\n' },
+  { cmd: 'mkdir e && rm -d e && echo ok', out: 'ok\n' },
+  { cmd: 'rm -v letter.txt empty.txt', out: "removed 'letter.txt'\nremoved 'empty.txt'\n" },
+  {
+    cmd: 'rm -rv notes',
+    out: "removed 'notes/page1'\nremoved 'notes/page2'\nremoved directory 'notes'\n",
+    game: true,
+  },
+  { cmd: 'rm .', err: "rm: cannot remove '.': Is a directory\n", status: 1 },
+  {
+    cmd: 'rm -r ..',
+    err: "rm: refusing to remove '.' or '..' directory: skipping '..'\n",
+    status: 1,
+  },
+  { cmd: 'rm *.txt && ls', out: 'many\nnotes\nrun.sh\n', game: true },
+  {
+    cmd: 'rm /vault/seal',
+    err: "rm: cannot remove '/vault/seal': Permission denied\n",
+    status: 1,
+    game: true,
+  },
+
+  // cp
+  {
+    cmd: 'cp letter.txt copy.txt && cat copy.txt',
+    out: 'Dear apprentice,\nthe stacks are failing.\n',
+  },
+  { cmd: 'cp letter.txt notes && ls notes', out: 'letter.txt\npage1\npage2\n' },
+  { cmd: 'cp letter.txt notes/ && ls notes', out: 'letter.txt\npage1\npage2\n' },
+  {
+    cmd: 'cp letter.txt empty.txt notes && ls notes',
+    out: 'empty.txt\nletter.txt\npage1\npage2\n',
+  },
+  { cmd: 'cp notes copy', err: "cp: -r not specified; omitting directory 'notes'\n", status: 1 },
+  { cmd: 'cp -r notes copy && ls copy', out: 'page1\npage2\n' },
+  {
+    cmd: 'mkdir dest && cp -r notes dest && ls dest dest/notes',
+    out: 'dest:\nnotes\n\ndest/notes:\npage1\npage2\n',
+  },
+  { cmd: 'cp ghost x', err: "cp: cannot stat 'ghost': No such file or directory\n", status: 1 },
+  {
+    cmd: 'cp letter.txt letter.txt',
+    err: "cp: 'letter.txt' and 'letter.txt' are the same file\n",
+    status: 1,
+  },
+  {
+    cmd: 'cp letter.txt empty.txt journal.txt',
+    err: "cp: target 'journal.txt': Not a directory\n",
+    status: 1,
+  },
+  {
+    cmd: 'cp letter.txt',
+    err: "cp: missing destination file operand after 'letter.txt'\nTry 'cp --help' for more information.\n",
+    status: 1,
+  },
+  {
+    cmd: 'cp',
+    err: "cp: missing file operand\nTry 'cp --help' for more information.\n",
+    status: 1,
+  },
+  {
+    cmd: 'cp -r notes notes/inner',
+    err: "cp: cannot copy a directory, 'notes', into itself, 'notes/inner'\n",
+    status: 1,
+  },
+  { cmd: 'cp -v letter.txt c.txt', out: "'letter.txt' -> 'c.txt'\n" },
+  {
+    cmd: 'cp -n letter.txt journal.txt; head -n 1 journal.txt',
+    out: 'entry 1\n',
+    err: 'cp: warning: behavior of -n is non-portable and may change in future; use --update=none instead\n',
+  },
+  { cmd: 'cp *.txt notes && ls notes | head -n 3', out: 'big.txt\nblanks.txt\nempty.txt\n' },
+
+  // mv
+  {
+    cmd: 'mv letter.txt moved.txt && ls moved.txt letter.txt',
+    out: 'moved.txt\n',
+    err: "ls: cannot access 'letter.txt': No such file or directory\n",
+    status: 2,
+  },
+  { cmd: 'mv letter.txt notes && ls notes', out: 'letter.txt\npage1\npage2\n' },
+  {
+    cmd: 'mv letter.txt empty.txt notes && ls notes',
+    out: 'empty.txt\nletter.txt\npage1\npage2\n',
+  },
+  { cmd: 'mv notes pages && ls pages', out: 'page1\npage2\n' },
+  { cmd: 'mv ghost x', err: "mv: cannot stat 'ghost': No such file or directory\n", status: 1 },
+  {
+    cmd: 'mv notes notes/inner',
+    err: "mv: cannot move 'notes' to a subdirectory of itself, 'notes/inner'\n",
+    status: 1,
+  },
+  {
+    cmd: 'mv letter.txt empty.txt journal.txt',
+    err: "mv: target 'journal.txt': Not a directory\n",
+    status: 1,
+  },
+  {
+    cmd: 'mv letter.txt',
+    err: "mv: missing destination file operand after 'letter.txt'\nTry 'mv --help' for more information.\n",
+    status: 1,
+  },
+  { cmd: 'mv -v letter.txt l.txt', out: "renamed 'letter.txt' -> 'l.txt'\n" },
+  {
+    cmd: 'mv -n letter.txt journal.txt; head -n 1 journal.txt',
+    out: 'entry 1\n',
+    err: "mv: not replacing 'journal.txt'\n",
+  },
+  {
+    cmd: 'mv letter.txt journal.txt && cat journal.txt',
+    out: 'Dear apprentice,\nthe stacks are failing.\n',
+  },
+  { cmd: 'mkdir d && mv notes d && ls d', out: 'notes\n' },
+  {
+    cmd: 'mv notes /vault/x',
+    err: "mv: cannot move 'notes' to '/vault/x': Permission denied\n",
+    status: 1,
+    game: true,
+  },
 ];

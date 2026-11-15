@@ -1,0 +1,27 @@
+NAME
+    rm - unmake books (and rooms) for good
+
+SYNOPSIS
+    rm [OPTION]... FILE...
+
+DESCRIPTION
+    Rm removes each FILE. There is no undo: nothing goes to a bin, and no
+    spell brings it back. Cast it carefully, and cast `ls` first.
+
+    -r, -R, --recursive
+           remove rooms and everything inside them
+    -f, --force
+           do not complain about missing books, never ask
+    -i     ask before every removal
+    -d, --dir
+           remove empty rooms
+    -v, --verbose
+           say what is being removed
+
+    Rm refuses to remove . and .., and will not operate recursively on
+    the Foundation Stone (/) at all.
+
+EXAMPLES
+    rm stray-page             one book
+    rm -i *.lx                ask about each one
+    rm -r old-shelf           a room and all it holds
