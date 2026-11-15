@@ -12,6 +12,11 @@ export function loadSettings(): Settings {
       theme: typeof s.theme === 'string' ? s.theme : DEFAULT_SETTINGS.theme,
       motion: s.motion === 'on' || s.motion === 'off' ? s.motion : 'auto',
       reader: s.reader === true,
+      music: s.music !== false,
+      volume:
+        typeof s.volume === 'number' && s.volume >= 0 && s.volume <= 10
+          ? Math.round(s.volume)
+          : DEFAULT_SETTINGS.volume,
     };
   } catch {
     return { ...DEFAULT_SETTINGS };

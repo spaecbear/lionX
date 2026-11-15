@@ -1,0 +1,136 @@
+# The Archive's soundtrack: cozy lo-fi, made live in the browser (no audio files).
+# Each mood is a loop of chords. Chords are note names with octaves (C4 = middle C).
+# bpm: tempo. swing: 0 (straight) to 0.33 (lazy). melody: notes the wandering
+# melody may pick from. drums: one bar of 16 steps; x = hit, . = rest.
+default: title
+moods:
+  title:
+    bpm: 72
+    swing: 0.22
+    chords:
+      - [F3, A3, C4, E4]
+      - [E3, G3, B3, D4]
+      - [D3, F3, A3, C4]
+      - [C3, E3, G3, B3]
+    melody: [C5, D5, E5, G5, A5]
+    drums:
+      kick: 'x.........x.....'
+      snare: '....x.......x...'
+      hat: 'x.x.x.x.x.x.x.x.'
+  apprentice-cells:
+    bpm: 70
+    swing: 0.2
+    chords:
+      - [C3, E3, G3, B3]
+      - [A2, C3, E3, G3]
+      - [D3, F3, A3, C4]
+      - [G2, B2, D3, F3]
+    melody: [E5, G5, A5, C6, D5]
+    drums:
+      kick: 'x.......x.x.....'
+      snare: '....x.......x...'
+      hat: 'x.x.x.x.x.x.x.x.'
+  reading-room:
+    bpm: 66
+    swing: 0.25
+    chords:
+      - [D3, F3, A3, C4]
+      - [G2, B2, D3, F3]
+      - [C3, E3, G3, B3]
+      - [A2, C3, E3, G3]
+    melody: [A4, C5, D5, E5, G5]
+    drums:
+      kick: 'x.........x.....'
+      snare: '....x.......x...'
+      hat: '..x...x...x...x.'
+  bindery:
+    bpm: 76
+    swing: 0.18
+    chords:
+      - [A2, C3, E3, G3]
+      - [F2, A2, C3, E3]
+      - [D3, F3, A3, C4]
+      - [E3, G3, B3, D4]
+    melody: [A4, C5, D5, E5, G5]
+    drums:
+      kick: 'x.....x...x.....'
+      snare: '....x.......x...'
+      hat: 'x.xxx.x.x.xxx.x.'
+  observatory:
+    bpm: 64
+    swing: 0.15
+    chords:
+      - [Eb3, G3, Bb3, D4]
+      - [Ab2, C3, Eb3, G3]
+      - [F3, Ab3, C4, Eb4]
+      - [Bb2, D3, F3, A3]
+    melody: [G5, Bb5, C6, D6, F5]
+    drums:
+      kick: 'x...............'
+      snare: '........x.......'
+      hat: 'x...x...x...x...'
+  aqueducts:
+    bpm: 68
+    swing: 0.24
+    chords:
+      - [E3, G3, B3, D4]
+      - [C3, E3, G3, B3]
+      - [A2, C3, E3, G3]
+      - [B2, D3, F#3, A3]
+    melody: [E5, G5, A5, B5, D6]
+    drums:
+      kick: 'x.......x.......'
+      snare: '....x.......x...'
+      hat: 'x.x.x.x.x.x.x.xx'
+  vault:
+    bpm: 62
+    swing: 0.2
+    chords:
+      - [F#3, A3, C#4, E4]
+      - [D3, F#3, A3, C#4]
+      - [B2, D3, F#3, A3]
+      - [C#3, E3, G#3, B3]
+    melody: [C#5, E5, F#5, A5, B5]
+    drums:
+      kick: 'x.........x.....'
+      snare: '....x.......x...'
+      hat: '..x...x...x...x.'
+  haunted-stacks:
+    bpm: 60
+    swing: 0.28
+    chords:
+      - [C3, Eb3, G3, Bb3]
+      - [Ab2, C3, Eb3, G3]
+      - [F2, Ab2, C3, Eb3]
+      - [G2, B2, D3, F3]
+    melody: [C5, Eb5, F5, G5, Bb5]
+    drums:
+      kick: 'x.........x.....'
+      snare: '........x.......'
+      hat: 'x...x...x...x...'
+  undercroft:
+    bpm: 58
+    swing: 0.2
+    chords:
+      - [D3, F3, A3, C4]
+      - [Bb2, D3, F3, A3]
+      - [G2, Bb2, D3, F3]
+      - [A2, C#3, E3, G3]
+    melody: [D5, F5, G5, A5, C6]
+    drums:
+      kick: 'x...............'
+      snare: '........x.......'
+      hat: '..x...x...x...x.'
+  root:
+    bpm: 74
+    swing: 0.2
+    chords:
+      - [F3, A3, C4, E4]
+      - [G3, B3, D4, F4]
+      - [E3, G3, B3, D4]
+      - [A2, C3, E3, G3]
+    melody: [C5, E5, F5, G5, A5, C6]
+    drums:
+      kick: 'x.....x...x.....'
+      snare: '....x.......x...'
+      hat: 'x.x.x.x.x.x.x.x.'

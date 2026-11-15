@@ -7,9 +7,19 @@ export interface Settings {
   motion: 'auto' | 'on' | 'off';
   /** Screen-reader mode: no ASCII art, no animation, announced output. */
   reader: boolean;
+  /** The lo-fi soundtrack. */
+  music: boolean;
+  /** Soundtrack volume, 0 to 10. */
+  volume: number;
 }
 
-export const DEFAULT_SETTINGS: Settings = { theme: 'candlelit', motion: 'auto', reader: false };
+export const DEFAULT_SETTINGS: Settings = {
+  theme: 'candlelit',
+  motion: 'auto',
+  reader: false,
+  music: true,
+  volume: 4,
+};
 
 export interface SettingsHost {
   get(): Settings;
@@ -40,8 +50,10 @@ export function createSettingsCommand(host: SettingsHost) {
           )
           .join('\n    ');
         io.stdout.write(
-          `  theme:   ${s.theme}\n    ${themes}\n  motion:  ${s.motion}\n  reader:  ${s.reader ? 'on' : 'off'}\n\n` +
-            '  Change one with: settings theme NAME, settings motion on|off|auto, settings reader on|off\n',
+          `  theme:   ${s.theme}\n    ${themes}\n  motion:  ${s.motion}\n  reader:  ${s.reader ? 'on' : 'off'}\n` +
+            `  music:   ${s.music ? 'on' : 'off'}\n  volume:  ${s.volume}\n\n` +
+            '  Change one with: settings theme NAME, settings motion on|off|auto, settings reader on|off,\n' +
+            '  settings music on|off, settings volume 0-10\n',
         );
         return 0;
       }
@@ -66,8 +78,16 @@ export function createSettingsCommand(host: SettingsHost) {
         host.set({ ...s, reader: value === 'on' });
         return 0;
       }
+      if (key === 'music' && (value === 'on' || value === 'off')) {
+        host.set({ ...s, music: value === 'on' });
+        return 0;
+      }
+      if (key === 'volume' && /^(10|[0-9])$/.test(value ?? '')) {
+        host.set({ ...s, volume: Number(value) });
+        return 0;
+      }
       io.stderr.write(
-        'settings: try settings theme NAME, settings motion on|off|auto, or settings reader on|off\n',
+        'settings: try settings theme NAME, settings motion on|off|auto, settings reader on|off, settings music on|off, or settings volume 0-10\n',
       );
       return 1;
     },

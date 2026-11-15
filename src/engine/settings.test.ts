@@ -48,7 +48,7 @@ describe('settings', () => {
     expect((await g.run('settings theme high-contrast')).status).toBe(0);
     expect((await g.run('settings motion off')).status).toBe(0);
     expect((await g.run('settings reader on')).status).toBe(0);
-    expect(g.get()).toEqual({ theme: 'high-contrast', motion: 'off', reader: true });
+    expect(g.get()).toMatchObject({ theme: 'high-contrast', motion: 'off', reader: true });
   });
 
   it('refuses unearned and unknown themes, and bad options', async () => {
@@ -59,5 +59,15 @@ describe('settings', () => {
     expect((await g.run('settings theme plaid')).err).toBe('settings: no theme called plaid\n');
     expect((await g.run('settings motion sideways')).status).toBe(1);
     expect(g.get()).toEqual(DEFAULT_SETTINGS);
+  });
+
+  it('turns the soundtrack on and off and sets its volume', async () => {
+    const g = setup(['candlelit']);
+    expect((await g.run('settings')).out).toContain('music:   on');
+    expect((await g.run('settings music off')).status).toBe(0);
+    expect((await g.run('settings volume 7')).status).toBe(0);
+    expect(g.get()).toMatchObject({ music: false, volume: 7 });
+    expect((await g.run('settings volume 11')).status).toBe(1);
+    expect((await g.run('settings music loud')).status).toBe(1);
   });
 });

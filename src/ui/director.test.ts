@@ -190,6 +190,8 @@ describe('settings and tints in the director', () => {
       theme: 'candlelit',
       motion: 'auto',
       reader: false,
+      music: true,
+      volume: 4,
     };
     const term = new Terminal({ cols: 80, rows: 40, allowProposedApi: true });
     const writes: Promise<void>[] = [];

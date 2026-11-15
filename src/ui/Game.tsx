@@ -8,6 +8,9 @@ import { artFor } from '../content';
 import { loadGameContent } from '../content/game';
 import titleHelp from '../content/title.txt?raw';
 import { Director } from './director';
+import musicYaml from '../content/music.yaml?raw';
+import { loadMusic, moodFor } from './audio/compose';
+import { LofiPlayer } from './audio/lofi';
 
 const TYPE_DELAY_MS = 18;
 import { ALWAYS_AVAILABLE, FONT_STACK, THEMES, WING_TINTS } from './theme';
@@ -133,6 +136,24 @@ export function Game() {
       setThemeName(st.theme);
     };
     applyLook(settings);
+    const music = loadMusic(musicYaml);
+    const player = new LofiPlayer(music);
+    // Browsers allow sound only after a key press or tap, so the music starts on the first one.
+    let heard = false;
+    const applyMusic = (st: Settings) => {
+      player.setVolume(st.volume / 10);
+      if (st.music && st.volume > 0 && heard && !document.hidden) player.start();
+      else player.stop();
+    };
+    const onGesture = () => {
+      if (heard) return;
+      heard = true;
+      applyMusic(settings);
+    };
+    const onVisibility = () => applyMusic(settings);
+    window.addEventListener('keydown', onGesture, true);
+    window.addEventListener('pointerdown', onGesture, true);
+    document.addEventListener('visibilitychange', onVisibility);
     let shell: Shell | null = null;
     const director = new Director(term, {
       storage: browserStorage(),
@@ -144,12 +165,14 @@ export function Game() {
           settings = next;
           saveSettings(next);
           applyLook(next);
+          applyMusic(next);
           director.configure(behavior(next));
         },
         themes: Object.keys(THEMES),
         alwaysAvailable: ALWAYS_AVAILABLE,
       },
       wingTints: WING_TINTS,
+      onWing: (id) => player.setMood(moodFor(music, id)),
       titleHelp,
 
       onChips: setCommands,
@@ -241,6 +264,10 @@ export function Game() {
       el.removeEventListener('touchstart', onTouchStart);
       el.removeEventListener('touchmove', onTouchMove);
       sub.dispose();
+      window.removeEventListener('keydown', onGesture, true);
+      window.removeEventListener('pointerdown', onGesture, true);
+      document.removeEventListener('visibilitychange', onVisibility);
+      player.stop();
       term.dispose();
       session.current = null;
     };

@@ -1,6 +1,7 @@
   play N    begin or continue save slot N (1, 2, or 3)
   slots     list the save slots
   erase N   erase save slot N
+  settings  theme, motion, reader mode, music and volume
   help      show this list
 
   Your progress saves itself after every spell. Inside the Archive,

@@ -37,6 +37,8 @@ export interface DirectorOptions {
   };
   /** Prompt path colors by wing id. */
   wingTints?: Record<string, string>;
+  /** The wing on screen changed (undefined on the title screen), e.g. for the soundtrack. */
+  onWing?: (wingId: string | undefined) => void;
   /** The shell changed (title <-> play), e.g. to update COLUMNS or tap-to-insert. */
   onShell?: (shell: Shell) => void;
 }
@@ -119,6 +121,7 @@ export class Director {
 
   private tint() {
     const id = this.session?.runner.wing.id;
+    this.opts.onWing?.(id);
     if (id && this.opts.wingTints?.[id])
       this.controller.configure({ accent: this.opts.wingTints[id] });
   }
@@ -131,6 +134,7 @@ export class Director {
     this.clearScreen();
     this.session = null;
     this.slot = null;
+    this.opts.onWing?.(undefined);
     const vfs = new Vfs({ credentials: { user: 'apprentice', groups: ['apprentice'] } });
     this.shell = new Shell({
       vfs,
