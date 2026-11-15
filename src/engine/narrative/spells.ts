@@ -148,6 +148,8 @@ export function createAchievementsCommand(
     options: {},
     run(_o, io) {
       const runner = getRunner();
+      if (runner?.progress.storyMode)
+        io.stdout.write('Story mode played part of this save, so achievements are off for it.\n\n');
       const earned = runner?.progress.achievements ?? [];
       const width = io.tty?.cols ?? 80;
       const lines = [

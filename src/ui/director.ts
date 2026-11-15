@@ -10,6 +10,7 @@ import {
 import { Shell } from '../engine/shell';
 import { createSettingsCommand, type Settings } from '../engine/settings';
 import { Vfs } from '../engine/vfs';
+import { createStoryCommand, STORY_END } from './story';
 import { TerminalController, type TerminalLike } from './terminal/controller';
 
 /** Spells of the Lexicon itself, always available, shown last among the chips. */
@@ -144,7 +145,71 @@ export class Director {
   }
 
   handleData(data: string): Promise<void> {
+    if (this.story.on && this.session) {
+      // Any key stops auto play (and is not passed on).
+      if (this.story.auto) {
+        this.story.auto = false;
+        return Promise.resolve();
+      }
+      // Space at an empty prompt (or in a pager or password prompt) takes the next story step.
+      if (data === ' ' && (this.controller.idle || this.controller.awaitingKey))
+        return this.storyStep();
+    }
     return this.controller.handleData(data);
+  }
+
+  /** Story mode (a secret spell, for testing and for reading the story through). */
+  private story = {
+    on: false,
+    auto: false,
+    password: undefined as string | undefined,
+    busy: false,
+  };
+
+  /** Type the next story command, as keystrokes, exactly as a player would. */
+  async storyStep(): Promise<void> {
+    const session = this.session;
+    if (!session || this.story.busy) return;
+    this.story.busy = true;
+    try {
+      const c = this.controller;
+      if (c.awaitingKey) {
+        // A program wants a key: the password it asked for, or q to leave a pager.
+        const keys = this.story.password !== undefined ? this.story.password + '\r' : 'q';
+        this.story.password = undefined;
+        await c.handleData(keys);
+        return;
+      }
+      if (!c.idle) return;
+      const next = session.nextStoryCommand();
+      if (!next) {
+        this.story.auto = false;
+        await c.handleData('\x15'); // clear the line, then say so
+        session.runner.queue([{ kind: 'narrator', text: STORY_END }]);
+        await c.handleData('\r');
+        return;
+      }
+      for (const ch of next.line) {
+        await c.handleData(ch);
+        await sleep(this.opts.typeDelay ? 25 : 0);
+      }
+      if (next.tab) await c.handleData('\t');
+      this.story.password = next.password;
+      await c.handleData('\r');
+    } finally {
+      this.story.busy = false;
+    }
+  }
+
+  /** Keep stepping until a key is pressed or the story runs out. */
+  private async storyAuto(): Promise<void> {
+    this.story.auto = true;
+    let guard = 0;
+    while (this.story.auto && this.story.on && guard++ < 5000) {
+      await sleep(this.opts.typeDelay ? 500 : 0);
+      if (!this.story.auto) break;
+      await this.storyStep();
+    }
   }
 
   showTitle(): void {
@@ -221,6 +286,16 @@ export class Director {
     });
     this.controller = controller;
     this.addSettings(session.shell);
+    session.shell.registry.register(
+      createStoryCommand({
+        set: (mode) => {
+          this.story.on = mode !== 'off';
+          session.setStoryActive(this.story.on);
+          if (mode === 'auto') setTimeout(() => void this.storyAuto(), 0);
+          else this.story.auto = false;
+        },
+      }),
+    );
     this.tint();
     controller.startSpirits();
     this.opts.onShell?.(session.shell);
@@ -253,3 +328,5 @@ export class Director {
     return lines.join('\n') + '\n' + note;
   }
 }
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));

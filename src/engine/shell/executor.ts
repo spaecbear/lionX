@@ -57,6 +57,7 @@ export const BUILTINS = new Set([
   'duty',
   'quests',
   'settings',
+  'story',
 ]);
 
 /** First line of a spell's file in /usr/bin: which built-in command it runs. */

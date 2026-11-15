@@ -72,6 +72,17 @@ export class TerminalController {
   private stderrText = '';
   /** True while Quill is mid-sentence; any key finishes the sentence instantly. */
   private speaking = false;
+  private running = false;
+
+  /** At the prompt with an empty line: nothing running, nothing being said. */
+  get idle(): boolean {
+    return !this.running && !this.speaking && !this.pending && this.line.text === '';
+  }
+
+  /** A running program (a pager, a password prompt) is waiting for a key. */
+  get awaitingKey(): boolean {
+    return this.keyReader !== null;
+  }
   private skipSpeechFlag = false;
   /** Once the player starts typing ahead, Space and Enter are part of the command. */
   private typedDuringSpeech = false;
@@ -408,6 +419,15 @@ export class TerminalController {
   }
 
   private async submit() {
+    this.running = true;
+    try {
+      await this.submitLine();
+    } finally {
+      this.running = false;
+    }
+  }
+
+  private async submitLine() {
     const typed = this.line.text;
     this.line.end();
     this.redraw();

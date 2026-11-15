@@ -311,6 +311,7 @@ export class LessonRunner {
   /** Newly earned achievements, in order. */
   checkAchievements(): Narration[] {
     const p = this.progress;
+    if (p.storyMode) return [];
     const earned = (p.achievements ??= []);
     const out: Narration[] = [];
     for (const a of this.opts.achievements ?? []) {
@@ -463,6 +464,9 @@ export class LessonRunner {
       }))
       .filter((x) => x.left > 0);
   }
+
+  /** Story mode is switched on right now: secrets wait until it is off. */
+  storyActive = false;
 
   /** Easy mode is on right now. */
   get easy(): boolean {
@@ -819,7 +823,8 @@ export class LessonRunner {
       this.pagesJustFound.push(page.id);
     const s = this.opts.secrets?.find((x) => x.file === path);
     const found = (this.progress.secrets ??= []);
-    if (!s || found.includes(s.id)) return;
+    // While story mode plays for you, it does not find secrets for you.
+    if (!s || found.includes(s.id) || this.storyActive) return;
     found.push(s.id);
     if (s.theme && !this.progress.themes.includes(s.theme)) this.progress.themes.push(s.theme);
     if (s.song) {

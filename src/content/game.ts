@@ -8,6 +8,8 @@ import {
   loadWing,
 } from '../engine/content';
 import librarySource from './library.yaml?raw';
+import storySource from './story.yaml?raw';
+import { parse as parseYaml } from 'yaml';
 import achievementsSource from './achievements.yaml?raw';
 import secretsSource from './secrets.yaml?raw';
 import { loadGlossary } from '../engine/narrative';
@@ -36,5 +38,6 @@ export function loadGameContent(): GameContent {
     secrets: loadSecrets(secretsSource),
     achievements: loadAchievements(achievementsSource),
     library: loadLibrary(librarySource),
+    storyNote: (parseYaml(storySource) as { note: string }).note,
   };
 }

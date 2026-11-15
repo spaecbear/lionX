@@ -40,6 +40,8 @@ export interface GameContent {
   secrets?: Secret[];
   achievements?: Achievement[];
   library?: Library;
+  /** The note in ~/.story-mode that tells of the secret story spell. */
+  storyNote?: string;
 }
 
 export interface SessionOptions {
@@ -70,6 +72,35 @@ export interface GameSession {
   ready: Promise<void>;
   /** Capture the whole game as save data. */
   toSave(history: string[]): SaveData;
+  /**
+   * Story mode: the next command that moves the story on (from the solution,
+   * or the walk to the next wing), or null when there is nothing left to do.
+   * Marks the save as story-played, which turns achievements off for it.
+   */
+  nextStoryCommand(): StoryCommand | null;
+  /** Story mode switched on or off (secrets are not found while it is on). */
+  setStoryActive(on: boolean): void;
+}
+
+/** One command for story mode to type: Tab after it, or a password when asked. */
+export interface StoryCommand {
+  line: string;
+  tab?: boolean;
+  password?: string;
+}
+
+/** Commands from a final hint like "Type: a   then press Tab   then: b   then enter your password: x". */
+export function storyFromHint(hint: string): StoryCommand[] {
+  const m = /Type(?: exactly)?:\s*(.+)$/.exec(hint);
+  if (!m) return [];
+  return m[1]
+    .split(/\s+then:\s+/)
+    .map((part) => ({
+      line: part.split(/\s+then (?:press|enter)\b/)[0].trim(),
+      tab: /press Tab/.test(part) || undefined,
+      password: /then enter your password: (\S+)/.exec(part)?.[1],
+    }))
+    .filter((c) => c.line);
 }
 
 const quiet: OutStream = { write() {} };
@@ -194,6 +225,7 @@ export function createSession(o: SessionOptions): GameSession {
       now,
     });
     runner.shellState = shellState;
+    runner.storyActive = storyOn;
     return runner.start();
   };
 
@@ -216,6 +248,9 @@ export function createSession(o: SessionOptions): GameSession {
   const shellState = { env: shell.env, exported: shell.exported, aliases: shell.aliases };
   runner.shellState = shellState;
   installSpells(runner.vfs, shell.registry);
+  // The secret story spell is written under the desk, for whoever looks with ls -a.
+  const note = `${runner.vfs.home}/.story-mode`;
+  if (content.storyNote && !runner.vfs.exists(note)) runner.vfs.writeFile(note, content.storyNote);
   // Immortal spirits (lionX) return only while their owner's crontab still calls them back.
   processes.respawnGuard = (spec) => (readCrontab(runner.vfs, spec.user) ?? '').includes(spec.name);
   if (!shell.env.has('PATH')) shell.env.set('PATH', DEFAULT_PATH);
@@ -231,9 +266,38 @@ export function createSession(o: SessionOptions): GameSession {
       () => undefined,
     );
 
+  let storyOn = false;
+  let storyQueue: StoryCommand[] = [];
+  let storyKey = '';
+  const nextStoryCommand = (): StoryCommand | null => {
+    runner.progress.storyMode = true;
+    const cur = runner.current;
+    if (!cur) {
+      // Between wings: walk to the next one's door.
+      const next = runner.wing.next ? content.wings[runner.wing.next] : undefined;
+      if (runner.done && next?.entrance) return { line: `cd ${next.entrance}` };
+      return null;
+    }
+    const key = `${runner.wing.id}:${cur.kind}:${cur.lessonIndex}:${cur.step.id}:${cur.duty?.signature ?? ''}`;
+    if (key !== storyKey || storyQueue.length === 0) {
+      storyKey = key;
+      const fromHint = storyFromHint(cur.step.hints.at(-1) ?? '');
+      storyQueue = fromHint.length
+        ? fromHint
+        : (cur.duty?.solution ?? []).map((line) => ({ line }));
+    }
+    return storyQueue.shift() ?? null;
+  };
+
   return {
     get runner() {
       return runner;
+    },
+    nextStoryCommand,
+    setStoryActive: (on) => {
+      storyOn = on;
+      runner.storyActive = on;
+      if (on) runner.progress.storyMode = true;
     },
     shell,
     resumed: !!save,

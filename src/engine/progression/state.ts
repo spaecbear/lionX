@@ -25,6 +25,8 @@ export interface ProgressState {
   achievements?: string[];
   /** Pages of the Book of Eco found. */
   library?: string[];
+  /** Story mode played some of this save: achievements are off for it. */
+  storyMode?: boolean;
   /** Spells and symbols ever used successfully (for achievements). */
   used?: string[];
   /** Duties finished swiftly. */

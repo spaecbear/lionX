@@ -303,3 +303,63 @@ describe('leftover duty rooms', () => {
     expect(vfs.exists('/archive/bindery/work/bench-a')).toBe(false);
   });
 });
+
+describe('story mode', () => {
+  it('plays the whole game from nextStoryCommand alone, with achievements off', async () => {
+    const session = createSession({ content: loadGameContent(), seed: 5 });
+    const keys: string[] = [];
+    session.shell.terminal = { stdout: { write: () => {} }, stderr: { write: () => {} } };
+    session.shell.tty = {
+      rows: 24,
+      cols: 80,
+      readKey: async () => 'q',
+      readSecret: async () => keys.shift() ?? null,
+    };
+    session.opening();
+    let n = 0;
+    for (; n < 2000; n++) {
+      const c = session.nextStoryCommand();
+      if (!c) break;
+      if (c.password) keys.push(c.password);
+      let text = c.line;
+      if (c.tab) {
+        const r = complete(text, text.length, {
+          vfs: session.runner.vfs,
+          commands: session.shell.registry.names(),
+        });
+        text = text.slice(0, r.start) + r.replacement;
+      }
+      const status = await session.shell.run(text);
+      session.afterCommand(text, status, '');
+    }
+    expect(n).toBeLessThan(2000);
+    expect(session.runner.progress.wingsDone).toContain('root');
+    expect(session.runner.progress.storyMode).toBe(true);
+    expect(session.runner.progress.achievements ?? []).toEqual([]);
+  });
+});
+
+describe('story mode and secrets', () => {
+  it('finds no secrets while story mode is on, but they unlock again once it is off', async () => {
+    const s: GameSession = createSession({ content: loadGameContent(), seed: 1 });
+    s.opening();
+    const rain = loadGameContent().secrets!.find((x) => x.id === 'rain-on-the-window')!;
+    expect(s.runner.vfs.exists(rain.file)).toBe(true);
+    s.setStoryActive(true);
+    s.runner.vfs.readFile(rain.file);
+    s.afterCommand('true', 0, '');
+    expect(s.runner.progress.secrets ?? []).toEqual([]);
+    s.setStoryActive(false);
+    s.runner.vfs.readFile(rain.file);
+    s.afterCommand('true', 0, '');
+    expect(s.runner.progress.secrets).toEqual(['rain-on-the-window']);
+    // The save used story mode, so achievements stay off.
+    expect(s.runner.progress.storyMode).toBe(true);
+    expect(s.runner.checkAchievements()).toEqual([]);
+  });
+
+  it('leaves the secret note under the desk', () => {
+    const s: GameSession = createSession({ content: loadGameContent(), seed: 1 });
+    expect(s.runner.vfs.readFile('/home/apprentice/.story-mode')).toContain('story on');
+  });
+});
