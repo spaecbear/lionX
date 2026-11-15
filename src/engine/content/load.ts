@@ -221,6 +221,7 @@ function checkPatch(c: Checker, v: unknown, path: string): WorldPatch | undefine
           'spirit',
           'durationMs',
           'tty',
+          'replace',
         ],
         p,
       );

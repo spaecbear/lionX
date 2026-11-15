@@ -1,4 +1,4 @@
-import type { Script, Word } from './ast';
+import type { Script, SimpleCommand, Word } from './ast';
 import { ShellSyntaxError } from './lexer';
 import { parse } from './parser';
 
@@ -9,7 +9,7 @@ function render(s: Script): string {
   return s.entries
     .map(({ node, background }) => {
       const pipe = (p: (typeof node)['first']) =>
-        p.commands
+        (p.commands as SimpleCommand[])
           .map((c) =>
             [
               ...c.assignments.map((a) => `${a.name}=${text(a.value)}`),
@@ -56,7 +56,7 @@ describe('parse', () => {
   });
 
   it('marks assignment words only before the command name', () => {
-    const cmd = parse('A=1 echo B=2').entries[0].node.first.commands[0];
+    const cmd = parse('A=1 echo B=2').entries[0].node.first.commands[0] as SimpleCommand;
     expect(cmd.assignments.map((a) => a.name)).toEqual(['A']);
     expect(cmd.words.map(text)).toEqual(['echo', 'B=2']);
   });
@@ -82,5 +82,47 @@ describe('parse', () => {
       expect((e as Error).message).toBe(`syntax error near unexpected token \`${near}'`);
       expect((e as ShellSyntaxError).incomplete).toBe(incomplete);
     }
+  });
+});
+
+describe('compound commands', () => {
+  it('parses for loops, with and without in', () => {
+    const f = parse('for x in a b; do echo $x; done').entries[0].node.first.commands[0];
+    expect(f.type).toBe('for');
+    if (f.type !== 'for') return;
+    expect(f.name).toBe('x');
+    expect(f.words?.map(text)).toEqual(['a', 'b']);
+    expect(f.body).toHaveLength(1);
+    const g = parse('for arg\ndo\n  echo $arg\ndone').entries[0].node.first.commands[0];
+    expect(g.type === 'for' && g.words).toBeNull();
+  });
+
+  it('parses if / elif / else', () => {
+    const c = parse('if false; then echo a; elif true; then echo b; else echo c; fi').entries[0]
+      .node.first.commands[0];
+    expect(c.type).toBe('if');
+    if (c.type !== 'if') return;
+    expect(c.branches).toHaveLength(2);
+    expect(c.elseBody).toHaveLength(1);
+  });
+
+  it.each(['for x in a; do echo', 'if true; then echo', 'for x in a b'])(
+    '%j is incomplete',
+    (src) => {
+      try {
+        parse(src);
+        throw new Error('should have thrown');
+      } catch (e) {
+        expect((e as ShellSyntaxError).incomplete).toBe(true);
+      }
+    },
+  );
+
+  it.each([
+    ['done', 'done'],
+    ['echo a; fi', 'fi'],
+    ['for 1x in a; do echo; done', '1x'],
+  ])('%j is a syntax error near %s', (src, near) => {
+    expect(() => parse(src)).toThrow(`syntax error near unexpected token \`${near}'`);
   });
 });

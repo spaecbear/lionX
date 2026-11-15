@@ -1,0 +1,176 @@
+# Duties for the Root: rituals, loops, and schedules. Password for sudo: oriel.
+templates:
+  - id: write-and-cast
+    spells: [echo, chmod]
+    params:
+      room: { pick: [chamber-a, chamber-b, chamber-c, chamber-d] }
+      words: { pick: [the stone holds, the roots drink, the lamps answer] }
+    setup:
+      dirs: ['/archive/root/workroom/{room}']
+    cleanup: ['/archive/root/workroom/{room}']
+    brief: 'Write a ritual at /archive/root/workroom/{room}/chant.sh that writes "{words}" into /archive/root/workroom/{room}/echo, then make it runnable and cast it.'
+    hints:
+      - 'A #! line, one echo with >, the run ward, then cast it by path.'
+      - "`echo '#!/bin/bash' > chant.sh`, append the echo line, `chmod +x`, run it."
+      - "Type: echo '#!/bin/bash' > /archive/root/workroom/{room}/chant.sh   then: echo 'echo {words} > /archive/root/workroom/{room}/echo' >> /archive/root/workroom/{room}/chant.sh   then: chmod +x /archive/root/workroom/{room}/chant.sh   then: /archive/root/workroom/{room}/chant.sh"
+    goal: { contains: { path: '/archive/root/workroom/{room}/echo', text: '{words}' } }
+    solution:
+      - "echo '#!/bin/bash' > /archive/root/workroom/{room}/chant.sh"
+      - "echo 'echo {words} > /archive/root/workroom/{room}/echo' >> /archive/root/workroom/{room}/chant.sh"
+      - 'chmod +x /archive/root/workroom/{room}/chant.sh'
+      - '/archive/root/workroom/{room}/chant.sh'
+
+  - id: candles-in-a-loop
+    spells: [touch]
+    params:
+      room: { pick: [chamber-a, chamber-b, chamber-c, chamber-d] }
+      thing: { pick: [candle, lamp, torch, lantern] }
+    setup:
+      dirs: ['/archive/root/workroom/{room}']
+    cleanup: ['/archive/root/workroom/{room}']
+    brief: 'Light five {thing}s in /archive/root/workroom/{room}: books named {thing}-1 to {thing}-5. Use a loop.'
+    hints:
+      - 'One loop over 1 2 3 4 5.'
+      - 'A `for` loop, touching each one.'
+      - 'Type: for n in 1 2 3 4 5; do touch /archive/root/workroom/{room}/{thing}-$n; done'
+    goal:
+      all:
+        - { isFile: '/archive/root/workroom/{room}/{thing}-1' }
+        - { isFile: '/archive/root/workroom/{room}/{thing}-3' }
+        - { isFile: '/archive/root/workroom/{room}/{thing}-5' }
+    solution: ['for n in 1 2 3 4 5; do touch /archive/root/workroom/{room}/{thing}-$n; done']
+
+  - id: list-in-a-loop
+    spells: [echo, '>>']
+    params:
+      room: { pick: [chamber-a, chamber-b, chamber-c, chamber-d] }
+    setup:
+      files:
+        '/archive/root/workroom/{room}/roots/oak': "Oak.\n"
+        '/archive/root/workroom/{room}/roots/ash': "Ash.\n"
+        '/archive/root/workroom/{room}/roots/yew': "Yew.\n"
+    cleanup: ['/archive/root/workroom/{room}']
+    brief: 'Write the path of every root in /archive/root/workroom/{room}/roots into a book there called register, one per line, with a loop.'
+    hints:
+      - 'Loop over the roots with a wildcard; append each name to the register.'
+      - '`for r in .../roots/*; do echo $r >> .../register; done`'
+      - 'Type: for r in /archive/root/workroom/{room}/roots/*; do echo $r >> /archive/root/workroom/{room}/register; done'
+    goal:
+      all:
+        - {
+            contains:
+              {
+                path: '/archive/root/workroom/{room}/register',
+                text: '/archive/root/workroom/{room}/roots/ash',
+              },
+          }
+        - {
+            contains:
+              {
+                path: '/archive/root/workroom/{room}/register',
+                text: '/archive/root/workroom/{room}/roots/yew',
+              },
+          }
+    solution:
+      [
+        'for r in /archive/root/workroom/{room}/roots/*; do echo $r >> /archive/root/workroom/{room}/register; done',
+      ]
+
+  - id: give-it-the-ward
+    spells: [chmod]
+    params:
+      room: { pick: [chamber-a, chamber-b, chamber-c, chamber-d] }
+      rite: { pick: [dawn-rite, dusk-rite, bell-rite] }
+    setup:
+      files:
+        '/archive/root/workroom/{room}/{rite}.sh':
+          {
+            content: "#!/bin/bash\necho done > /archive/root/workroom/{room}/{rite}.done\n",
+            mode: '644',
+          }
+    cleanup: ['/archive/root/workroom/{room}']
+    brief: 'The {rite} ritual at /archive/root/workroom/{room}/{rite}.sh will not run. Fix that, and cast it.'
+    hints:
+      - 'A ritual needs the run ward before it can be cast.'
+      - '`chmod +x` it, then run it by path.'
+      - 'Type: chmod +x /archive/root/workroom/{room}/{rite}.sh   then: /archive/root/workroom/{room}/{rite}.sh'
+    goal: { isFile: '/archive/root/workroom/{room}/{rite}.done' }
+    solution:
+      [
+        'chmod +x /archive/root/workroom/{room}/{rite}.sh',
+        '/archive/root/workroom/{room}/{rite}.sh',
+      ]
+
+  - id: ritual-with-an-argument
+    spells: [chmod]
+    params:
+      room: { pick: [chamber-a, chamber-b, chamber-c, chamber-d] }
+      name: { pick: [Mira, Tobin, Oriel, Quill] }
+    setup:
+      files:
+        '/archive/root/workroom/{room}/bless.sh':
+          {
+            content: "#!/bin/bash\necho \"blessed: $1\" > /archive/root/workroom/{room}/blessing\n",
+            mode: '755',
+          }
+    cleanup: ['/archive/root/workroom/{room}']
+    brief: 'The blessing ritual at /archive/root/workroom/{room}/bless.sh takes a name as its first argument. Bless {name}.'
+    hints:
+      - "Words after a ritual's path become $1, $2, and so on inside it."
+      - 'Cast it by path with the name after it.'
+      - 'Type: /archive/root/workroom/{room}/bless.sh {name}'
+    goal: { contains: { path: '/archive/root/workroom/{room}/blessing', text: 'blessed: {name}' } }
+    solution: ['/archive/root/workroom/{room}/bless.sh {name}']
+
+  - id: schedule-a-bell
+    spells: [crontab, echo]
+    params:
+      minute: { pick: ['0', '15', '30', '45'] }
+      bell: { pick: [the first bell, the reading bell, the closing bell] }
+    cleanup: []
+    brief: 'Schedule {bell}: a crontab line that runs `echo {bell}` at minute {minute} of every hour.'
+    hints:
+      - 'Five time fields, then the spell, fed into crontab.'
+      - "`echo '{minute} * * * * echo {bell}' | crontab -`"
+      - "Type: echo '{minute} * * * * echo {bell}' | crontab -"
+    goal:
+      {
+        contains:
+          {
+            path: /var/spool/cron/crontabs/apprentice,
+            pattern: '^{minute} \* \* \* \* echo {bell}$',
+          },
+      }
+    solution: ["echo '{minute} * * * * echo {bell}' | crontab -"]
+
+  - id: clear-the-schedule
+    spells: [crontab]
+    params:
+      job: { pick: [ring-bells, count-candles, wind-clocks] }
+    setup:
+      files:
+        /var/spool/cron/crontabs/apprentice: { content: "*/5 * * * * {job}\n", mode: '600' }
+    brief: 'Your old {job} schedule is ringing at all hours. Remove your crontab.'
+    hints:
+      - 'crontab can remove your whole schedule.'
+      - '`crontab -r`.'
+      - 'Type: crontab -r'
+    goal: { missing: /var/spool/cron/crontabs/apprentice }
+    solution: ['crontab -r']
+
+  - id: read-a-schedule
+    spells: [sudo, crontab]
+    params:
+      who: { pick: [archivist] }
+      task: { pick: [water-the-roots, dust-the-stone, light-the-lamps] }
+    setup:
+      files:
+        /var/spool/cron/crontabs/archivist:
+          { content: "0 6 * * * {task}\n", owner: root, mode: '600' }
+    brief: "What does the Archivist's schedule say? Read the archivist's crontab."
+    hints:
+      - "Reading another user's crontab takes root's authority."
+      - '`sudo crontab -l -u archivist`. Your password is oriel.'
+      - 'Type: sudo crontab -l -u archivist   then enter your password: oriel'
+    goal: { ran: { command: crontab, args: ['-u', 'archivist'] } }
+    solution: ['sudo crontab -l -u archivist']

@@ -11,7 +11,14 @@ gate: 60
 setup:
   dirs:
     - { path: /archive/haunted-stacks/workroom, owner: apprentice, group: apprentice }
+    - { path: /var/spool/cron/crontabs, mode: '700' }
   files:
+    # cron is what keeps lionX coming back. Nobody has noticed this file yet.
+    /var/spool/cron/crontabs/lionx:
+      {
+        content: "# keep the guardian awake\n* * * * * /usr/local/lib/lionx/wake lionX\n",
+        mode: '600',
+      }
     /archive/haunted-stacks/warning: "The stacks are full of spirits. Most mean no harm. Learn which are which.\n"
   processes:
     - {

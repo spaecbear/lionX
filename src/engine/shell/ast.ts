@@ -35,9 +35,27 @@ export interface SimpleCommand {
   redirects: Redirect[];
 }
 
+/** for NAME in WORDS; do BODY; done */
+export interface ForCommand {
+  type: 'for';
+  name: string;
+  /** Null means `for NAME; do` (iterate over "$@"). */
+  words: Word[] | null;
+  body: ListEntry[];
+}
+
+/** if COND; then BODY; [elif COND; then BODY;]... [else BODY;] fi */
+export interface IfCommand {
+  type: 'if';
+  branches: { cond: ListEntry[]; body: ListEntry[] }[];
+  elseBody: ListEntry[] | null;
+}
+
+export type Command = SimpleCommand | ForCommand | IfCommand;
+
 export interface Pipeline {
   type: 'pipeline';
-  commands: SimpleCommand[];
+  commands: Command[];
 }
 
 export interface AndOr {

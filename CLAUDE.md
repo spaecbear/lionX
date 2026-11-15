@@ -21,6 +21,17 @@ lionX is a process/character, never a renamed command.
 ## Commands
 
 - `npm run dev` / `npm test` / `npm run lint` / `npm run build`
+- `npm run e2e`: builds, then drives real Chromium (desktop and 375px touch) through the title,
+  play, commands, Tab, saves, and reload. Run it before committing UI or startup changes; unit
+  tests cannot see everything the real screen does. Needs Playwright with Chromium
+  (`npm i -D playwright && npx playwright install chromium` on a new machine).
+
+## Working habits
+
+- Run `npx prettier --write` before scripted edits, or use exact edits; reformatted lines are the
+  most common reason a scripted change silently misses.
+- New content must pass the hint-only playthrough test (`src/engine/playthrough.test.ts`): a
+  player who follows only Quill's last hints must finish every wing.
 
 ## CI
 

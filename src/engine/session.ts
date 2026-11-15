@@ -10,6 +10,7 @@ import {
 import { newProgress, type DutyTemplate } from './progression';
 import { SAVE_VERSION, type SaveData } from './save';
 import { Shell } from './shell';
+import { readCrontab } from './commands/cron';
 import { BUILTINS, SPELL_MARKER } from './shell/executor';
 import type { CommandRegistry } from './commands/types';
 import type { Vfs } from './vfs';
@@ -71,6 +72,10 @@ export function installSpells(vfs: Vfs, registry: CommandRegistry): void {
   try {
     for (const d of ['/bin', '/usr/bin', '/usr/local/bin'])
       if (!vfs.exists(d)) vfs.mkdir(d, { parents: true });
+    if (!vfs.exists('/tmp')) {
+      vfs.mkdir('/tmp');
+      vfs.chmod('/tmp', 0o1777);
+    }
     for (const name of registry.names()) {
       const path = `/usr/bin/${name}`;
       if (BUILTINS.has(name) || vfs.exists(path)) continue;
@@ -178,6 +183,8 @@ export function createSession(o: SessionOptions): GameSession {
   const shellState = { env: shell.env, exported: shell.exported, aliases: shell.aliases };
   runner.shellState = shellState;
   installSpells(runner.vfs, shell.registry);
+  // Immortal spirits (lionX) return only while their owner's crontab still calls them back.
+  processes.respawnGuard = (spec) => (readCrontab(runner.vfs, spec.user) ?? '').includes(spec.name);
   if (!shell.env.has('PATH')) shell.env.set('PATH', DEFAULT_PATH);
   // Like a login shell, read ~/.bashrc (trusted: startup files may use spells not yet learned).
   const ready = shell

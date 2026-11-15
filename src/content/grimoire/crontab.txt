@@ -1,0 +1,28 @@
+NAME
+    crontab - set spells to be cast on a schedule
+
+SYNOPSIS
+    crontab [-u USER] FILE
+    crontab [-u USER] -l | -r | -e
+
+DESCRIPTION
+    Cron is a spirit that wakes every minute and casts whatever spells
+    your crontab tells it to. Each line holds five time fields, then the
+    spell:
+
+      minute  hour  day-of-month  month  day-of-week   command
+      */10    *     *             *      *             echo hello
+
+    * means every; */10 means every ten; 0 means at zero. Lines starting
+    with # are notes.
+
+    -l        list your crontab
+    -r        remove your crontab
+    -e        edit your crontab in nano
+    -u USER   act on USER's crontab (root only)
+    FILE      install FILE as your crontab; - reads standard input
+
+EXAMPLES
+    crontab -l
+    echo '0 * * * * echo the hour bell' | crontab -
+    sudo crontab -l -u lionx

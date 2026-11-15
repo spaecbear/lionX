@@ -6,7 +6,8 @@ export type Token =
   /** A redirect operator with an explicit fd, e.g. `2>` or `2>&`. */
   | { type: 'redir'; fd: number | null; value: RedirOperator };
 
-export type Operator = '|' | '||' | '&' | '&&' | ';';
+/** A newline separator: like ;, but blank lines and leading newlines are allowed. */
+export type Operator = '|' | '||' | '&' | '&&' | ';' | '\n';
 export type RedirOperator = '>' | '>>' | '<' | '>&' | '&>' | '&>>';
 
 export class ShellSyntaxError extends Error {
@@ -87,10 +88,8 @@ export function tokenize(input: string): Token[] {
       // A newline ends a command, like ;, unless the line ended mid-pipeline or mid-chain.
       endWord();
       const last = tokens[tokens.length - 1];
-      const continues = last?.type === 'op' && last.value !== ';' && last.value !== '&';
-      if (last && !continues && !(last.type === 'op' && last.value === ';')) {
-        tokens.push({ type: 'op', value: ';' });
-      }
+      // After |, &&, ||, ;, & or another newline, a newline adds nothing.
+      if (last && last.type !== 'op') tokens.push({ type: 'op', value: '\n' });
       i++;
       continue;
     }

@@ -1,0 +1,212 @@
+# Wing 9: the Root. Spells: scripts (#!, chmod +x), nano, for loops, crontab.
+# The finale: lionX returns through cron. The ritual script removes the cron
+# entry, ends lionX, gives the root back to the Archivist, and unseals it.
+id: root
+banner: root
+entrance: /archive/root
+duties: [root, undercroft, haunted-stacks]
+gate: 60
+
+setup:
+  dirs:
+    - { path: /archive/root/workroom, owner: apprentice, group: apprentice }
+    - { path: /home/apprentice/candles, owner: apprentice, group: apprentice }
+    - { path: /archive/root/heart, owner: lionx, group: lionx, mode: '700' }
+  files:
+    /archive/root/heart/foundation-stone:
+      {
+        content: "THE FOUNDATION STONE.\nEvery story in the Archive grows from here.\n",
+        owner: lionx,
+        group: lionx,
+        mode: '600',
+      }
+  processes:
+    # lionX wakes, wherever it was frozen.
+    - {
+        pid: 666,
+        name: lionX,
+        args: 'lionX --guard /',
+        user: lionx,
+        cpu: 9,
+        mem: 6.6,
+        ignoresTerm: true,
+        immortal: true,
+        respawnsChildren: true,
+        spirit: '=^.^=',
+        replace: true,
+      }
+
+intro:
+  - 'The Root. The Foundation Stone is just there, in the heart. lionX holds it.'
+  - "lionX is awake again. Whatever you freeze, whatever you banish, it comes back. Before we face it, you need the last of the Lexicon's language: rituals. Spells written down, to be cast all at once."
+
+lessons:
+  - id: first-ritual
+    spells: [chmod]
+    intro:
+      - 'A script is a book of spells. Its first line, starting with #!, says which shell should read it. Then it needs the run ward, and you cast it by its path.'
+    steps:
+      - id: write-script
+        guide: exact
+        guidance:
+          exact: "Type `echo '#!/bin/bash' > ~/hello.sh`, then `echo 'echo hello from a ritual' >> ~/hello.sh`, then `chmod +x ~/hello.sh`, then `~/hello.sh`."
+        hints:
+          - 'Write the #! line, then a spell, then give it the run ward, then cast it by its path.'
+          - '`echo` with `>` and `>>` writes it; `chmod +x` makes it runnable; then type its path.'
+          - "Type: echo '#!/bin/bash' > ~/hello.sh   then: echo 'echo hello from a ritual' >> ~/hello.sh   then: chmod +x ~/hello.sh   then: ~/hello.sh"
+        goal:
+          all:
+            - { contains: { path: /home/apprentice/hello.sh, pattern: '^#!' } }
+            - { perm: { path: /home/apprentice/hello.sh, who: u, has: x } }
+            - any:
+                - { ran: /home/apprentice/hello.sh }
+                - { ran: ./hello.sh }
+        success:
+          - 'Your first ritual. Spells, written once, cast as often as you like.'
+
+  - id: the-editor
+    spells: [nano]
+    intro:
+      - 'Writing rituals one echo at a time gets old. `nano` lets you write them by hand.'
+    steps:
+      - id: nano
+        guide: goal
+        guidance:
+          exact: 'Type `nano ~/hello.sh`. Move to the end with the arrow keys, press Enter, type `echo the candles are lit`, then Ctrl+O, Enter to save, and Ctrl+X to leave.'
+          goal: 'Open ~/hello.sh in nano and add a line that says: echo the candles are lit. Save it and leave.'
+        hints:
+          - 'Open it in the editor. The keys you need are shown at the bottom: ^ means Ctrl.'
+          - '`nano ~/hello.sh`, add the line, Ctrl+O and Enter to save, Ctrl+X to exit. (Appending with echo and >> works too.)'
+          - "Type: echo 'echo the candles are lit' >> ~/hello.sh"
+        goal: { contains: { path: /home/apprentice/hello.sh, text: 'echo the candles are lit' } }
+        success:
+          - 'Cast it again sometime: ~/hello.sh. It does both now.'
+
+  - id: loops
+    spells: [touch]
+    intro:
+      - 'A loop casts the same spell for each word in a list: `for NAME in words; do spells; done`. Inside, $NAME is the current word.'
+    steps:
+      - id: for
+        guide: exact
+        guidance:
+          exact: 'Type `for n in 1 2 3; do touch ~/candles/candle-$n; done`.'
+        hints:
+          - 'One loop, three candles.'
+          - 'A `for` loop over 1 2 3, touching ~/candles/candle-$n each time.'
+          - 'Type: for n in 1 2 3; do touch ~/candles/candle-$n; done'
+        goal:
+          all:
+            - { isFile: /home/apprentice/candles/candle-1 }
+            - { isFile: /home/apprentice/candles/candle-2 }
+            - { isFile: /home/apprentice/candles/candle-3 }
+        success:
+          - 'Three candles, one spell. Loops work the same inside a ritual.'
+
+  - id: schedules
+    spells: [crontab]
+    intro:
+      - 'One last spirit: cron. It wakes every minute and casts whatever your crontab tells it to, on schedule.'
+    steps:
+      - id: own-crontab
+        guide: exact
+        guidance:
+          exact: "Type `echo '0 * * * * echo the hour bell' | crontab -` to schedule a spell every hour, then `crontab -l` to see it."
+        hints:
+          - 'Feed a schedule line into crontab, then list it.'
+          - 'The five fields are minute, hour, day, month, weekday; `0 * * * *` means at minute 0 of every hour. Pipe it into `crontab -`.'
+          - "Type: echo '0 * * * * echo the hour bell' | crontab -   then: crontab -l"
+        goal: { contains: { path: /var/spool/cron/crontabs/apprentice, text: 'the hour bell' } }
+        success:
+          - 'Scheduled. Now. I have a terrible suspicion about how lionX keeps coming back.'
+      - id: lionx-crontab
+        guide: goal
+        guidance:
+          exact: "Type `sudo crontab -l -u lionx` to read lionX's crontab."
+          goal: "Read lionx's crontab. You will need root's authority to read another user's."
+        hints:
+          - "Only root may read another user's crontab."
+          - '`sudo crontab -l -u lionx`. Your password is oriel.'
+          - 'Type: sudo crontab -l -u lionx   then enter your password: oriel'
+        goal: { ran: { command: crontab, args: ['-u', 'lionx'] } }
+        success:
+          - '"Keep the guardian awake." Every minute, cron wakes lionX. That is why nothing we do lasts.'
+
+practice:
+  intro:
+    - 'Practice your rituals. When you are ready, we write the last one. Your password is still oriel.'
+  gateOpens:
+    - 'You are ready. I have never said that to an apprentice before. Let us end this.'
+
+capstone:
+  intro:
+    - "Write a ritual at ~/ritual.sh that does four things, in order: remove lionx's crontab, so it cannot come back; end lionX itself; give the heart of the root (/archive/root/heart and the stone inside) back to the Archivist, with your group allowed to read; and seal it from everyone else."
+    - 'Then make it runnable, and cast it. One ritual. All at once. Before lionX can react.'
+  steps:
+    - id: the-ritual
+      guide: problem
+      guidance:
+        exact: "Type: `echo '#!/bin/bash' > ~/ritual.sh`, then append these lines with `>>`: `sudo crontab -r -u lionx`, `sudo pkill -9 lionX`, `sudo chown -R archivist:apprentice /archive/root/heart`, `sudo chmod -R g+rX,o-rwx /archive/root/heart`. Then `chmod +x ~/ritual.sh` and `~/ritual.sh`."
+        goal: "Write ~/ritual.sh: remove lionx's crontab (sudo crontab -r -u lionx), end lionX (sudo pkill -9 lionX), give /archive/root/heart to archivist with group apprentice (sudo chown -R), and let only owner and group in (sudo chmod -R). Make it runnable and cast it."
+        problem: 'Write the ritual, make it runnable, and cast it.'
+      hints:
+        - 'Order matters: remove the cron entry before ending lionX, or cron simply wakes it again.'
+        - 'Write the #! line and four sudo lines into ~/ritual.sh with echo and >> (or nano), then chmod +x and run it.'
+        - "Type: echo '#!/bin/bash' > ~/ritual.sh   then: echo 'sudo crontab -r -u lionx' >> ~/ritual.sh   then: echo 'sudo pkill -9 lionX' >> ~/ritual.sh   then: echo 'sudo chown -R archivist:apprentice /archive/root/heart' >> ~/ritual.sh   then: echo 'sudo chmod -R g+rX,o-rwx /archive/root/heart' >> ~/ritual.sh   then: chmod +x ~/ritual.sh   then: ~/ritual.sh   then enter your password: oriel"
+      goal:
+        all:
+          - { contains: { path: /home/apprentice/ritual.sh, pattern: '^#!' } }
+          - { perm: { path: /home/apprentice/ritual.sh, who: u, has: x } }
+          - any:
+              - { ran: /home/apprentice/ritual.sh }
+              - { ran: ./ritual.sh }
+          - { missing: /var/spool/cron/crontabs/lionx }
+          - { not: { processRunning: lionX } }
+          - { owner: { path: /archive/root/heart, owner: archivist, group: apprentice } }
+          - {
+              owner:
+                { path: /archive/root/heart/foundation-stone, owner: archivist, group: apprentice },
+            }
+          - { perm: { path: /archive/root/heart, who: g, has: rx } }
+          - { perm: { path: /archive/root/heart, who: o, lacks: rwx } }
+          - { perm: { path: /archive/root/heart/foundation-stone, who: o, lacks: rwx } }
+      coaching:
+        - line: 'pkill.*lionX'
+          say: 'If cron still has its entry, lionX will simply wake again. Did you remove the crontab first?'
+      success:
+        - 'Silence. No purring. No respawn. The cron entry is gone, and lionX with it.'
+  outro:
+    - 'Footsteps. Someone is climbing up from below the heart.'
+    - 'It is the Archivist. Oriel Vane, thinner and older, holding a lantern that has never gone out.'
+    - '"You learned all of it," they say. "Every spell. I could not have ended it alone."'
+    - 'The Archivist kneels at the Foundation Stone and calls lionX back. Not as a guardian of the root this time: as a gardener, at the lowest priority, with no authority over anything at all. It purrs.'
+    - '"Even guardians need a supervisor," says Quill. "So do archivists. And familiars, I suppose."'
+    - "The Archive is yours to wander now. Every room, every spell. Cast `duty` if you want work, `status` to see how far you have come. And thank you, apprentice. No. Archivist's apprentice. That is a real title now."
+  unlocks:
+    files:
+      /home/apprentice/lore/a-letter-from-oriel-vane: |
+        Apprentice,
+        You stood where I fell. You wrote the ritual I could not.
+        The Archive keeps every story. Yours is on the first shelf now.
+          Oriel Vane, Archivist
+    processes:
+      - {
+          name: lionX,
+          args: 'lionX --nice 19 --tend-the-garden',
+          user: archivist,
+          cpu: 0.1,
+          mem: 0.3,
+          spirit: '=^.^=',
+          replace: true,
+        }
+
+rewards:
+  - id: oriels-lantern
+    afterDuties: 2
+    say: 'A lantern that never goes out appeared on your desk. `cat ~/oriels-lantern`'
+    decoration:
+      file: oriels-lantern
+      content: "    .\n   (_)\n  .-'-.\n  | * |   It has never gone out.\n  '---'\n"
+
+outro:
+  - 'The End. The Archive is open: wander, practice, and keep every story.'

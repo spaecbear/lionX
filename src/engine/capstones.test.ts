@@ -113,6 +113,29 @@ const solutions: Record<string, string[][]> = {
       'grep -c hums /archive/undercroft/foundation-stone-log',
     ],
   ],
+  root: [
+    [
+      "echo '#!/bin/bash' > ~/ritual.sh",
+      "echo 'sudo crontab -r -u lionx' >> ~/ritual.sh",
+      "echo 'sudo pkill -9 lionX' >> ~/ritual.sh",
+      "echo 'sudo chown -R archivist:apprentice /archive/root/heart' >> ~/ritual.sh",
+      "echo 'sudo chmod -R g+rX,o-rwx /archive/root/heart' >> ~/ritual.sh",
+      'chmod +x ~/ritual.sh',
+      '~/ritual.sh',
+    ],
+    [
+      // Octal modes, kill by PID, a loop inside the ritual, run as ./ritual.sh from home.
+      'cd ~',
+      "echo '#!/bin/bash' > ritual.sh",
+      "echo 'sudo crontab -u lionx -r' >> ritual.sh",
+      "echo 'sudo kill -9 666' >> ritual.sh",
+      "echo 'for p in /archive/root/heart /archive/root/heart/foundation-stone; do sudo chown archivist:apprentice $p; done' >> ritual.sh",
+      "echo 'sudo chmod 750 /archive/root/heart' >> ritual.sh",
+      "echo 'sudo chmod 640 /archive/root/heart/foundation-stone' >> ritual.sh",
+      'chmod 700 ritual.sh',
+      './ritual.sh',
+    ],
+  ],
 };
 
 describe('capstones can be solved more than one way', () => {

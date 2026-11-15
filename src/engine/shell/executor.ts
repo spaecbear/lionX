@@ -1,6 +1,15 @@
 import { VfsError, type Vfs } from '../vfs';
 import type { Command, CommandRegistry, IO, OutStream, ShellContext, Tty } from '../commands/types';
-import type { AndOr, Pipeline, Redirect, SimpleCommand, Word } from './ast';
+import type {
+  AndOr,
+  ForCommand,
+  IfCommand,
+  ListEntry,
+  Pipeline,
+  Redirect,
+  SimpleCommand,
+  Word,
+} from './ast';
 import { expandWord, expandWordToString, type ExpandEnv } from './expand';
 import { JobTable, ProcessTable } from '../processes';
 import { ShellSyntaxError, tokenize, type Token } from './lexer';
@@ -209,12 +218,13 @@ export class Shell {
     const text = this.vfs.readFile(path);
     const saved = this.terminal;
     const wasTrusted = this.trusted;
-    this.terminal = { stdout: io.stdout, stderr: io.stderr };
+    const mine = { stdout: io.stdout, stderr: io.stderr };
+    this.terminal = mine;
     if (opts.trusted) this.trusted = true;
     try {
       return await this.run(text.replace(/^#![^\n]*\n/, ''), { nested: true });
     } finally {
-      this.terminal = saved;
+      if (this.terminal === mine) this.terminal = saved;
       this.trusted = wasTrusted;
     }
   }
@@ -225,12 +235,13 @@ export class Shell {
   private async sourceTrusted(path: string, io: IO): Promise<number> {
     const text = this.vfs.isFile(path) ? this.vfs.readFileQuietly(path) : '';
     const saved = this.terminal;
-    this.terminal = { stdout: io.stdout, stderr: io.stderr };
+    const mine = { stdout: io.stdout, stderr: io.stderr };
+    this.terminal = mine;
     this.trusted = true;
     try {
       return await this.run(text.replace(/^#![^\n]*\n/, ''), { nested: true });
     } finally {
-      this.terminal = saved;
+      if (this.terminal === mine) this.terminal = saved;
       this.trusted = false;
       this.startup = null;
     }
@@ -252,7 +263,8 @@ export class Shell {
     this.env.set('#', String(args.length));
     this.env.set('@', args.join(' '));
     this.env.set('*', args.join(' '));
-    this.terminal = { stdout: io.stdout, stderr: io.stderr };
+    const mine = { stdout: io.stdout, stderr: io.stderr };
+    this.terminal = mine;
     this.scriptDepth++;
     try {
       return await this.run(text.replace(/^#![^\n]*\n/, ''), { nested: true });
@@ -261,7 +273,7 @@ export class Shell {
       throw e;
     } finally {
       this.scriptDepth--;
-      this.terminal = savedTerminal;
+      if (this.terminal === mine) this.terminal = savedTerminal;
       this.env.clear();
       for (const [k, v] of savedEnv) this.env.set(k, v);
       try {
@@ -278,7 +290,7 @@ export class Shell {
     if (!this.processes || !this.jobs || node.rest.length || node.first.commands.length !== 1)
       return false;
     const cmd = node.first.commands[0];
-    if (cmd.redirects.length || cmd.assignments.length) return false;
+    if (cmd.type !== 'command' || cmd.redirects.length || cmd.assignments.length) return false;
     const argv = cmd.words.flatMap((w) => expandWord(w, this.expandEnv()));
     const command = argv.length ? this.registry.get(argv[0]) : undefined;
     if (!command?.background || !this.isUnlocked(command)) return false;
@@ -349,15 +361,52 @@ export class Shell {
     for (let i = 0; i < p.commands.length; i++) {
       const last = i === p.commands.length - 1;
       const pipe = last ? null : new BufferSink();
-      status = await this.runCommand(p.commands[i], {
-        stdin: input,
-        out: pipe ?? this.terminal.stdout,
-        err: this.terminal.stderr,
-      });
+      const c = p.commands[i];
+      const fds = { stdin: input, out: pipe ?? this.terminal.stdout, err: this.terminal.stderr };
+      status =
+        c.type === 'command' ? await this.runCommand(c, fds) : await this.runCompound(c, fds);
       input = pipe ? pipe.text : null;
     }
     if (p.commands.length > 1) this.onCommandRun?.('|', [], 0);
     return status;
+  }
+
+  /** Run a list of commands (a loop body, an if branch). */
+  private async runList(entries: ListEntry[]): Promise<number> {
+    for (const entry of entries) {
+      if (entry.background && (await this.tryBackground(entry.node))) continue;
+      await this.runAndOr(entry.node);
+    }
+    return this.lastStatus;
+  }
+
+  /** for and if. Their output goes wherever the pipeline sends it. */
+  private async runCompound(cmd: ForCommand | IfCommand, fds: Fds): Promise<number> {
+    const saved = this.terminal;
+    const mine = { stdout: fds.out, stderr: fds.err };
+    this.terminal = mine;
+    try {
+      if (cmd.type === 'for') {
+        const values =
+          cmd.words === null
+            ? (this.env.get('@') ?? '').split(' ').filter(Boolean)
+            : cmd.words.flatMap((w) => expandWord(w, this.expandEnv()));
+        this.lastStatus = 0;
+        for (const v of values) {
+          this.env.set(cmd.name, v);
+          await this.runList(cmd.body);
+        }
+        return this.lastStatus;
+      }
+      for (const branch of cmd.branches) {
+        await this.runList(branch.cond);
+        if (this.lastStatus === 0) return this.runList(branch.body);
+      }
+      if (cmd.elseBody) return this.runList(cmd.elseBody);
+      return (this.lastStatus = 0);
+    } finally {
+      if (this.terminal === mine) this.terminal = saved;
+    }
   }
 
   private expandEnv(env = this.env): ExpandEnv {
@@ -372,6 +421,12 @@ export class Shell {
     // Commands inside scripts and startup files are not the player's own casts.
     if (this.scriptDepth === 0 && !this.trusted) {
       if (argv.length) this.onCommandRun?.(argv[0], argv.slice(1), status);
+      // `sudo chown ...` is a cast of chown too.
+      if (argv[0] === 'sudo') {
+        let i = 1;
+        while (i < argv.length && argv[i].startsWith('-')) i += argv[i] === '-u' ? 2 : 1;
+        if (i < argv.length) this.onCommandRun?.(argv[i], argv.slice(i + 1), status);
+      }
       // A redirect succeeded if it was applied, even when the command itself then failed.
       for (const op of redirectSpells(cmd))
         this.onCommandRun?.(op, [], this.redirectFailed ? 1 : 0);

@@ -255,13 +255,6 @@ export class LessonRunner {
   /** Record a command as it runs (wire to Shell.onCommandRun). */
   recordCommand(command: string, args: string[], status: number): void {
     this.commands.push({ command, args, status });
-    // `sudo chown ...` is a cast of chown too.
-    if (command === 'sudo') {
-      let i = 0;
-      while (i < args.length && args[i].startsWith('-')) i += args[i] === '-u' ? 2 : 1;
-      if (i < args.length)
-        this.commands.push({ command: args[i], args: args.slice(i + 1), status });
-    }
   }
 
   /**

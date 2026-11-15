@@ -1,0 +1,3 @@
+Usage: nano [OPTIONS] FILE
+
+ ^O  write out    ^X  exit    ^K  cut line

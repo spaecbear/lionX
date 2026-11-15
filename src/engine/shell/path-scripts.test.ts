@@ -125,3 +125,34 @@ describe('aliases and the environment', () => {
     );
   });
 });
+
+describe('loops and conditions', () => {
+  it('for loops over words and globs, and set the variable', async () => {
+    const g = setup();
+    expect((await g.run('for n in 1 2 3; do echo candle-$n; done')).out).toBe(
+      'candle-1\ncandle-2\ncandle-3\n',
+    );
+    expect((await g.run('for f in /opt/tools/bin/*; do echo found $f; done')).out).toBe(
+      'found /opt/tools/bin/kindle\n',
+    );
+    await g.run('mkdir -p ~/c; for n in a b; do touch ~/c/$n; done');
+    expect((await g.run('ls ~/c')).out).toBe('a\nb\n');
+  });
+
+  it('if picks the first branch whose condition succeeds', async () => {
+    const g = setup();
+    expect(
+      (await g.run('if false; then echo a; elif true; then echo b; else echo c; fi')).out,
+    ).toBe('b\n');
+    expect((await g.run('if ls /nope 2>/dev/null; then echo yes; else echo no; fi')).out).toBe(
+      'no\n',
+    );
+    expect((await g.run('if false; then echo a; fi; echo $?')).out).toBe('0\n');
+  });
+
+  it('loops can be piped and span lines', async () => {
+    const g = setup();
+    expect((await g.run('for w in b a c; do echo $w; done | sort')).out).toBe('a\nb\nc\n');
+    expect((await g.run('for w in x y\ndo\n  echo [$w]\ndone')).out).toBe('[x]\n[y]\n');
+  });
+});

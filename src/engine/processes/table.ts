@@ -47,6 +47,8 @@ export interface ProcSpec {
   durationMs?: number;
   /** The terminal it belongs to: pts/0 for the player's jobs, ? for daemons and spirits. */
   tty?: string;
+  /** Remove any process of the same name first (used when content wakes a fresh one). */
+  replace?: boolean;
 }
 
 export interface Proc {
@@ -86,12 +88,21 @@ export class ProcessTable {
   private procs = new Map<number, Proc>();
   private nextPid = 2000;
   private pending: { spec: ProcSpec; at: number }[] = [];
+  /**
+   * Consulted when an immortal process is due to return: return false to keep
+   * it gone (the game ties this to the owner's crontab).
+   */
+  respawnGuard?: (spec: ProcSpec) => boolean;
   /** Notified when a process ends (pid, how). */
+
   onExit?: (p: Proc, how: 'done' | 'killed') => void;
 
   constructor(private now: () => number) {}
 
   spawn(spec: ProcSpec): Proc {
+    if (spec.replace)
+      for (const old of [...this.procs.values()])
+        if (old.name === spec.name) this.procs.delete(old.pid);
     let pid = spec.pid ?? this.nextPid++;
     while (this.procs.has(pid)) pid = this.nextPid++;
     if (spec.pid !== undefined && spec.pid >= this.nextPid) this.nextPid = spec.pid + 1;
@@ -132,7 +143,9 @@ export class ProcessTable {
     }
     const due = this.pending.filter((r) => r.at <= t);
     this.pending = this.pending.filter((r) => r.at > t);
-    for (const r of due) this.spawn({ ...r.spec, pid: undefined });
+    for (const r of due)
+      if (!this.respawnGuard || this.respawnGuard(r.spec))
+        this.spawn({ ...r.spec, pid: undefined });
   }
 
   list(): Proc[] {

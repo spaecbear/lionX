@@ -2,6 +2,8 @@ import { cat } from './cat';
 import { cd } from './cd';
 import { clear } from './clear';
 import { echo } from './echo';
+import { crontab } from './cron';
+import { nano } from './editor';
 import { exit } from './exit';
 import { alias, dot, env, exportCmd, printenv, source, type, unalias, which } from './envops';
 import { cp, mkdir, mv, rm, rmdir, touch } from './fileops';
@@ -48,6 +50,7 @@ export const allCommands: Command[] = [
   ...[chmod, chown, id, sudo, whoami],
   ...[bg, fg, jobs, kill, pgrep, pkill, ps, sleep, top],
   ...[alias, dot, env, exportCmd, printenv, source, type, unalias, which, exit],
+  ...[crontab, nano],
 ];
 
 export function createRegistry(): CommandRegistry {

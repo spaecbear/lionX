@@ -14,6 +14,11 @@ export default tseslint.config(
     rules: reactHooks.configs.recommended.rules,
   },
   {
+    // The browser smoke test runs in Node and evaluates code in the page.
+    files: ['e2e/**/*.mjs'],
+    languageOptions: { globals: { ...globals.node, ...globals.browser } },
+  },
+  {
     // The engine must stay headless: no UI or DOM imports.
     files: ['src/engine/**/*.ts'],
     languageOptions: { globals: globals.node },

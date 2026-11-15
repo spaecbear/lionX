@@ -67,6 +67,39 @@ describe('title screen and saves', () => {
     expect(g.chips.at(-1)).toEqual(TITLE_CHIPS);
   });
 
+  it('command output reaches the screen after startup (.bashrc) finishes', async () => {
+    const g = boot();
+    await g.type('play 1');
+    await g.type('pwd');
+    await g.type('ls -a');
+    await g.type('cat cell-rules.txt');
+    const s = g.screen();
+    expect(s).toContain('\n/home/apprentice\n');
+    expect(s).toContain('.under-the-floorboard');
+    expect(s).toContain('1. Keep your candle lit.');
+  });
+
+  it('...and in the real opening wing too', async () => {
+    const term = new Terminal({ cols: 80, rows: 40, allowProposedApi: true });
+    const writes: Promise<void>[] = [];
+    const d = new Director(
+      { cols: 80, rows: 40, write: (s) => void writes.push(new Promise((r) => term.write(s, r))) },
+      { storage: memoryStorage(), content: loadGameContent(), artFor, titleHelp: '' },
+    );
+    d.showTitle();
+    await d.ready;
+    for (const line of ['play 1', 'pwd', 'ls']) {
+      await d.handleData(line + '\r');
+      await d.ready;
+    }
+    await Promise.all(writes);
+    const b = term.buffer.active;
+    let text = '';
+    for (let y = 0; y < b.length; y++) text += b.getLine(y)!.translateToString(true) + '\n';
+    expect(text).toContain('\n/home/apprentice\n');
+    expect(text).toContain('torn-page-with-a-lions-head');
+  });
+
   it('play 1 starts a new game in slot 1 and saves at once', async () => {
     const g = boot();
     await g.type('play 1');

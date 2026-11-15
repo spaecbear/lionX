@@ -88,10 +88,16 @@ describe('boot to the end of every written wing with no outside help (done crite
     const { session, said, wingsSeen } = await playToBindery(seed);
     expect(wingsSeen).toEqual(chain.map((w) => w.id));
     expect(session.runner.progress.wingsDone).toEqual(chain.map((w) => w.id));
-    // Standing in the door Quill pointed to at the end.
     const last = chain[chain.length - 1];
-    const door = /`cd (\/archive\/[\w-]+)`/.exec(last.outro!.join(' '))![1];
-    expect(session.runner.vfs.cwd).toBe(door);
+    if (last.next) {
+      // Standing in the door Quill pointed to, where the next (unwritten) wing begins.
+      const door = new RegExp('`cd (/archive/[\\w-]+)`').exec(last.outro!.join(' '))![1];
+      expect(session.runner.vfs.cwd).toBe(door);
+    } else {
+      // The end of the game: free play, lionX tamed.
+      expect(session.runner.done).toBe(true);
+      expect(session.shell.processes!.byName('lionX')[0]?.user).toBe('archivist');
+    }
     // Story beats landed along the way.
     expect(said.join('\n')).toContain('The root is closed for rewriting.');
     expect(said).toContain('lionX.');

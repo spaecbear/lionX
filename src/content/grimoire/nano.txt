@@ -1,0 +1,18 @@
+NAME
+    nano - write and edit books by hand
+
+SYNOPSIS
+    nano FILE
+
+DESCRIPTION
+    Nano opens FILE (or a new, empty one) for editing. Type to write.
+    Arrows move the cursor; Enter starts a new line; Backspace erases.
+
+    The keys you need are shown at the bottom of the screen. ^ means
+    Ctrl:
+      Ctrl+O   write out (save); press Enter to keep the name
+      Ctrl+X   exit (nano offers to save if you changed anything)
+      Ctrl+K   cut the current line
+
+EXAMPLES
+    nano ritual.sh
