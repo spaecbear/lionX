@@ -21,6 +21,8 @@ export type Predicate =
   /** An alias exists (with `value`, if given). */
   | { alias: { name: string; value?: string } }
   | { processRunning: string }
+  /** Every running process with this name is at least this nice. */
+  | { niceAtLeast: { name: string; nice: number } }
   | { ran: string | { command: string; status?: number | 'any'; args?: string[] } }
   | { read: string }
   | { all: Predicate[] }
@@ -43,6 +45,8 @@ export interface WorldView {
   reads: Set<string>;
   /** Names of running processes (empty until the process table exists). */
   processes: string[];
+  /** Niceness of each running process with a name. */
+  niceness?: (name: string) => number[];
   /** The shell's variables, exports, and aliases, when goals need them. */
   shell?: { env: Map<string, string>; exported: Set<string>; aliases: Map<string, string> };
 }
@@ -60,6 +64,7 @@ export const PREDICATE_KEYS = [
   'variable',
   'alias',
   'processRunning',
+  'niceAtLeast',
   'ran',
   'read',
   'all',
@@ -97,6 +102,10 @@ export function evaluate(p: Predicate, w: WorldView): boolean {
     return a !== undefined && (p.alias.value === undefined || a === p.alias.value);
   }
   if ('processRunning' in p) return w.processes.includes(p.processRunning);
+  if ('niceAtLeast' in p) {
+    const ns = w.niceness?.(p.niceAtLeast.name) ?? [];
+    return ns.length > 0 && ns.every((n) => n >= p.niceAtLeast.nice);
+  }
   if ('read' in p) return w.reads.has(vfs.resolve(p.read));
   if ('ran' in p) {
     const want = typeof p.ran === 'string' ? { command: p.ran } : p.ran;

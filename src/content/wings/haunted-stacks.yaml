@@ -33,6 +33,16 @@ setup:
         immortal: true,
         spirit: '=^.^=',
       }
+    # Not one of the Archive's. A visitor from another world, who stepped out of a shadow.
+    - {
+        pid: 1313,
+        name: lombra,
+        args: 'lombra --looking-for-someone',
+        user: lombra,
+        cpu: 0,
+        shadow: true,
+        spirit: '~^~',
+      }
     - {
         pid: 4242,
         name: candle-imp,
@@ -111,6 +121,12 @@ lessons:
         goal: { ran: { command: ps, args: [aux] } }
         success:
           - 'There. PID 666. lionX itself, owned by lionx, running "--guard /". And a gnawer that belongs to it.'
+          - 'And PID 1313. "lombra"? I have never seen that one. It is not lionX''s. It is not anyone''s.'
+          - "@lombra Rude. I have a name, and it has an apostrophe in it. L'Ombra. Your Lexicon simply cannot spell."
+          - 'It spoke. Spirits do not speak.'
+          - '@lombra This one does. Carry on, little archivist. Pretend I am not here. I am very good at that.'
+          - '@lombra Oh, and I leave notes in the shadows. You know how to see shadows, I trust.'
+
       - id: top
         guide: goal
         guidance:
@@ -227,6 +243,58 @@ lessons:
         goal: { ran: pgrep }
         success:
           - '`pkill` is the same idea with a signal attached. It does not ask; be sure the pattern names only what you mean.'
+
+  - id: kindness
+    spells: [renice]
+    setup:
+      processes:
+        - {
+            pid: 4500,
+            name: crow,
+            args: 'crow --faster --faster --faster',
+            user: apprentice,
+            cpu: 72,
+            spirit: 'v',
+          }
+    intro:
+      - "Something new has climbed to the top of the list. A spirit called crow, taking nearly three quarters of the stacks' strength. And it is yours, somehow."
+      - '@lombra A crow. Of course it is a crow.'
+    steps:
+      - id: see-crow
+        art: crow
+        guide: exact
+        guidance:
+          exact: 'Type `top` and find the crow. Look at its NI column, its niceness: 0, the default. Press q to leave.'
+        hints:
+          - 'Watch the spirits live, and find the busiest.'
+          - '`top`, then q.'
+          - 'Type exactly: top'
+        goal: { ran: top }
+        success:
+          - 'It is racing. Burning through everything it is given to go faster, and wearing itself out doing it.'
+      - id: slow-the-crow
+        art: feather
+        guide: exact
+        guidance:
+          exact: "The crow is PID 4500. Type `renice 19 4500`. `renice` changes a spirit's niceness: 19 is the kindest, and a kind spirit takes less and leaves more for everyone else."
+        hints:
+          - 'Do not banish it. Ask it to slow down.'
+          - '`renice` with a niceness and the PID.'
+          - 'Type exactly: renice 19 4500'
+        goal: { niceAtLeast: { name: crow, nice: 10 } }
+        coaching:
+          - line: 'kill.*4500'
+            say: '@lombra You would kill a bird for being in a hurry? Slow it down instead.'
+        success:
+          - 'Its share falls. It drifts now instead of racing.'
+          - '@lombra I knew someone who sped himself up like that, once. Caught every stone before it fell. It cost him all his years.'
+          - '@lombra Every power has a price. He paid his gladly. Do not tell anyone I said something sentimental.'
+    outro:
+      - 'Not every spirit needs banishing. Some only need to be asked, kindly, to take less.'
+
+coaching:
+  - line: '\b1313\b'
+    say: '@lombra You cannot kill a shadow. You can only turn on a light, and you do not have one big enough.'
 
 practice:
   intro:

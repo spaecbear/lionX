@@ -213,4 +213,17 @@ moods:
       kick: 'x.....x.x.......'
       snare: '....x.......x...'
       hat: 'x.x.x.x.x.x.x.x.'
-songs: [rain, tavern, midnight, harbor, snowfall, sunrise]
+  crow:
+    bpm: 60
+    swing: 0.24
+    chords:
+      - [A2, C3, E3, G3]
+      - [D3, F3, A3, C4]
+      - [E3, G#3, B3, D4]
+      - [A2, C3, E3, G3]
+    melody: [A4, C5, E5, G5, B4]
+    drums:
+      kick: 'x.........x.....'
+      snare: '........x.......'
+      hat: '..x...x...x...x.'
+songs: [rain, tavern, midnight, harbor, snowfall, sunrise, crow]

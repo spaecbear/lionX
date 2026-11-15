@@ -263,6 +263,32 @@ export const moss: ITheme = {
   brightWhite: '#f4fce8',
 };
 
+/** Grigio: the gray of L'Osservatore, found in a secret. */
+export const grigio: ITheme = {
+  background: '#0e0e0f',
+  foreground: '#c4c4c8',
+  cursor: '#e8e8ec',
+  cursorAccent: '#0e0e0f',
+  selectionBackground: '#3a3a40',
+  selectionForeground: '#ffffff',
+  black: '#18181a',
+  red: '#b89a9a',
+  green: '#9ab0a0',
+  yellow: '#c8c0a0',
+  blue: '#9aa4b8',
+  magenta: '#b0a0b8',
+  cyan: '#a0b8b8',
+  white: '#d0d0d4',
+  brightBlack: '#5a5a60',
+  brightRed: '#d0b0b0',
+  brightGreen: '#b0c8b8',
+  brightYellow: '#e0d8b8',
+  brightBlue: '#b0bcd0',
+  brightMagenta: '#c8b8d0',
+  brightCyan: '#b8d0d0',
+  brightWhite: '#f4f4f8',
+};
+
 export const THEMES: Record<string, ITheme> = {
   candlelit,
   'green-phosphor': greenPhosphor,
@@ -274,6 +300,7 @@ export const THEMES: Record<string, ITheme> = {
   moonlight,
   frost,
   moss,
+  grigio,
 };
 
 /** Themes every player has from the start (accessibility is never earned). */

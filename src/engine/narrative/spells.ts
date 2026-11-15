@@ -25,7 +25,16 @@ export function createStatusCommand(getRunner: () => LessonRunner | null) {
         lines.push(`  Achievements: ${p.achievements.length} (see achievements)`);
       if (p.secrets?.length)
         lines.push(`  Secrets found: ${p.secrets.length} of ${runner.secretCount}`);
-      lines.push(`  ${runner.statusLine}`);
+      const toGate = runner.dutiesToGate();
+      if (toGate?.length) {
+        const most = Math.max(...toGate.map((x) => x.left));
+        lines.push(
+          `  ${(runner.lines.untilTrial ?? 'Next trial: about {n} more dut{s}.').replace('{n}', String(most)).replace('{s}', most === 1 ? 'y' : 'ies')}`,
+        );
+        lines.push(
+          `    Still practicing: ${toGate.map((x) => `${x.spell} (about ${x.left})`).join(', ')}`,
+        );
+      } else lines.push(`  ${runner.statusLine}`);
       const width = io.tty?.cols ?? 80;
       io.stdout.write(lines.map((l) => wrapIndented(l, width)).join('\n') + '\n');
       return 0;

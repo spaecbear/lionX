@@ -12,6 +12,7 @@ import type {
 } from '../content';
 import { GUIDE_LEVELS } from '../content';
 import {
+  GAIN,
   applyTask,
   DEFAULT_GATE,
   gateOpen,
@@ -149,7 +150,7 @@ export class LessonRunner {
   private pending: Narration[] = [];
   private duty: Duty | null = null;
   private rng: Rng;
-  private lines: QuillLines;
+  readonly lines: QuillLines;
   private templates: DutyTemplate[];
   /** Total hints used per task id, for tests and tuning. */
   readonly hintLog = new Map<string, number>();
@@ -331,6 +332,10 @@ export class LessonRunner {
       );
     if ('spells' in w) return p.known.length >= w.spells && (p.used?.length ?? 0) > 0;
     if ('used' in w) return p.used?.includes(w.used) ?? false;
+    if ('library' in w) {
+      const total = this.opts.library?.pages.length ?? Infinity;
+      return (p.library?.length ?? 0) >= (w.library === 'all' ? total : w.library);
+    }
     return false;
   }
 
@@ -441,6 +446,22 @@ export class LessonRunner {
     return cur ? [{ kind: 'quill', text: cur.step.guidance[cur.level]! }] : [];
   }
 
+  /**
+   * For `status`: while practicing duties, how many more clean (hint-free)
+   * duties each spell still needs before the capstone opens. An estimate:
+   * hints and swift casting change it.
+   */
+  dutiesToGate(): { spell: string; left: number }[] | null {
+    if (this.phase !== 'duties' || this.gateIsOpen()) return null;
+    const gate = this.wing.gate ?? DEFAULT_GATE;
+    return this.gatedSpells()
+      .map((spell) => ({
+        spell,
+        left: Math.ceil(Math.max(0, gate - (this.progress.mastery[spell] ?? 0)) / GAIN.clean),
+      }))
+      .filter((x) => x.left > 0);
+  }
+
   /** Whether the capstone is open (for the `status` spell). */
   gateIsOpen(): boolean {
     return (
@@ -477,6 +498,7 @@ export class LessonRunner {
       commands: this.commands,
       reads: this.reads,
       processes: this.opts.processes?.names() ?? [],
+      niceness: (name) => this.opts.processes?.byName(name).map((p) => p.nice) ?? [],
       shell: this.shellState,
     });
   }
@@ -748,7 +770,10 @@ export class LessonRunner {
       for (const g of gone) if (this.vfs.exists(g)) this.vfs.remove(g);
     });
     const done = found.length >= lib.pages.length;
-    return [{ kind: 'narrator', text: done ? lib.complete : first ? lib.firstFiled : lib.filed }];
+    return [
+      ...(done ? this.reward(['echo']) : []),
+      { kind: 'narrator', text: done ? lib.complete : first ? lib.firstFiled : lib.filed },
+    ];
   }
 
   /** A secret was read: unlock its theme or song, and let the narrator say so. */

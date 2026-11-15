@@ -147,7 +147,7 @@ describe('secrets', () => {
   it('every secret is hidden somewhere in a full playthrough, and reading it unlocks its cosmetic', async () => {
     const { session } = await playToBindery(1);
     const secrets = loadGameContent().secrets!;
-    expect(secrets.length).toBe(12);
+    expect(secrets.length).toBe(14);
     const vfs = session.runner.vfs;
     const missing = secrets.filter((s) => !session.runner.vfs.exists(s.file)).map((s) => s.file);
     expect(missing).toEqual([]);
@@ -165,7 +165,7 @@ describe('secrets', () => {
     expect(p.themes).toEqual(
       expect.arrayContaining(['rose', 'ember', 'ink', 'moonlight', 'frost', 'moss']),
     );
-    expect(said).toHaveLength(12);
+    expect(said).toHaveLength(14);
     expect(vfs.readFile('/home/apprentice/gallery/music-box')).toContain('tavern song');
     void vfs;
   });
@@ -203,7 +203,7 @@ describe('achievements', () => {
     session.shell.terminal = { stdout: { write: (t) => (out += t) }, stderr: { write: () => {} } };
     await session.shell.run('achievements');
     expect(out).toContain('[*] Out of the Cell: Mend the Apprentice Cells.');
-    expect(out).toMatch(/Achievements: \d+ of 24/);
+    expect(out).toMatch(/Achievements: \d+ of 27/);
   });
 
   it('announces a new one right after the command that earns it', async () => {

@@ -202,6 +202,14 @@ body,
   --key-bg: #0e180e;
   --key-bg-active: #1a2c16;
 }
+.game[data-theme='grigio'] {
+  --bg: #0e0e0f;
+  --amber: #c4c4c8;
+  --amber-dim: #5a5a60;
+  --amber-glow: #e8e8ec;
+  --key-bg: #18181a;
+  --key-bg-active: #3a3a40;
+}
 .game {
   background: var(--bg);
 }

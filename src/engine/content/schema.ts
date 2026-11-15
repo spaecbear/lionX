@@ -57,7 +57,8 @@ export type AchievementWhen =
   | { gallery: number }
   | { secrets: number | 'all' }
   | { spells: number }
-  | { used: string };
+  | { used: string }
+  | { library: number | 'all' };
 
 export interface Achievement {
   id: string;
@@ -186,4 +187,6 @@ export interface QuillLines {
   noSkip?: string;
   /** Added to hints on a duty once the last hint is reached. */
   skipReminder?: string;
+  /** status, while practicing: {n} duties until the trial ({s}: y/ies). */
+  untilTrial?: string;
 }

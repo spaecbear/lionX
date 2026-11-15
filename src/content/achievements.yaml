@@ -108,3 +108,16 @@ achievements:
     says: 'Send a spell into the background.'
     hidden: true
     when: { used: '&' }
+  - id: every-power
+    title: Every Power Has a Price
+    says: 'Ask a spirit, kindly, to slow down.'
+    when: { used: renice }
+  - id: library-1
+    title: A Loose Page
+    says: 'File your first page of the Book of Eco.'
+    when: { library: 1 }
+  - id: library-all
+    title: Nothing Said Is Ever Gone
+    says: 'Find every page of the Book of Eco.'
+    hidden: true
+    when: { library: all }

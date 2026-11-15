@@ -122,6 +122,14 @@ export function checkPredicate(c: Checker, v: unknown, path: string): Predicate 
         },
       };
     }
+    case 'niceAtLeast': {
+      const m = c.obj(val, p);
+      c.noExtra(m, ['name', 'nice'], p);
+      const nice = Number(m.nice);
+      if (!Number.isInteger(nice) || nice < -20 || nice > 19)
+        c.fail(`${p}.nice`, 'expected -20 to 19');
+      return { niceAtLeast: { name: c.str(m.name, `${p}.name`), nice } };
+    }
     case 'alias': {
       const m = c.obj(val, p);
       c.noExtra(m, ['name', 'value'], p);
@@ -225,6 +233,8 @@ function checkPatch(c: Checker, v: unknown, path: string): WorldPatch | undefine
           'durationMs',
           'tty',
           'replace',
+          'shadow',
+          'nice',
         ],
         p,
       );
@@ -578,6 +588,10 @@ export function loadQuillLines(yamlText: string, source = 'quill.yaml'): QuillLi
     idle: one('idle'),
     gateSealed: one('gateSealed'),
     gateOpen: one('gateOpen'),
+    untilTrial:
+      o.untilTrial === undefined
+        ? 'Next trial: about {n} more dut{s} (done without hints).'
+        : one('untilTrial'),
     resume: one('resume'),
     galleryNew: o.galleryNew === undefined ? undefined : one('galleryNew'),
     wrongPlace: o.wrongPlace === undefined ? undefined : one('wrongPlace'),
@@ -624,6 +638,7 @@ const ACHIEVEMENT_KEYS = [
   'secrets',
   'spells',
   'used',
+  'library',
 ];
 
 /** Parse src/content/achievements.yaml. */

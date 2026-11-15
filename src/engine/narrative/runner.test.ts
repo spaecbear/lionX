@@ -86,6 +86,16 @@ describe('sample wing: lessons', () => {
     expect(runner.known).toEqual(['pwd', 'ls', 'cat', 'cd']);
   });
 
+  it('status estimates how many duties remain before the trial', async () => {
+    const { runner, lessons, type, output } = play(sample());
+    await lessons();
+    await type('status');
+    const out = output().out;
+    expect(out).toMatch(/Next trial: about \d+ more dut(y|ies)/);
+    expect(out).toMatch(/Still practicing: .*\(about \d+\)/);
+    expect(runner.dutiesToGate()!.every((x) => x.left > 0)).toBe(true);
+  });
+
   it('duty skip sets aside a duty that can no longer be done and gives a fresh one', async () => {
     const { runner, lessons, type } = play(sample());
     await lessons();
