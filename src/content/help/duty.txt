@@ -1,0 +1,2 @@
+Usage: duty
+Ask Quill for restoration work, or repeat the current task.

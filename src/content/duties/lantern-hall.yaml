@@ -1,0 +1,75 @@
+# Restoration duties for the lantern hall. Parameters fill {placeholders}.
+# `difficulty` (1-3) rises when the player works swiftly without hints.
+# Each `solution` is a tidy way to finish; tests run it to prove every duty is solvable.
+templates:
+  - id: misplaced-scroll
+    spells: [cd, ls, cat]
+    params:
+      room: { pick: [east-alcove, west-alcove, map-room, quiet-nook, ink-closet, bell-loft] }
+      scroll:
+        { pick: [tide-chart, star-ledger, bell-psalm, salt-recipe, moth-census, rain-almanac] }
+      shelf: { byDifficulty: ['top-shelf', 'top-shelf/back', 'top-shelf/back/under-the-dust'] }
+      place: { text: '/archive/stacks/{room}/{shelf}' }
+    setup:
+      files:
+        '{place}/{scroll}.txt': "The {scroll}, restored to its place.\nThe ink is faint but holding.\n"
+    cleanup: ['/archive/stacks/{room}']
+    brief: 'The {scroll} has slipped out of order somewhere in /archive/stacks/{room}. Find it and read it, so it remembers what it says.'
+    hints:
+      - 'Walk to the room first, then look around. Rooms can hold other rooms.'
+      - 'Use `cd` to walk, `ls` to look, and `cat` to read.'
+      - 'Type: cd {place}   then: cat {scroll}.txt'
+    goal: { read: '{place}/{scroll}.txt' }
+    solution: ['cd {place}', 'ls', 'cat {scroll}.txt']
+
+  - id: hidden-note
+    spells: [ls, cat]
+    params:
+      room: { pick: [east-alcove, west-alcove, map-room, quiet-nook, ink-closet, bell-loft] }
+      note: { pick: [apology, warning, confession, recipe, map-scrap, promise] }
+    setup:
+      files:
+        '/archive/stacks/{room}/.{note}': "A {note}, written in a hurried hand.\nAt the bottom, a small lion's head, drawn and scratched out.\n"
+    cleanup: ['/archive/stacks/{room}']
+    brief: 'Someone hid a note out of sight in /archive/stacks/{room}. Find it and read it.'
+    hints:
+      - 'Things tucked out of sight have names starting with a dot.'
+      - '`ls -a` shows hidden names. `cat` reads them.'
+      - 'Type: ls -a /archive/stacks/{room}   then: cat /archive/stacks/{room}/.{note}'
+    goal: { read: '/archive/stacks/{room}/.{note}' }
+    solution: ['ls -a /archive/stacks/{room}', 'cat /archive/stacks/{room}/.{note}']
+
+  - id: name-the-room
+    spells: [cd, pwd]
+    params:
+      room: { pick: [lamp-gallery, echo-stair, cold-vault-door, reading-pit, copy-hall, owl-roost] }
+    setup:
+      dirs: ['/archive/stacks/{room}']
+    cleanup: ['/archive/stacks/{room}']
+    brief: 'The Lexicon has lost track of the {room}. Walk to /archive/stacks/{room} and speak your location aloud so it remembers.'
+    hints:
+      - 'Go there, then say where you are.'
+      - '`cd` takes you there. `pwd` names where you stand.'
+      - 'Type: cd /archive/stacks/{room}   then: pwd'
+    goal:
+      all:
+        - { cwdIs: '/archive/stacks/{room}' }
+        - { ran: pwd }
+    solution: ['cd /archive/stacks/{room}', 'pwd']
+
+  - id: letter-under-door
+    spells: [cat]
+    params:
+      sender: { pick: [the-cook, a-copyist, the-night-porter, an-old-reader, the-bindery-boy] }
+      n: { int: [2, 99] }
+    setup:
+      files:
+        '/home/apprentice/letter-{n}-from-{sender}.txt': "Apprentice,\nThe lanterns on my floor went out again. Please hurry.\nSigned, {sender}\n"
+    cleanup: ['/home/apprentice/letter-{n}-from-{sender}.txt']
+    brief: 'A letter was slipped under your cell door. Read it.'
+    hints:
+      - 'It is in your cell. Look, then read.'
+      - '`ls ~` shows your cell. `cat` reads the letter.'
+      - 'Type: cat ~/letter-{n}-from-{sender}.txt'
+    goal: { read: '/home/apprentice/letter-{n}-from-{sender}.txt' }
+    solution: ['cat ~/letter-{n}-from-{sender}.txt']

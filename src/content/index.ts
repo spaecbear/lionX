@@ -42,3 +42,18 @@ export function artNames(): string[] {
 export function artFor(name: string, cols: number): string | undefined {
   return art(name, cols >= WIDE_ART_COLS ? 'wide' : 'narrow') ?? art(name, 'narrow');
 }
+
+import quillYaml from './quill.yaml?raw';
+
+const dutyFiles = import.meta.glob<string>('./duties/*.yaml', {
+  query: '?raw',
+  import: 'default',
+  eager: true,
+});
+
+export const quillSource = quillYaml;
+
+/** Raw YAML for each duty template file, by id. */
+export const dutySources: Record<string, string> = Object.fromEntries(
+  Object.entries(dutyFiles).map(([path, text]) => [path.replace(/^.*\/(.+)\.yaml$/, '$1'), text]),
+);

@@ -1,5 +1,19 @@
-import type { CoachingRule, GuideLevel, Lesson, Step, Wing } from '../content';
+import type { CoachingRule, GuideLevel, Lesson, QuillLines, Reward, Step, Wing } from '../content';
 import { GUIDE_LEVELS } from '../content';
+import {
+  applyTask,
+  DEFAULT_GATE,
+  gateOpen,
+  generateDuty,
+  isSwift,
+  newProgress,
+  nextDifficulty,
+  Rng,
+  type Duty,
+  type DutyTemplate,
+  type ProgressState,
+  type TaskResult,
+} from '../progression';
 import { evaluate, type CommandEvent } from '../validator';
 import { applyPatch, buildWorld, type Vfs } from '../vfs';
 
@@ -9,35 +23,68 @@ export type Narration =
   | { kind: 'quill'; text: string }
   /** An ASCII art piece by name; the UI picks the narrow or wide variant. */
   | { kind: 'art'; name: string }
-  /** Quiet marker that a lesson or wing finished (no text). */
-  | { kind: 'event'; event: 'step-complete' | 'lesson-complete' | 'wing-complete'; id: string };
+  /** Quiet marker for progress (no text). */
+  | {
+      kind: 'event';
+      event:
+        | 'step-complete'
+        | 'lesson-complete'
+        | 'duty-complete'
+        | 'capstone-open'
+        | 'wing-complete'
+        | 'reward'
+        | 'spells-changed';
+      id: string;
+    };
+
+export type Phase = 'lessons' | 'duties' | 'capstone' | 'free';
 
 export interface RunnerOptions {
   /** Shared coaching for common mistakes, checked after the wing's own rules. */
   coaching?: CoachingRule[];
+  /** Every loaded duty template, by file id. The wing names which files it draws from. */
+  dutyFiles?: Record<string, DutyTemplate[]>;
+  /** Quill's fixed lines for duties, swift casting, and the gate. */
+  lines?: QuillLines;
+  /** Progress carried in from earlier wings or a save. */
+  progress?: ProgressState;
   now?: () => number;
 }
 
-export interface StepState {
-  lesson: Lesson;
+export interface TaskState {
+  kind: 'step' | 'duty' | 'capstone';
+  lesson?: Lesson;
   step: Step;
+  duty?: Duty;
   lessonIndex: number;
   stepIndex: number;
-  /** Guidance level Quill used for this step. */
+  /** Guidance level Quill used for this task. */
   level: GuideLevel;
   hintsUsed: number;
 }
 
+const FALLBACK_LINES: QuillLines = {
+  swift: ['Swift casting.'],
+  dutyDone: ['Done.'],
+  noDuty: 'Nothing needs mending right now.',
+  idle: 'Nothing needs mending here right now. Wander as you like.',
+  gateSealed: 'The way forward is still sealed.',
+  gateOpen: 'Something stirs at the far end of the hall.',
+};
+
 /**
- * Runs one wing: Quill's lines, step goals, fading guidance, hints, and
- * coaching. Headless: it never touches the screen, it returns Narration.
+ * Runs one wing: lessons, then practice duties until the wing's spells are
+ * strong enough, then the capstone, then free play. Headless: it returns
+ * Narration and never touches the screen.
  *
  * Fading: each step names its most hands-off guidance (exact command, then the
  * goal, then only the problem). If the player needed hints on the previous
- * step, Quill steps one level back toward spelling it out.
+ * task, Quill steps one level back toward spelling it out.
  */
 export class LessonRunner {
   readonly vfs: Vfs;
+  readonly progress: ProgressState;
+  private phase: Phase = 'lessons';
   private lessonIndex = 0;
   private stepIndex = 0;
   private hintsUsed = 0;
@@ -46,8 +93,11 @@ export class LessonRunner {
   private commands: CommandEvent[] = [];
   private reads = new Set<string>();
   private pending: Narration[] = [];
-  private finished = false;
-  /** Total hints used per step id, for tests and future mastery tracking. */
+  private duty: Duty | null = null;
+  private rng: Rng;
+  private lines: QuillLines;
+  private templates: DutyTemplate[];
+  /** Total hints used per task id, for tests and tuning. */
   readonly hintLog = new Map<string, number>();
 
   constructor(
@@ -56,23 +106,51 @@ export class LessonRunner {
   ) {
     this.vfs = buildWorld(wing.world, { now: opts.now });
     this.vfs.onRead = (p) => this.reads.add(p);
+    this.progress = opts.progress ?? newProgress();
+    this.rng = new Rng(this.progress.rngState);
+    this.lines = opts.lines ?? FALLBACK_LINES;
+    // Every template the game has, so duties can mix in older spells; eligibility is by known spells.
+    this.templates = Object.values(opts.dutyFiles ?? {}).flat();
   }
 
+  /** The wing's capstone is solved (or, for a wing without one, its lessons are done). */
   get done(): boolean {
-    return this.finished;
+    return this.phase === 'free';
   }
 
-  get current(): StepState | null {
-    if (this.finished) return null;
-    const lesson = this.wing.lessons[this.lessonIndex];
-    return {
-      lesson,
-      step: lesson.steps[this.stepIndex],
+  get currentPhase(): Phase {
+    return this.phase;
+  }
+
+  /** Spells taught so far: these are unlocked. */
+  get known(): string[] {
+    return [...this.progress.known];
+  }
+
+  knows(spell: string): boolean {
+    return this.progress.known.includes(spell);
+  }
+
+  /** Every spell this wing teaches. */
+  get wingSpells(): string[] {
+    return [...new Set(this.wing.lessons.flatMap((l) => l.spells))];
+  }
+
+  get current(): TaskState | null {
+    const base = {
       lessonIndex: this.lessonIndex,
       stepIndex: this.stepIndex,
       level: this.level,
       hintsUsed: this.hintsUsed,
     };
+    if (this.phase === 'lessons') {
+      const lesson = this.wing.lessons[this.lessonIndex];
+      return { ...base, kind: 'step', lesson, step: lesson.steps[this.stepIndex] };
+    }
+    if (this.phase === 'capstone')
+      return { ...base, kind: 'capstone', step: this.wing.capstone!.steps[this.stepIndex] };
+    if (this.duty) return { ...base, kind: 'duty', step: dutyStep(this.duty), duty: this.duty };
+    return null;
   }
 
   /** Opening: banner, wing intro, first lesson, first step. */
@@ -95,13 +173,14 @@ export class LessonRunner {
    */
   afterCommand(line: string, status: number, stderr: string): Narration[] {
     const out = this.pending.splice(0);
-    if (this.finished || line.trim() === '') return out;
-    const cur = this.current!;
+    if (line.trim() === '') return out;
+    const cur = this.current;
+    if (!cur) return out;
     if (this.goalMet(cur.step)) {
-      out.push(...this.completeStep());
+      out.push(...this.completeTask());
       return out;
     }
-    if (/^\s*hint\b/.test(line)) return out;
+    if (/^\s*(hint|status|duty)\b/.test(line)) return out;
     const advice = this.coach(cur.step, line, status, stderr);
     if (advice) out.push({ kind: 'quill', text: advice });
     return out;
@@ -109,16 +188,21 @@ export class LessonRunner {
 
   /** The `hint` spell: a nudge, then the spell's name, then the full syntax. */
   hint(): Narration[] {
-    if (this.finished)
-      return [{ kind: 'quill', text: 'Nothing needs mending here right now. Wander as you like.' }];
-    const cur = this.current!;
+    const cur = this.current;
+    if (!cur) return [{ kind: 'quill', text: this.lines.idle }];
     const i = Math.min(this.hintsUsed, 2);
     this.hintsUsed = Math.min(this.hintsUsed + 1, 3);
     this.hintLog.set(cur.step.id, (this.hintLog.get(cur.step.id) ?? 0) + 1);
     return [{ kind: 'quill', text: cur.step.hints[i] }];
   }
 
-  /** Queue narration to be returned by the next afterCommand (used by the `hint` spell). */
+  /** The `duty` spell: ask for restoration work during free play. */
+  requestDuty(): Narration[] {
+    if (this.current) return this.repeat();
+    return this.assignDuty();
+  }
+
+  /** Queue narration to be returned by the next afterCommand (used by in-world spells). */
   queue(lines: Narration[]): void {
     this.pending.push(...lines);
   }
@@ -127,6 +211,27 @@ export class LessonRunner {
   repeat(): Narration[] {
     const cur = this.current;
     return cur ? [{ kind: 'quill', text: cur.step.guidance[cur.level]! }] : [];
+  }
+
+  /** Whether the capstone is open (for the `status` spell). */
+  gateIsOpen(): boolean {
+    return (
+      this.phase === 'capstone' ||
+      this.phase === 'free' ||
+      gateOpen(this.progress.mastery, this.wingSpells, this.wing.gate ?? DEFAULT_GATE)
+    );
+  }
+
+  get statusLine(): string {
+    return this.gateIsOpen() ? this.lines.gateOpen : this.lines.gateSealed;
+  }
+
+  // ------------------------------------------------------------ internals
+
+  private weakSpells(): string[] {
+    const gate = this.wing.gate ?? DEFAULT_GATE;
+    const weak = this.wingSpells.filter((s) => (this.progress.mastery[s] ?? 0) < gate);
+    return weak.length ? weak : this.wingSpells;
   }
 
   private goalMet(step: Step): boolean {
@@ -153,14 +258,22 @@ export class LessonRunner {
     return null;
   }
 
+  private learn(spells: string[]): Narration[] {
+    const fresh = spells.filter((s) => !this.progress.known.includes(s));
+    if (fresh.length === 0) return [];
+    this.progress.known.push(...fresh);
+    return [{ kind: 'event', event: 'spells-changed', id: fresh.join(',') }];
+  }
+
   private beginLesson(): Narration[] {
     const lesson = this.wing.lessons[this.lessonIndex];
     if (lesson.setup) applyPatch(this.vfs, lesson.setup, this.wing.world.user);
-    return [...quill(lesson.intro), ...this.beginStep()];
+    return [...this.learn(lesson.spells), ...quill(lesson.intro), ...this.beginStep()];
   }
 
+  /** Reset per-task tracking and give the instruction at the right level of help. */
   private beginStep(): Narration[] {
-    const step = this.wing.lessons[this.lessonIndex].steps[this.stepIndex];
+    const step = this.current!.step;
     this.commands = [];
     this.reads.clear();
     const wanted = GUIDE_LEVELS.indexOf(step.guide);
@@ -169,14 +282,42 @@ export class LessonRunner {
     return [{ kind: 'quill', text: step.guidance[this.level]! }];
   }
 
-  private completeStep(): Narration[] {
+  /** Spells cast successfully during this task. */
+  private spellsUsed(): string[] {
+    return [
+      ...new Set(
+        this.commands.filter((c) => c.status === 0 && this.knows(c.command)).map((c) => c.command),
+      ),
+    ];
+  }
+
+  private recordMastery(required: string[], par?: number): TaskResult {
+    const result: TaskResult = {
+      required,
+      used: this.spellsUsed(),
+      hints: this.hintsUsed,
+      commands: this.commands.length,
+      par,
+    };
+    applyTask(this.progress.mastery, result);
+    this.struggled = this.hintsUsed > 0;
+    return result;
+  }
+
+  private completeTask(): Narration[] {
+    if (this.phase === 'duties' || (this.phase === 'free' && this.duty)) return this.completeDuty();
+    if (this.phase === 'capstone') return this.completeCapstoneStep();
+    return this.completeLessonStep();
+  }
+
+  private completeLessonStep(): Narration[] {
     const lesson = this.wing.lessons[this.lessonIndex];
     const step = lesson.steps[this.stepIndex];
+    this.recordMastery(lesson.spells.filter((s) => this.spellsUsed().includes(s)));
     const out: Narration[] = [
       ...quill(step.success),
       { kind: 'event', event: 'step-complete', id: step.id },
     ];
-    this.struggled = this.hintsUsed > 0;
     if (this.stepIndex + 1 < lesson.steps.length) {
       this.stepIndex++;
       return [...out, ...this.beginStep()];
@@ -187,12 +328,156 @@ export class LessonRunner {
       this.stepIndex = 0;
       return [...out, ...this.beginLesson()];
     }
-    this.finished = true;
-    return [
-      ...out,
-      ...quill(this.wing.outro),
-      { kind: 'event', event: 'wing-complete', id: this.wing.id },
+    return [...out, ...this.afterLessons()];
+  }
+
+  /** Lessons done: practice duties if the wing has a capstone to earn, else the wing is complete. */
+  private afterLessons(): Narration[] {
+    if (!this.wing.capstone) return this.finishWing();
+    this.phase = 'duties';
+    const out = quill(this.wing.practice?.intro);
+    if (this.gateIsOpen()) return [...out, ...this.openCapstone()];
+    return [...out, ...this.assignDuty()];
+  }
+
+  private assignDuty(): Narration[] {
+    const duty = generateDuty(this.templates, {
+      known: this.progress.known,
+      // Practice what is weakest: spells still below the gate, falling back to all wing spells.
+      focus: this.weakSpells(),
+      difficulty: this.progress.difficulty,
+      rng: this.rng,
+      recent: this.progress.recentDuties,
+      exists: (p) => this.vfs.exists(p) || asRootExists(this.vfs, p),
+    });
+    this.progress.rngState = this.rng.state;
+    if (!duty) {
+      // No duty fits what the player knows; skip straight to the capstone if there is one.
+      if (this.phase === 'duties') return this.openCapstone();
+      return [{ kind: 'quill', text: this.lines.noDuty }];
+    }
+    this.duty = duty;
+    this.progress.recentDuties = [...this.progress.recentDuties, duty.signature].slice(-30);
+    if (duty.setup) applyPatch(this.vfs, duty.setup, this.wing.world.user);
+    this.stepIndex = 0;
+    return this.beginStep();
+  }
+
+  private completeDuty(): Narration[] {
+    const duty = this.duty!;
+    const result = this.recordMastery(duty.spells, duty.par);
+    this.progress.difficulty = nextDifficulty(this.progress.difficulty, result);
+    this.progress.dutiesDone++;
+    this.cleanup(duty);
+    this.duty = null;
+    const out: Narration[] = [
+      { kind: 'quill', text: duty.success ?? this.rng.pick(this.lines.dutyDone) },
+      ...(isSwift(result)
+        ? [{ kind: 'quill' as const, text: this.rng.pick(this.lines.swift) }]
+        : []),
+      { kind: 'event', event: 'duty-complete', id: duty.signature },
+      ...this.giveRewards(),
     ];
+    this.progress.rngState = this.rng.state;
+    if (this.phase === 'free') return out;
+    if (this.gateIsOpen()) return [...out, ...this.openCapstone()];
+    return [...out, ...this.assignDuty()];
+  }
+
+  private cleanup(duty: Duty) {
+    const saved = this.vfs.credentials;
+    this.vfs.credentials = { user: 'root', groups: ['root'] };
+    try {
+      for (const p of duty.cleanup) {
+        // Never pull the floor out from under the player.
+        const abs = this.vfs.resolve(p);
+        if (this.vfs.cwd === abs || this.vfs.cwd.startsWith(abs + '/')) continue;
+        if (this.vfs.exists(p)) this.vfs.remove(p, { recursive: true });
+      }
+    } finally {
+      this.vfs.credentials = saved;
+    }
+  }
+
+  private giveRewards(): Narration[] {
+    const out: Narration[] = [];
+    for (const r of this.wing.rewards ?? []) {
+      if (this.progress.rewardsGiven.includes(r.id) || this.progress.dutiesDone < r.afterDuties)
+        continue;
+      this.progress.rewardsGiven.push(r.id);
+      this.grant(r);
+      out.push({ kind: 'quill', text: r.say }, { kind: 'event', event: 'reward', id: r.id });
+    }
+    return out;
+  }
+
+  private grant(r: Reward) {
+    const home = this.wing.world.user.home;
+    const files: Record<string, string> = {};
+    if (r.lore) {
+      files[`${home}/${r.lore.file}`] = r.lore.text;
+      this.progress.lore.push(r.id);
+    }
+    if (r.decoration) files[`${home}/${r.decoration.file}`] = r.decoration.content;
+    if (r.theme && !this.progress.themes.includes(r.theme)) this.progress.themes.push(r.theme);
+    if (Object.keys(files).length) applyPatch(this.vfs, { files }, this.wing.world.user);
+  }
+
+  private openCapstone(): Narration[] {
+    const cap = this.wing.capstone;
+    if (!cap) return this.finishWing();
+    this.phase = 'capstone';
+    this.duty = null;
+    this.stepIndex = 0;
+    return [
+      ...quill(this.wing.practice?.gateOpens),
+      { kind: 'event', event: 'capstone-open', id: this.wing.id },
+      ...quill(cap.intro),
+      ...this.beginStep(),
+    ];
+  }
+
+  private completeCapstoneStep(): Narration[] {
+    const cap = this.wing.capstone!;
+    const step = cap.steps[this.stepIndex];
+    this.recordMastery(this.wingSpells.filter((s) => this.spellsUsed().includes(s)));
+    const out: Narration[] = [
+      ...quill(step.success),
+      { kind: 'event', event: 'step-complete', id: step.id },
+    ];
+    if (this.stepIndex + 1 < cap.steps.length) {
+      this.stepIndex++;
+      return [...out, ...this.beginStep()];
+    }
+    if (cap.unlocks) applyPatch(this.vfs, cap.unlocks, this.wing.world.user);
+    return [...out, ...quill(cap.outro), ...this.finishWing()];
+  }
+
+  private finishWing(): Narration[] {
+    this.phase = 'free';
+    if (!this.progress.wingsDone.includes(this.wing.id)) this.progress.wingsDone.push(this.wing.id);
+    return [...quill(this.wing.outro), { kind: 'event', event: 'wing-complete', id: this.wing.id }];
+  }
+}
+
+/** Present a duty through the same step machinery as lessons. */
+function dutyStep(d: Duty): Step {
+  return {
+    id: d.signature,
+    goal: d.goal,
+    guide: 'problem',
+    guidance: { exact: d.hints[2], goal: d.brief, problem: d.brief },
+    hints: d.hints,
+  };
+}
+
+function asRootExists(vfs: Vfs, p: string): boolean {
+  const saved = vfs.credentials;
+  vfs.credentials = { user: 'root', groups: ['root'] };
+  try {
+    return vfs.exists(p);
+  } finally {
+    vfs.credentials = saved;
   }
 }
 

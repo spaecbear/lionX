@@ -1,0 +1,2 @@
+Usage: status
+Describe your progress with each spell you know.

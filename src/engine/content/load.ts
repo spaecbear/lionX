@@ -1,10 +1,15 @@
 import { parse as parseYaml } from 'yaml';
 import { PREDICATE_KEYS, type Predicate } from '../validator';
+import type { DutyTemplate, ParamDef } from '../progression';
 import {
   GUIDE_LEVELS,
+  type Capstone,
   type CoachingRule,
   type GuideLevel,
   type Lesson,
+  type Practice,
+  type QuillLines,
+  type Reward,
   type Step,
   type Wing,
   type WorldPatch,
@@ -232,7 +237,24 @@ export function loadWing(yamlText: string, source = 'wing.yaml'): Wing {
     throw new ContentError(`${source}: invalid YAML: ${(e as Error).message}`);
   }
   const o = c.obj(doc, '(root)');
-  c.noExtra(o, ['id', 'banner', 'world', 'intro', 'lessons', 'outro', 'coaching'], '(root)');
+  c.noExtra(
+    o,
+    [
+      'id',
+      'banner',
+      'world',
+      'intro',
+      'lessons',
+      'outro',
+      'coaching',
+      'duties',
+      'gate',
+      'practice',
+      'capstone',
+      'rewards',
+    ],
+    '(root)',
+  );
   const world = c.obj(o.world, 'world');
   const user = c.obj(world.user, 'world.user');
   c.str(user.name, 'world.user.name');
@@ -250,6 +272,196 @@ export function loadWing(yamlText: string, source = 'wing.yaml'): Wing {
     lessons,
     outro: checkSay(c, o.outro, 'outro'),
     coaching: checkCoaching(c, o.coaching, 'coaching'),
+    duties:
+      o.duties === undefined
+        ? undefined
+        : c.arr(o.duties, 'duties').map((d, i) => c.str(d, `duties[${i}]`)),
+    gate: checkGate(c, o.gate),
+    practice: checkPractice(c, o.practice),
+    capstone: checkCapstone(c, o.capstone),
+    rewards: checkRewards(c, o.rewards),
+  };
+}
+
+function checkGate(c: Checker, v: unknown): number | undefined {
+  if (v === undefined) return undefined;
+  if (typeof v !== 'number' || v < 0 || v > 100) c.fail('gate', 'expected a number from 0 to 100');
+  return v;
+}
+
+function checkPractice(c: Checker, v: unknown): Practice | undefined {
+  if (v === undefined) return undefined;
+  const o = c.obj(v, 'practice');
+  c.noExtra(o, ['intro', 'gateOpens'], 'practice');
+  return {
+    intro: checkSay(c, o.intro, 'practice.intro'),
+    gateOpens: checkSay(c, o.gateOpens, 'practice.gateOpens'),
+  };
+}
+
+function checkCapstone(c: Checker, v: unknown): Capstone | undefined {
+  if (v === undefined) return undefined;
+  const o = c.obj(v, 'capstone');
+  c.noExtra(o, ['intro', 'steps', 'outro', 'unlocks'], 'capstone');
+  const steps = c
+    .arr(o.steps, 'capstone.steps')
+    .map((s, i) => checkStep(c, s, `capstone.steps[${i}]`));
+  if (steps.length === 0) c.fail('capstone.steps', 'a capstone needs at least one step');
+  uniqueIds(c, steps, 'capstone.steps');
+  return {
+    intro: checkSay(c, o.intro, 'capstone.intro'),
+    steps,
+    outro: checkSay(c, o.outro, 'capstone.outro'),
+    unlocks: checkPatch(c, o.unlocks, 'capstone.unlocks'),
+  };
+}
+
+function checkRewards(c: Checker, v: unknown): Reward[] | undefined {
+  if (v === undefined) return undefined;
+  const rewards = c.arr(v, 'rewards').map((x, i) => {
+    const p = `rewards[${i}]`;
+    const o = c.obj(x, p);
+    c.noExtra(o, ['id', 'afterDuties', 'say', 'lore', 'decoration', 'theme'], p);
+    if (typeof o.afterDuties !== 'number' || o.afterDuties < 1)
+      c.fail(`${p}.afterDuties`, 'expected a whole number of duties');
+    const say = c.str(o.say, `${p}.say`);
+    c.playerText(say, `${p}.say`);
+    const fileAndText = (key: 'lore' | 'decoration', field: 'text' | 'content') => {
+      if (o[key] === undefined) return undefined;
+      const m = c.obj(o[key], `${p}.${key}`);
+      return {
+        file: c.str(m.file, `${p}.${key}.file`),
+        [field]: c.str(m[field], `${p}.${key}.${field}`),
+      };
+    };
+    return {
+      id: c.str(o.id, `${p}.id`),
+      afterDuties: o.afterDuties as number,
+      say,
+      lore: fileAndText('lore', 'text') as Reward['lore'],
+      decoration: fileAndText('decoration', 'content') as Reward['decoration'],
+      theme: c.optStr(o.theme, `${p}.theme`),
+    };
+  });
+  uniqueIds(c, rewards, 'rewards');
+  return rewards;
+}
+
+function checkParams(c: Checker, v: unknown, path: string): Record<string, ParamDef> {
+  if (v === undefined) return {};
+  const o = c.obj(v, path);
+  const out: Record<string, ParamDef> = {};
+  for (const [name, raw] of Object.entries(o)) {
+    const p = `${path}.${name}`;
+    const d = c.obj(raw, p);
+    const kinds = Object.keys(d);
+    if (kinds.length !== 1)
+      c.fail(p, 'a parameter has exactly one kind: pick, int, byDifficulty, or text');
+    const k = kinds[0];
+    if (k === 'pick' || k === 'byDifficulty') {
+      const list = c.arr(d[k], `${p}.${k}`);
+      if (list.length === 0) c.fail(`${p}.${k}`, 'needs at least one value');
+      out[name] = { [k]: list } as ParamDef;
+    } else if (k === 'int') {
+      const r = c.arr(d.int, `${p}.int`);
+      if (
+        r.length !== 2 ||
+        !r.every((n) => Number.isInteger(n)) ||
+        (r[0] as number) > (r[1] as number)
+      ) {
+        c.fail(`${p}.int`, 'expected [min, max] whole numbers');
+      }
+      out[name] = { int: r as [number, number] };
+    } else if (k === 'text') {
+      out[name] = { text: c.str(d.text, `${p}.text`) };
+    } else c.fail(p, `unknown parameter kind "${k}"`);
+  }
+  return out;
+}
+
+/** Parse a duty template file (src/content/duties/<id>.yaml). */
+export function loadDuties(yamlText: string, source = 'duties.yaml'): DutyTemplate[] {
+  const c = new Checker(source);
+  let doc: unknown;
+  try {
+    doc = parseYaml(yamlText);
+  } catch (e) {
+    throw new ContentError(`${source}: invalid YAML: ${(e as Error).message}`);
+  }
+  const root = c.obj(doc, '(root)');
+  const templates = c.arr(root.templates, 'templates').map((x, i): DutyTemplate => {
+    const p = `templates[${i}]`;
+    const o = c.obj(x, p);
+    c.noExtra(
+      o,
+      [
+        'id',
+        'spells',
+        'params',
+        'setup',
+        'cleanup',
+        'brief',
+        'hints',
+        'goal',
+        'solution',
+        'par',
+        'success',
+      ],
+      p,
+    );
+    const hints = c.arr(o.hints, `${p}.hints`);
+    if (hints.length !== 3)
+      c.fail(`${p}.hints`, 'expected exactly 3 hints: a nudge, the spell, the full syntax');
+    const spells = c.arr(o.spells, `${p}.spells`).map((s, j) => c.str(s, `${p}.spells[${j}]`));
+    if (spells.length === 0) c.fail(`${p}.spells`, 'a duty needs at least one spell');
+    const brief = c.str(o.brief, `${p}.brief`);
+    c.playerText(brief, `${p}.brief`);
+    const solution = c
+      .arr(o.solution, `${p}.solution`)
+      .map((s, j) => c.str(s, `${p}.solution[${j}]`));
+    if (solution.length === 0) c.fail(`${p}.solution`, 'every duty needs a solution');
+    return {
+      id: c.str(o.id, `${p}.id`),
+      spells,
+      params: checkParams(c, o.params, `${p}.params`),
+      setup: checkPatch(c, o.setup, `${p}.setup`),
+      cleanup:
+        o.cleanup === undefined
+          ? undefined
+          : c.arr(o.cleanup, `${p}.cleanup`).map((s, j) => c.str(s, `${p}.cleanup[${j}]`)),
+      brief,
+      hints: hints.map((h, j) => {
+        const s = c.str(h, `${p}.hints[${j}]`);
+        c.playerText(s, `${p}.hints[${j}]`);
+        return s;
+      }) as DutyTemplate['hints'],
+      goal: checkPredicate(c, o.goal, `${p}.goal`),
+      solution,
+      par: o.par === undefined ? undefined : Number(o.par),
+      success: c.optStr(o.success, `${p}.success`),
+    };
+  });
+  uniqueIds(c, templates, 'templates');
+  return templates;
+}
+
+/** Parse Quill's fixed lines (src/content/quill.yaml). */
+export function loadQuillLines(yamlText: string, source = 'quill.yaml'): QuillLines {
+  const c = new Checker(source);
+  const o = c.obj(parseYaml(yamlText), '(root)');
+  const list = (k: string) => {
+    const l = checkSay(c, o[k], k);
+    if (!l || l.length === 0) c.fail(k, 'expected at least one line');
+    return l as string[];
+  };
+  const one = (k: string) => list(k)[0];
+  return {
+    swift: list('swift'),
+    dutyDone: list('dutyDone'),
+    noDuty: one('noDuty'),
+    idle: one('idle'),
+    gateSealed: one('gateSealed'),
+    gateOpen: one('gateOpen'),
   };
 }
 

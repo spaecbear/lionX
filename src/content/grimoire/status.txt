@@ -1,0 +1,12 @@
+NAME
+    status - take stock of your craft
+
+SYNOPSIS
+    status
+
+DESCRIPTION
+    Status tells you how well each spell you have learned answers you,
+    how many duties you have done, and whether the way forward has begun
+    to open. Quill does not believe in numbers, so neither does status.
+
+    Status is a spell of the Lexicon itself; real terminals do not have it.

@@ -1,9 +1,9 @@
 import { Terminal } from '@xterm/headless';
 import { createRegistry } from '../../engine/commands';
-import { loadCoaching, loadWing } from '../../engine/content';
+import { loadCoaching, loadDuties, loadQuillLines, loadWing } from '../../engine/content';
 import { createHintCommand, LessonRunner } from '../../engine/narrative';
 import { Shell } from '../../engine/shell';
-import { artFor, coachingSource, wingSources } from '../../content';
+import { artFor, coachingSource, dutySources, quillSource, wingSources } from '../../content';
 import { TerminalController } from './controller';
 
 async function game(opts: { cols?: number; typeDelay?: number } = {}) {
@@ -11,6 +11,10 @@ async function game(opts: { cols?: number; typeDelay?: number } = {}) {
   const term = new Terminal({ cols, rows: 30, allowProposedApi: true });
   const runner = new LessonRunner(loadWing(wingSources['lantern-hall']), {
     coaching: loadCoaching(coachingSource),
+    dutyFiles: Object.fromEntries(
+      Object.entries(dutySources).map(([id, src]) => [id, loadDuties(src, id)]),
+    ),
+    lines: loadQuillLines(quillSource),
   });
   const shell = new Shell({
     vfs: runner.vfs,
@@ -80,11 +84,14 @@ describe('playing the sample wing in the terminal', () => {
     ]) {
       await g.type(line + '\r');
     }
-    expect(g.runner.done).toBe(true);
+    expect(g.runner.currentPhase).toBe('duties');
     const t = g.text();
     expect(t).toContain('Quill: A lion.');
     expect(t).toContain('Quill: Safe. For tonight.');
-    expect(t).toContain('Tomorrow we go deeper.');
+    expect(t).toContain('Small repairs first.');
+    // Solve the first duty in the terminal too.
+    for (const line of g.runner.current!.duty!.solution) await g.type(line + '\r');
+    expect(g.text()).toMatch(/Quill: (Mended|Done|Good)\./);
   });
 
   it('hint and coaching appear as Quill lines after the command', async () => {

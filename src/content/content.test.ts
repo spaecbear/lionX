@@ -1,10 +1,12 @@
-import { loadCoaching, loadWing } from '../engine/content';
+import { loadCoaching, loadDuties, loadQuillLines, loadWing } from '../engine/content';
 import {
   art,
   artFor,
   artNames,
   coachingSource,
+  dutySources,
   NARROW_ART_COLS,
+  quillSource,
   WIDE_ART_COLS,
   wingSources,
 } from '.';
@@ -14,6 +16,20 @@ describe('content files', () => {
     const wing = loadWing(wingSources[id], `${id}.yaml`);
     expect(wing.id).toBe(id);
     if (wing.banner) expect(artNames()).toContain(wing.banner);
+  });
+
+  it.each(Object.keys(dutySources))('duty file %s loads', (id) => {
+    expect(loadDuties(dutySources[id], `${id}.yaml`).length).toBeGreaterThan(0);
+  });
+
+  it('every duty file a wing names exists', () => {
+    for (const [id, src] of Object.entries(wingSources)) {
+      for (const d of loadWing(src, id).duties ?? []) expect(Object.keys(dutySources)).toContain(d);
+    }
+  });
+
+  it("Quill's lines load", () => {
+    expect(loadQuillLines(quillSource).swift.length).toBeGreaterThan(0);
   });
 
   it('shared coaching loads', () => {

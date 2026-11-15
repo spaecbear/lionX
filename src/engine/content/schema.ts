@@ -42,8 +42,43 @@ export interface Lesson {
   outro?: string[];
 }
 
+export interface Reward {
+  id: string;
+  /** Given once this many duties are done (across the whole game). */
+  afterDuties: number;
+  say: string;
+  /** A lore fragment written into the player's cell as a readable file. */
+  lore?: { file: string; text: string };
+  /** A decoration placed in the cell (any file path under home). */
+  decoration?: { file: string; content: string };
+  /** A terminal theme the player can switch to later. */
+  theme?: string;
+}
+
+export interface Capstone {
+  intro?: string[];
+  steps: Step[];
+  outro?: string[];
+  /** World changes when solved: the way to the next wing opens. */
+  unlocks?: WorldPatch;
+}
+
+export interface Practice {
+  /** Quill, when duties begin after the lessons. */
+  intro?: string[];
+  /** Quill, when the wing's spells are strong enough for the capstone. */
+  gateOpens?: string[];
+}
+
 export interface Wing {
   id: string;
+  /** Duty template files (src/content/duties/<id>.yaml) this wing draws from. */
+  duties?: string[];
+  /** Mastery every wing spell needs before the capstone appears (0-100, default 60). */
+  gate?: number;
+  practice?: Practice;
+  capstone?: Capstone;
+  rewards?: Reward[];
   /** Art name: art/<banner>.narrow.txt and art/<banner>.wide.txt. */
   banner?: string;
   world: WorldSpec;
@@ -51,4 +86,14 @@ export interface Wing {
   lessons: Lesson[];
   outro?: string[];
   coaching?: CoachingRule[];
+}
+
+/** Fixed lines Quill uses for game events (src/content/quill.yaml). */
+export interface QuillLines {
+  swift: string[];
+  dutyDone: string[];
+  noDuty: string;
+  idle: string;
+  gateSealed: string;
+  gateOpen: string;
 }

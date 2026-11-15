@@ -4,9 +4,17 @@ import { FitAddon } from '@xterm/addon-fit';
 import '@xterm/xterm/css/xterm.css';
 import { createRegistry } from '../engine/commands';
 import { Shell } from '../engine/shell';
-import { loadCoaching, loadWing } from '../engine/content';
-import { createHintCommand, LessonRunner } from '../engine/narrative';
-import { artFor, coachingSource, wingSources } from '../content';
+import { loadCoaching, loadDuties, loadQuillLines, loadWing } from '../engine/content';
+import {
+  createDutyCommand,
+  createHintCommand,
+  createStatusCommand,
+  LessonRunner,
+} from '../engine/narrative';
+import { artFor, coachingSource, dutySources, quillSource, wingSources } from '../content';
+
+/** Spells of the Lexicon itself, always available, shown last among the chips. */
+const LEXICON_SPELLS = ['hint', 'status', 'duty'];
 
 /** The wing to play. Phase 9 replaces this sample with the real opening wings. */
 const START_WING = 'lantern-hall';
@@ -116,24 +124,36 @@ export function Game() {
 
     const runner = new LessonRunner(loadWing(wingSources[START_WING], `${START_WING}.yaml`), {
       coaching: loadCoaching(coachingSource),
+      dutyFiles: Object.fromEntries(
+        Object.entries(dutySources).map(([id, src]) => [id, loadDuties(src, `${id}.yaml`)]),
+      ),
+      lines: loadQuillLines(quillSource),
     });
     const vfs = runner.vfs;
-    const registry = createRegistry().register(createHintCommand(() => runner));
+    const registry = createRegistry().register(
+      createHintCommand(() => runner),
+      createStatusCommand(() => runner),
+      createDutyCommand(() => runner),
+    );
     const shell = new Shell({
       vfs,
       registry,
       terminal: { stdout: { write() {} }, stderr: { write() {} } },
       env: { USER: vfs.credentials.user, PWD: vfs.cwd, TERM: 'xterm-256color' },
       onCommandRun: (name, args, status) => runner.recordCommand(name, args, status),
+      isUnlocked: (cmd) => cmd.unlockedInAct === 0 || runner.knows(cmd.name),
     });
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const controller = new TerminalController(term, shell, {
       narrator: runner,
+      // Chips grow as lessons teach new spells.
+      onCommand: () => setCommands([...runner.known, ...LEXICON_SPELLS]),
       artFor,
       typeDelay: reducedMotion ? 0 : TYPE_DELAY_MS,
     });
     session.current = { term, fit, controller, shell };
-    setCommands(['hint', ...registry.names().filter((n) => n !== 'hint')]);
+    // Known spells are set when the opening narration is produced.
+    queueMicrotask(() => setCommands([...runner.known, ...LEXICON_SPELLS]));
 
     const resize = () => {
       const vv = window.visualViewport;

@@ -1,0 +1,13 @@
+NAME
+    duty - ask for restoration work
+
+SYNOPSIS
+    duty
+
+DESCRIPTION
+    The Corruption keeps creeping back, so there is always something to
+    mend: a misplaced scroll, a journal to check, a hidden note to find.
+    Duty asks Quill for the next task, or reminds you of the one at hand.
+    Duties use only spells you know, so they are good practice.
+
+    Duty is a spell of the Lexicon itself; real terminals do not have it.

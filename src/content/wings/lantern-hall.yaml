@@ -2,6 +2,8 @@
 # Steps fade from the exact command, to the goal, to just the problem.
 id: lantern-hall
 banner: lantern
+duties: [lantern-hall]
+gate: 60
 
 world:
   user: { name: apprentice, groups: [apprentice], home: /home/apprentice }
@@ -16,6 +18,13 @@ world:
     /home/apprentice/.under-the-floorboard: |
       A torn page. Most of it is blank, as if the ink was eaten.
       Only a mark survives in the corner: a small lion's head.
+    /archive/lantern-hall/stair/landing/cellar/.keepers-last-note: |
+      To whoever finds this:
+      I went down to relight the cellar lamps. Something was already here,
+      sitting in the dark, purring like a great cat. It knew my name.
+      I am going back up. If I do not, the door at the end of the hall
+      opens for anyone who can read this far.
+    /archive/lantern-hall/stair/landing/cobwebs.txt: "Only cobwebs. Keep going down.\n"
     /archive/lantern-hall/lantern-log.txt: |
       Lanterns lit: 212
       Lanterns lit, second night: 140
@@ -119,6 +128,57 @@ lessons:
         goal: { cwdIs: /home/apprentice }
         success:
           - 'Safe. For tonight.'
+
+practice:
+  intro:
+    - 'The Corruption does not rest, so neither do we. Small repairs first. Cast `status` whenever you want to know how you are doing.'
+  gateOpens:
+    - 'Your spells answer you now. Good. There is something I have been avoiding.'
+
+capstone:
+  intro:
+    - 'The lantern-keeper went down the stair and never came back. Their last note is down there somewhere.'
+  steps:
+    - id: keepers-note
+      guide: problem
+      guidance:
+        exact: 'Type `cd /archive/lantern-hall/stair/landing/cellar`, then `ls -a`, then `cat` the note you find.'
+        goal: 'Go down the stair in the lantern hall, as far as it goes, and find the hidden note. Read it.'
+        problem: "The keeper's note is somewhere below the stair. Find it. Read it."
+      hints:
+        - 'The stair goes down more than one floor. Keep looking on each landing.'
+        - 'Use `cd` and `ls -a` on each floor; the note is hidden. `cat` reads it.'
+        - 'Type: cat /archive/lantern-hall/stair/landing/cellar/.keepers-last-note'
+      goal: { read: /archive/lantern-hall/stair/landing/cellar/.keepers-last-note }
+      success:
+        - 'Purring like a great cat. It knew their name. I knew it would be that.'
+  outro:
+    - 'Listen. Something unsealed at the end of the hall. Cast `ls /archive` and see.'
+  unlocks:
+    dirs: [/archive/bindery]
+    files:
+      /archive/bindery/sign.txt: "THE BINDERY. Mind the loose pages.\n"
+
+rewards:
+  - id: first-lantern
+    afterDuties: 1
+    say: 'You found something while you worked. It is in your cell now: `cat ~/lore/the-first-lantern.txt`'
+    lore:
+      file: lore/the-first-lantern.txt
+      text: |
+        The first lantern of the Archive was lit by the Archivist's own hand,
+        on the night the first story was shelved. It has never gone out.
+        Not yet.
+  - id: candle
+    afterDuties: 3
+    say: 'Someone left a candle in your cell, as thanks. `cat ~/candle.txt`'
+    decoration:
+      file: candle.txt
+      content: "    )\n   (\n  .-.\n  | |\n  | |\n _|_|_\n"
+  - id: green-phosphor
+    afterDuties: 5
+    say: 'The Lexicon has learned a new glow from you: green phosphor. You will be able to choose it later.'
+    theme: green-phosphor
 
 outro:
   - 'You learned to look, to read, and to walk. Tomorrow we go deeper.'
