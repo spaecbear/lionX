@@ -165,7 +165,7 @@ lessons:
           - 'Type: ls -a   then: cat .dust-under-the-rug'
         goal: { read: /archive/reading-room/.dust-under-the-rug }
         success:
-          - 'Names starting with a dot are hidden files. Most hold settings. Some hold secrets.'
+          - 'Names starting with a dot are hidden files. Most hold settings. Some hold secrets. Speaking of which: that listing showed something else hidden here. Have a look, if you are curious.'
       - id: sizes
         guide: goal
         guidance:
