@@ -17,6 +17,7 @@ export function loadSettings(): Settings {
         typeof s.volume === 'number' && s.volume >= 0 && s.volume <= 10
           ? Math.round(s.volume)
           : DEFAULT_SETTINGS.volume,
+      song: typeof s.song === 'string' ? s.song : 'auto',
     };
   } catch {
     return { ...DEFAULT_SETTINGS };

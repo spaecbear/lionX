@@ -34,6 +34,8 @@ export interface DirectorOptions {
     set(next: Settings): void;
     themes: string[];
     alwaysAvailable: string[];
+    /** Every secret song. */
+    songs?: string[];
   };
   /** Prompt path colors by wing id. */
   wingTints?: Record<string, string>;
@@ -95,6 +97,16 @@ export class Director {
     return [...earned];
   }
 
+  /** Secret songs found in any save (or the session being played). */
+  availableSongs(): string[] {
+    const found = new Set<string>(this.session?.runner.progress.songs ?? []);
+    for (let i = 1; i <= SLOT_COUNT; i++) {
+      const r = readSlot(this.opts.storage, i);
+      if (r.status === 'ok') for (const t of r.data.progress.songs ?? []) found.add(t);
+    }
+    return [...found];
+  }
+
   /** Give a shell the `settings` spell. */
   private addSettings(shell: Shell) {
     const s = this.opts.settings;
@@ -105,6 +117,11 @@ export class Director {
         set: s.set,
         themes: () =>
           s.themes.map((name) => ({ name, available: this.availableThemes().includes(name) })),
+        songs: () =>
+          (s.songs ?? []).map((name) => ({
+            name,
+            available: this.availableSongs().includes(name),
+          })),
       }),
     );
   }

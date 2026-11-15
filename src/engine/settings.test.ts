@@ -38,7 +38,8 @@ describe('settings', () => {
     const r = await g.run('settings');
     expect(r.out).toContain('theme:   candlelit');
     expect(r.out).toContain('* candlelit');
-    expect(r.out).toContain('  green-phosphor (not yet earned)');
+    expect(r.out).toContain('???');
+    expect(r.out).not.toContain('green-phosphor');
     expect(r.out).toContain('motion:  auto');
     expect(r.out).toContain('reader:  off');
   });
@@ -69,5 +70,37 @@ describe('settings', () => {
     expect(g.get()).toMatchObject({ music: false, volume: 7 });
     expect((await g.run('settings volume 11')).status).toBe(1);
     expect((await g.run('settings music loud')).status).toBe(1);
+  });
+
+  it('plays a found secret song, keeps unfound ones secret, and returns to auto', async () => {
+    let current: Settings = { ...DEFAULT_SETTINGS };
+    const registry = createRegistry().register(
+      createSettingsCommand({
+        get: () => current,
+        set: (n) => (current = n),
+        themes: () => [{ name: 'candlelit', available: true }],
+        songs: () => [
+          { name: 'rain', available: true },
+          { name: 'harbor', available: false },
+        ],
+      }),
+    );
+    let out = '';
+    let err = '';
+    const shell = new Shell({
+      vfs: buildWorld({ user: { name: 'a', groups: ['a'], home: '/home/a' } }),
+      registry,
+      terminal: { stdout: { write: (s) => (out += s) }, stderr: { write: (s) => (err += s) } },
+    });
+    await shell.run('settings');
+    expect(out).toContain('rain');
+    expect(out).toContain('???');
+    expect(out).not.toContain('harbor');
+    expect(await shell.run('settings song harbor')).toBe(1);
+    expect(err).toBe('settings: you have not found the harbor song yet\n');
+    expect(await shell.run('settings song rain')).toBe(0);
+    expect(current.song).toBe('rain');
+    expect(await shell.run('settings song auto')).toBe(0);
+    expect(current.song).toBe('auto');
   });
 });

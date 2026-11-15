@@ -17,6 +17,10 @@ export interface ProgressState {
   wingsDone: string[];
   /** Art pieces earned and hung in ~/gallery. */
   gallery?: string[];
+  /** Ids of secrets found. */
+  secrets?: string[];
+  /** Songs unlocked by secrets. */
+  songs?: string[];
 }
 
 export function newProgress(seed = 1): ProgressState {

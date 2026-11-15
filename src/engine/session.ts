@@ -1,5 +1,5 @@
 import { createRegistry } from './commands';
-import type { CoachingRule, QuillLines, Wing } from './content';
+import type { CoachingRule, QuillLines, Secret, Wing } from './content';
 import {
   createDutyCommand,
   createQuestsCommand,
@@ -35,6 +35,8 @@ export interface GameContent {
   artText?: (name: string) => string | undefined;
   /** What each spell and flag does, for `solution`. */
   glossary?: Glossary;
+  /** Hidden notes that unlock themes and songs. */
+  secrets?: Secret[];
 }
 
 export interface SessionOptions {
@@ -128,6 +130,7 @@ export function createSession(o: SessionOptions): GameSession {
     lines: content.lines,
     artText: content.artText,
     glossary: content.glossary,
+    secrets: content.secrets,
     progress: save
       ? structuredClone(save.progress)
       : newProgress(o.seed ?? Math.floor(now() % 2 ** 32)),
@@ -173,6 +176,7 @@ export function createSession(o: SessionOptions): GameSession {
       lines: content.lines,
       artText: content.artText,
       glossary: content.glossary,
+      secrets: content.secrets,
       progress: runner.progress,
       vfs: runner.vfs,
       now,

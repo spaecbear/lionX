@@ -135,10 +135,49 @@ describe('help', () => {
     expect(await s.shell.run('help')).toBe(0);
     expect(out).toContain('pwd');
     expect(out).toContain('names the room you stand in');
-    expect(out).toContain('-a  shows all');
+    expect(out).toContain('man NAME');
     expect(out).not.toContain('grep');
     out = '';
     expect(await s.shell.run('help solution')).toBe(0);
     expect(out).toContain('Usage: solution');
+  });
+});
+
+describe('secrets', () => {
+  it('every secret is hidden somewhere in a full playthrough, and reading it unlocks its cosmetic', async () => {
+    const { session } = await playToBindery(1);
+    const secrets = loadGameContent().secrets!;
+    expect(secrets.length).toBe(12);
+    const vfs = session.runner.vfs;
+    const missing = secrets.filter((s) => !session.runner.vfs.exists(s.file)).map((s) => s.file);
+    expect(missing).toEqual([]);
+    const said: string[] = [];
+    for (const s of secrets) {
+      await session.shell.run(`cat ${s.file}`);
+      for (const n of session.afterCommand(`cat ${s.file}`, 0, ''))
+        if (n.kind === 'narrator') said.push(n.text);
+    }
+    const p = session.runner.progress;
+    expect(secrets.filter((s) => !p.secrets!.includes(s.id)).map((s) => s.file)).toEqual([]);
+    expect(p.songs).toEqual(
+      expect.arrayContaining(['rain', 'tavern', 'midnight', 'harbor', 'snowfall', 'sunrise']),
+    );
+    expect(p.themes).toEqual(
+      expect.arrayContaining(['rose', 'ember', 'ink', 'moonlight', 'frost', 'moss']),
+    );
+    expect(said).toHaveLength(12);
+    void vfs;
+  });
+});
+
+describe('the Grimoire in your cell', () => {
+  it('appears once man is learned, with a page for every known spell', async () => {
+    const fresh = createSession({ content: loadGameContent(), seed: 1 });
+    fresh.opening();
+    expect(fresh.runner.vfs.exists('/home/apprentice/grimoire')).toBe(false);
+    const { session } = await playToBindery(2);
+    const vfs = session.runner.vfs;
+    for (const spell of ['ls', 'cat', 'man', 'grep', 'chmod', 'crontab'])
+      expect(vfs.readFile(`/home/apprentice/grimoire/${spell}`)).toContain('NAME');
   });
 });

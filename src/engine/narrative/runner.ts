@@ -1,4 +1,13 @@
-import type { CoachingRule, GuideLevel, Lesson, QuillLines, Reward, Step, Wing } from '../content';
+import type {
+  CoachingRule,
+  GuideLevel,
+  Lesson,
+  QuillLines,
+  Reward,
+  Secret,
+  Step,
+  Wing,
+} from '../content';
 import { GUIDE_LEVELS } from '../content';
 import {
   applyTask,
@@ -16,6 +25,7 @@ import {
 } from '../progression';
 import { evaluate, type CommandEvent } from '../validator';
 import { commandsFromHint, explain, type Glossary } from './explain';
+import { manPageFor } from '../commands/util';
 import { applyPatch, buildWorld, Vfs, type VfsSnapshot } from '../vfs';
 import type { ProcessTable } from '../processes';
 import type { WorldPatch } from '../content';
@@ -40,6 +50,7 @@ export type Narration =
         | 'capstone-open'
         | 'wing-complete'
         | 'reward'
+        | 'secret'
         | 'spells-changed'
         | 'reload-shell';
       id: string;
@@ -66,6 +77,8 @@ export interface RunnerOptions {
   coaching?: CoachingRule[];
   /** What each spell and flag does, for the `solution` spell. */
   glossary?: Glossary;
+  /** Hidden notes that unlock cosmetics, placed as their wing begins. */
+  secrets?: Secret[];
   /** Every loaded duty template, by file id. The wing names which files it draws from. */
   dutyFiles?: Record<string, DutyTemplate[]>;
   /** Quill's fixed lines for duties, swift casting, and the gate. */
@@ -147,7 +160,10 @@ export class LessonRunner {
     } else if (wing.world) this.vfs = buildWorld(wing.world, { now: opts.now });
     else
       throw new Error(`Wing "${wing.id}" has no world of its own; enter it from an earlier wing`);
-    this.vfs.onRead = (p) => this.reads.add(p);
+    this.vfs.onRead = (p) => {
+      this.reads.add(p);
+      this.noticeSecret(p);
+    };
     this.progress = opts.progress ?? newProgress();
     this.rng = new Rng(this.progress.rngState);
     this.lines = opts.lines ?? FALLBACK_LINES;
@@ -258,6 +274,7 @@ export class LessonRunner {
     if (this.wing.banner) out.push({ kind: 'art', name: this.wing.banner });
     out.push(...quill(this.wing.intro));
     out.push(...this.beginLesson());
+    this.placeSecrets();
     return out;
   }
 
@@ -272,6 +289,9 @@ export class LessonRunner {
    */
   afterCommand(line: string, status: number, stderr: string): Narration[] {
     const out = this.pending.splice(0);
+    // Rooms appear as lessons go on; hide any secret whose room now exists.
+    this.placeSecrets();
+    this.fillGrimoire();
     if (line.trim() === '') return out;
     const cur = this.current;
     if (!cur) return out;
@@ -415,7 +435,23 @@ export class LessonRunner {
     const fresh = spells.filter((s) => !this.progress.known.includes(s));
     if (fresh.length === 0) return [];
     this.progress.known.push(...fresh);
+    this.fillGrimoire();
     return [{ kind: 'event', event: 'spells-changed', id: fresh.join(',') }];
+  }
+
+  /**
+   * Once the player knows `man`, every spell they know has a page in
+   * ~/grimoire, readable with cat or less. New spells add new pages.
+   */
+  private fillGrimoire(): void {
+    if (!this.progress.known.includes('man')) return;
+    const dir = `${this.user.home}/grimoire`;
+    const files: Record<string, string> = {};
+    for (const spell of this.progress.known) {
+      const page = manPageFor(spell);
+      if (page && !asRootExists(this.vfs, `${dir}/${spell}`)) files[`${dir}/${spell}`] = page;
+    }
+    if (Object.keys(files).length) this.patch({ files }, { ownedByPlayer: true });
   }
 
   private beginLesson(): Narration[] {
@@ -580,6 +616,39 @@ export class LessonRunner {
         out.push({ kind: 'quill', text: this.lines.galleryNew });
     }
     return out;
+  }
+
+  /** Hide this wing's secrets (those not yet found), where their room exists. */
+  private placeSecrets(): void {
+    const found = this.progress.secrets ?? [];
+    for (const s of this.opts.secrets ?? []) {
+      if (s.wing !== this.wing.id || found.includes(s.id)) continue;
+      const dir = s.file.slice(0, s.file.lastIndexOf('/')) || '/';
+      if (!asRootExists(this.vfs, dir) || asRootExists(this.vfs, s.file)) continue;
+      this.patch({ files: { [s.file]: s.text } });
+    }
+  }
+
+  /** A secret was read: unlock its theme or song, and let the narrator say so. */
+  private noticeSecret(path: string): void {
+    const s = this.opts.secrets?.find((x) => x.file === path);
+    const found = (this.progress.secrets ??= []);
+    if (!s || found.includes(s.id)) return;
+    found.push(s.id);
+    if (s.theme && !this.progress.themes.includes(s.theme)) this.progress.themes.push(s.theme);
+    if (s.song) {
+      const songs = (this.progress.songs ??= []);
+      if (!songs.includes(s.song)) songs.push(s.song);
+    }
+    this.pending.push(
+      { kind: 'narrator', text: s.say },
+      { kind: 'event', event: 'secret', id: s.id },
+    );
+  }
+
+  /** How many secrets exist, for `status`. */
+  get secretCount(): number {
+    return this.opts.secrets?.length ?? 0;
   }
 
   private giveRewards(): Narration[] {

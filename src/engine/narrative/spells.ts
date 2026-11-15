@@ -20,6 +20,8 @@ export function createStatusCommand(getRunner: () => LessonRunner | null) {
       lines.push('');
       lines.push(`  Duties done: ${p.dutiesDone}`);
       if (p.lore.length) lines.push(`  Lore fragments found: ${p.lore.length}`);
+      if (p.secrets?.length)
+        lines.push(`  Secrets found: ${p.secrets.length} of ${runner.secretCount}`);
       lines.push(`  ${runner.statusLine}`);
       const width = io.tty?.cols ?? 80;
       io.stdout.write(lines.map((l) => wrapIndented(l, width)).join('\n') + '\n');
@@ -80,7 +82,8 @@ export function createQuestsCommand(getRunner: () => LessonRunner | null, text: 
 const HELPERS = ['hint', 'solution', 'status', 'duty', 'help', 'settings'];
 
 /**
- * `help`: every spell you know, what it does, and the flags it takes.
+ * `help`: an index of the spells you know, one line each. The Grimoire (`man`)
+ * holds the full pages and flags.
  * `help NAME` shows one spell's usage (like Bash's `help cd`).
  */
 export function createHelpCommand(getRunner: () => LessonRunner | null, glossary?: Glossary) {
@@ -107,15 +110,10 @@ export function createHelpCommand(getRunner: () => LessonRunner | null, glossary
       for (const s of known) {
         const c = glossary?.commands[s];
         lines.push(wrapIndented(`  ${s.padEnd(pad)}${c?.says ?? ''}`, width, pad + 2));
-        for (const [flag, info] of Object.entries(c?.flags ?? {})) {
-          const says = typeof info === 'string' ? info : info.says;
-          const shown = typeof info !== 'string' && info.takes ? `${flag} N` : flag;
-          lines.push(wrapIndented(`${' '.repeat(pad + 2)}${shown}  ${says}`, width, pad + 4));
-        }
       }
       if (known.length === 0) lines.push('  None yet.');
       lines.push('', `Always at hand: ${HELPERS.join(', ')}.`);
-      lines.push('`help NAME` for one spell, `man NAME` for its Grimoire page.');
+      lines.push('Flags, examples and the rest live in the Grimoire: `man NAME`.');
       io.stdout.write(lines.join('\n') + '\n');
       return 0;
     },

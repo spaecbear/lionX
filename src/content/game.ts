@@ -1,4 +1,5 @@
-import { loadCoaching, loadDuties, loadQuillLines, loadWing } from '../engine/content';
+import { loadCoaching, loadDuties, loadQuillLines, loadSecrets, loadWing } from '../engine/content';
+import secretsSource from './secrets.yaml?raw';
 import { loadGlossary } from '../engine/narrative';
 import type { GameContent } from '../engine/session';
 import { art, glossarySource, coachingSource, dutySources, quillSource, wingSources } from '.';
@@ -22,5 +23,6 @@ export function loadGameContent(): GameContent {
     sideQuests,
     artText: (name) => art(name, 'narrow'),
     glossary: loadGlossary(glossarySource),
+    secrets: loadSecrets(secretsSource),
   };
 }

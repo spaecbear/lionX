@@ -15,6 +15,8 @@ export interface Mood {
 export interface MusicData {
   default: string;
   moods: Record<string, Mood>;
+  /** Secret songs a player may choose (each also a mood). */
+  songs?: string[];
 }
 
 export type Voice = 'keys' | 'bass' | 'lead' | 'kick' | 'snare' | 'hat';
@@ -47,6 +49,8 @@ export function loadMusic(source: string): MusicData {
       if (!/^[x.]{16}$/.test(m.drums?.[d] ?? ''))
         throw new Error(`${where}: drums.${d} must be 16 steps of x and .`);
   }
+  for (const s of raw.songs ?? [])
+    if (!raw.moods[s]) throw new Error(`music.yaml: song ${s} has no mood`);
   if (!raw.moods[raw.default]) throw new Error(`music.yaml: default mood ${raw.default} missing`);
   return raw;
 }

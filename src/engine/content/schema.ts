@@ -49,6 +49,19 @@ export interface Lesson {
   outro?: string[];
 }
 
+/** A hidden note that unlocks one cosmetic (a theme or a song) when read. */
+export interface Secret {
+  id: string;
+  /** Placed when this wing begins. */
+  wing: string;
+  file: string;
+  text: string;
+  /** The narrator, when it is found. */
+  say: string;
+  theme?: string;
+  song?: string;
+}
+
 export interface Reward {
   id: string;
   /** Given once this many duties are done (across the whole game). */

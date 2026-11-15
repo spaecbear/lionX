@@ -198,6 +198,7 @@ lessons:
         goal: { ran: { command: man, args: [ls] } }
         success:
           - 'NAME, SYNOPSIS, DESCRIPTION. Every page follows the same shape. In the SYNOPSIS, square brackets mean optional.'
+          - 'Your own copy of the Grimoire lives in your cell now: one page for every spell you know, and a new one each time you learn another. `ls ~/grimoire` to see them, and `less` any page you like.'
       - id: help-flag
         guide: goal
         guidance:

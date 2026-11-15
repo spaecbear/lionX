@@ -13,6 +13,7 @@ import {
   type Step,
   type Wing,
   type WorldPatch,
+  Secret,
 } from './schema';
 
 export class ContentError extends Error {}
@@ -588,4 +589,24 @@ export function loadCoaching(yamlText: string, source = 'coaching.yaml'): Coachi
   const doc = parseYaml(yamlText) as unknown;
   const o = c.obj(doc, '(root)');
   return checkCoaching(c, o.rules, 'rules') ?? [];
+}
+
+/** Parse the hidden notes (src/content/secrets.yaml). Each unlocks exactly one theme or song. */
+export function loadSecrets(yamlText: string, source = 'secrets.yaml'): Secret[] {
+  const raw = parseYaml(yamlText) as { secrets?: unknown };
+  if (!Array.isArray(raw?.secrets)) throw new Error(`${source}: expected a secrets list`);
+  const seen = new Set<string>();
+  return raw.secrets.map((s: Record<string, unknown>, i: number) => {
+    const where = `${source}: secrets[${i}]`;
+    for (const k of ['id', 'wing', 'file', 'text', 'say'])
+      if (typeof s[k] !== 'string') throw new Error(`${where}: ${k} must be text`);
+    const file = s.file as string;
+    if (!file.startsWith('/') || !file.split('/').pop()!.startsWith('.'))
+      throw new Error(`${where}: file must be an absolute path to a hidden (dot) file`);
+    if ((s.theme === undefined) === (s.song === undefined))
+      throw new Error(`${where}: needs exactly one of theme or song`);
+    if (seen.has(s.id as string)) throw new Error(`${where}: duplicate id ${s.id}`);
+    seen.add(s.id as string);
+    return s as unknown as Secret;
+  });
 }

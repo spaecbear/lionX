@@ -154,6 +154,54 @@ body,
   --key-bg: #000000;
   --key-bg-active: #333333;
 }
+.game[data-theme='ember'] {
+  --bg: #120604;
+  --amber: #ff7a45;
+  --amber-dim: #7a3420;
+  --amber-glow: #ffa070;
+  --key-bg: #1e0c08;
+  --key-bg-active: #3a140a;
+}
+.game[data-theme='rose'] {
+  --bg: #140a0e;
+  --amber: #ff9ec4;
+  --amber-dim: #7a4a5c;
+  --amber-glow: #ffc0d8;
+  --key-bg: #20121a;
+  --key-bg-active: #3a1a28;
+}
+.game[data-theme='ink'] {
+  --bg: #0c0814;
+  --amber: #c8a8ff;
+  --amber-dim: #5a4a7a;
+  --amber-glow: #e0c8ff;
+  --key-bg: #160f22;
+  --key-bg-active: #241a3a;
+}
+.game[data-theme='moonlight'] {
+  --bg: #070a12;
+  --amber: #c8d4ec;
+  --amber-dim: #4a5470;
+  --amber-glow: #ffffff;
+  --key-bg: #0e1220;
+  --key-bg-active: #1a2238;
+}
+.game[data-theme='frost'] {
+  --bg: #06101a;
+  --amber: #a8e8ff;
+  --amber-dim: #3a6078;
+  --amber-glow: #e0f8ff;
+  --key-bg: #0c1a26;
+  --key-bg-active: #123048;
+}
+.game[data-theme='moss'] {
+  --bg: #070d08;
+  --amber: #9ad88a;
+  --amber-dim: #40603a;
+  --amber-glow: #c8f0b0;
+  --key-bg: #0e180e;
+  --key-bg-active: #1a2c16;
+}
 .game {
   background: var(--bg);
 }

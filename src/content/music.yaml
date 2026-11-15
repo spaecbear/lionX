@@ -134,3 +134,83 @@ moods:
       kick: 'x.....x...x.....'
       snare: '....x.......x...'
       hat: 'x.x.x.x.x.x.x.x.'
+  # Secret songs, unlocked by hidden notes (secrets.yaml); chosen with `settings song NAME`.
+  rain:
+    bpm: 64
+    swing: 0.26
+    chords:
+      - [A2, C3, E3, G3, B3]
+      - [F2, A2, C3, E3]
+      - [C3, E3, G3, B3]
+      - [G2, B2, D3, F#3]
+    melody: [E5, G5, A5, B5, D6]
+    drums:
+      kick: 'x.........x.....'
+      snare: '........x.......'
+      hat: 'x.xxx.x.x.xxx.x.'
+  tavern:
+    bpm: 84
+    swing: 0.3
+    chords:
+      - [G2, B2, D3, G3]
+      - [C3, E3, G3, C4]
+      - [D3, F#3, A3, D4]
+      - [G2, B2, D3, G3]
+    melody: [G4, A4, B4, D5, E5]
+    drums:
+      kick: 'x.......x.......'
+      snare: '....x.......x...'
+      hat: 'x.x.x.x.x.x.x.x.'
+  midnight:
+    bpm: 56
+    swing: 0.18
+    chords:
+      - [Db3, F3, Ab3, C4]
+      - [Bb2, Db3, F3, Ab3]
+      - [Gb2, Bb2, Db3, F3]
+      - [Ab2, C3, Eb3, G3]
+    melody: [F5, Ab5, Bb5, C6, Eb6]
+    drums:
+      kick: 'x...............'
+      snare: '........x.......'
+      hat: '..x...x...x...x.'
+  harbor:
+    bpm: 68
+    swing: 0.22
+    chords:
+      - [D3, F#3, A3, C#4]
+      - [B2, D3, F#3, A3]
+      - [G2, B2, D3, F#3]
+      - [A2, C#3, E3, G3]
+    melody: [F#5, A5, B5, D6, E5]
+    drums:
+      kick: 'x.....x...x.....'
+      snare: '....x.......x...'
+      hat: 'x...x...x...x...'
+  snowfall:
+    bpm: 54
+    swing: 0.12
+    chords:
+      - [E3, G3, B3, D4]
+      - [C3, E3, G3, B3]
+      - [G2, B2, D3, F#3]
+      - [D3, F#3, A3, C#4]
+    melody: [B5, D6, E6, G5, A5]
+    drums:
+      kick: 'x...............'
+      snare: '................'
+      hat: '....x.......x...'
+  sunrise:
+    bpm: 78
+    swing: 0.16
+    chords:
+      - [C3, E3, G3, D4]
+      - [F3, A3, C4, E4]
+      - [A2, C3, E3, B3]
+      - [G2, B2, D3, A3]
+    melody: [E5, G5, A5, C6, D6]
+    drums:
+      kick: 'x.....x.x.......'
+      snare: '....x.......x...'
+      hat: 'x.x.x.x.x.x.x.x.'
+songs: [rain, tavern, midnight, harbor, snowfall, sunrise]

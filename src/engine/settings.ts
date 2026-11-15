@@ -11,6 +11,8 @@ export interface Settings {
   music: boolean;
   /** Soundtrack volume, 0 to 10. */
   volume: number;
+  /** A secret song to play everywhere, or auto (each wing's own). */
+  song: string;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -19,6 +21,7 @@ export const DEFAULT_SETTINGS: Settings = {
   reader: false,
   music: true,
   volume: 4,
+  song: 'auto',
 };
 
 export interface SettingsHost {
@@ -26,6 +29,8 @@ export interface SettingsHost {
   set(next: Settings): void;
   /** Every theme, and whether this player may use it yet. */
   themes(): { name: string; available: boolean }[];
+  /** Secret songs, and whether this player has found each. */
+  songs?(): { name: string; available: boolean }[];
 }
 
 /**
@@ -44,16 +49,16 @@ export function createSettingsCommand(host: SettingsHost) {
       if (!key) {
         const themes = host
           .themes()
-          .map(
-            (t) =>
-              `${t.name === s.theme ? '*' : ' '} ${t.name}${t.available ? '' : ' (not yet earned)'}`,
-          )
+          .map((t) => (t.available ? `${t.name === s.theme ? '*' : ' '} ${t.name}` : '  ???'))
           .join('\n    ');
         io.stdout.write(
           `  theme:   ${s.theme}\n    ${themes}\n  motion:  ${s.motion}\n  reader:  ${s.reader ? 'on' : 'off'}\n` +
-            `  music:   ${s.music ? 'on' : 'off'}\n  volume:  ${s.volume}\n\n` +
-            '  Change one with: settings theme NAME, settings motion on|off|auto, settings reader on|off,\n' +
-            '  settings music on|off, settings volume 0-10\n',
+            `  music:   ${s.music ? 'on' : 'off'}\n  volume:  ${s.volume}\n` +
+            `  song:    ${s.song}${songList(host, s)}\n\n` +
+            '  Change one with:\n' +
+            '    settings theme NAME\n    settings motion on|off|auto\n    settings reader on|off\n' +
+            '    settings music on|off\n    settings volume 0-10\n    settings song NAME|auto\n' +
+            '  ??? is still hidden somewhere in the Archive.\n',
         );
         return 0;
       }
@@ -82,6 +87,23 @@ export function createSettingsCommand(host: SettingsHost) {
         host.set({ ...s, music: value === 'on' });
         return 0;
       }
+      if (key === 'song') {
+        if (value === 'auto') {
+          host.set({ ...s, song: 'auto' });
+          return 0;
+        }
+        const song = host.songs?.().find((x) => x.name === value);
+        if (!song) {
+          io.stderr.write(`settings: no song called ${value ?? '(nothing)'}\n`);
+          return 1;
+        }
+        if (!song.available) {
+          io.stderr.write(`settings: you have not found the ${value} song yet\n`);
+          return 1;
+        }
+        host.set({ ...s, song: song.name });
+        return 0;
+      }
       if (key === 'volume' && /^(10|[0-9])$/.test(value ?? '')) {
         host.set({ ...s, volume: Number(value) });
         return 0;
@@ -92,4 +114,15 @@ export function createSettingsCommand(host: SettingsHost) {
       return 1;
     },
   });
+}
+
+/** The secret songs under the song setting: found ones by name, the rest as ??? so they stay secret. */
+function songList(host: SettingsHost, s: Settings): string {
+  const songs = host.songs?.() ?? [];
+  if (!songs.length) return '';
+  const rows = [
+    `${s.song === 'auto' ? '*' : ' '} auto (each wing's own)`,
+    ...songs.map((x) => (x.available ? `${x.name === s.song ? '*' : ' '} ${x.name}` : '  ???')),
+  ];
+  return '\n    ' + rows.join('\n    ');
 }

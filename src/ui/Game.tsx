@@ -140,7 +140,12 @@ export function Game() {
     const player = new LofiPlayer(music);
     // Browsers allow sound only after a key press or tap, so the music starts on the first one.
     let heard = false;
+    let wing: string | undefined;
+    /** A chosen secret song plays everywhere; otherwise each wing has its own mood. */
+    const chosenMood = () =>
+      settings.song !== 'auto' && music.moods[settings.song] ? settings.song : moodFor(music, wing);
     const applyMusic = (st: Settings) => {
+      player.setMood(chosenMood());
       player.setVolume(st.volume / 10);
       if (st.music && st.volume > 0 && heard && !document.hidden) player.start();
       else player.stop();
@@ -170,9 +175,13 @@ export function Game() {
         },
         themes: Object.keys(THEMES),
         alwaysAvailable: ALWAYS_AVAILABLE,
+        songs: music.songs ?? [],
       },
       wingTints: WING_TINTS,
-      onWing: (id) => player.setMood(moodFor(music, id)),
+      onWing: (id) => {
+        wing = id;
+        player.setMood(chosenMood());
+      },
       titleHelp,
 
       onChips: setCommands,

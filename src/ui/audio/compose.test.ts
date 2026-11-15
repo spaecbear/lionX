@@ -43,7 +43,8 @@ describe('soundtrack composer', () => {
           expect(e.at, name).toBeLessThan(len);
           expect(e.vel).toBeLessThanOrEqual(1);
         }
-        const keys = ev.filter((e) => e.voice === 'keys').slice(0, 4);
+        const chord = m.chords[bar % m.chords.length];
+        const keys = ev.filter((e) => e.voice === 'keys').slice(0, chord.length);
         expect(keys.map((k) => k.freq)).toEqual(
           m.chords[bar % m.chords.length].map((n) => noteFreq(n)),
         );
