@@ -182,7 +182,7 @@ lessons:
       - 'Some rooms have absurd names. The Lexicon will finish them for you, if you ask.'
     steps:
       - id: corridor
-        art: lantern-tall
+        art: corridor
         guide: exact
         guidance:
           exact: 'Type `cd an` and then press the Tab key. The Lexicon fills in the rest. Then press Enter.'
