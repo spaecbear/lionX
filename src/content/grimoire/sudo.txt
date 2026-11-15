@@ -1,0 +1,22 @@
+NAME
+    sudo - borrow root's authority for one spell
+
+SYNOPSIS
+    sudo [-S] [-u USER] COMMAND [ARGUMENT]...
+
+DESCRIPTION
+    Sudo runs one COMMAND as root (or as USER). It first asks for YOUR
+    password, not root's, and only works if /etc/sudoers names you.
+    The password is not shown as you type it. After a correct password,
+    sudo trusts you for a while without asking again.
+
+    With great authority comes the ability to break absolutely anything.
+    Use sudo for the one spell that needs it, never as a habit.
+
+    -u USER   act as USER instead of root
+    -S        read the password from standard input
+    -k        forget the remembered password
+
+EXAMPLES
+    sudo chown archivist /archive/vault/inner
+    sudo cat /etc/shadow

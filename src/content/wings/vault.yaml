@@ -1,0 +1,211 @@
+# Wing 6: the Vault. Spells: whoami, id, chmod, chown, sudo.
+# lionX beat: it holds root. Its files must be reclaimed with sudo and chown.
+id: vault
+banner: vault
+entrance: /archive/vault
+next: haunted-stacks
+duties: [vault, aqueducts, observatory]
+gate: 60
+
+setup:
+  dirs:
+    - { path: /archive/vault/ledgers, owner: lionx, group: lionx, mode: '755' }
+    - { path: /archive/vault/inner, owner: lionx, group: lionx, mode: '700' }
+    - { path: /archive/vault/workroom, owner: apprentice, group: apprentice }
+  files:
+    /etc/passwd: |
+      root:x:0:0:root:/root:/bin/bash
+      apprentice:x:1000:1000:Apprentice:/home/apprentice:/bin/bash
+      archivist:x:1001:1001:Oriel Vane:/home/archivist:/bin/bash
+      lionx:x:999:999:guardian:/:/usr/sbin/nologin
+    /etc/group: |
+      root:x:0:
+      apprentice:x:1000:
+      archivist:x:1001:
+      lionx:x:999:
+      scribes:x:1002:apprentice,archivist
+    /etc/sudoers:
+      {
+        content: "# Granted by the Archivist, the night before.\napprentice ALL=(ALL) ALL\n",
+        mode: '440',
+      }
+    /etc/shadow: { content: "apprentice:oriel\narchivist:vane\n", mode: '600' }
+    /home/apprentice/diary: "Day one in the Vault. Quill is nervous. So am I.\n"
+    /home/apprentice/ritual-draft: "A ritual, half written. It will need to be runnable one day.\n"
+    /archive/vault/ledgers/water-ledger:
+      {
+        content: "Water ledger. Rightfully the Archivist's. Taken by lionX.\n",
+        owner: lionx,
+        group: lionx,
+        mode: '600',
+      }
+    /archive/vault/ledgers/grain-ledger:
+      {
+        content: "Grain ledger. Rightfully the Archivist's. Taken by lionX.\n",
+        owner: lionx,
+        group: lionx,
+        mode: '600',
+      }
+    /archive/vault/inner/archivists-seal:
+      {
+        content: "THE SEAL OF ORIEL VANE, ARCHIVIST.\nWhoever holds this may speak for the Archive.\n",
+        owner: lionx,
+        group: lionx,
+        mode: '600',
+      }
+
+intro:
+  - "The Vault. The Archivist kept the Archive's authority here: its ledgers, its seal. lionX holds all of it now."
+  - 'Every book has wards that say who may read it, change it, or run it. Today you learn to read them, change them, and, when you must, borrow the authority to break them.'
+
+lessons:
+  - id: who
+    spells: [whoami, id]
+    steps:
+      - id: whoami
+        guide: exact
+        guidance:
+          exact: 'Type `whoami`. Wards care very much who is asking.'
+        hints:
+          - 'Ask the Lexicon who you are.'
+          - 'The spell is `whoami`.'
+          - 'Type exactly: whoami'
+        goal: { ran: whoami }
+        success:
+          - 'apprentice. Not root. Not the Archivist. Remember that.'
+      - id: id
+        guide: goal
+        guidance:
+          exact: 'Type `id` to see your user and your groups.'
+          goal: 'Find out which groups you belong to.'
+        hints:
+          - 'Groups matter too.'
+          - 'The spell is `id`.'
+          - 'Type exactly: id'
+        goal: { ran: id }
+        success:
+          - "A book's middle set of wards applies to its group. Your groups decide whether those apply to you."
+
+  - id: wards
+    spells: [chmod]
+    intro:
+      - '`ls -l` shows wards as nine letters: three for the owner, three for the group, three for everyone else. r is read, w is write, x is run, or for a room, enter.'
+    steps:
+      - id: private
+        guide: exact
+        guidance:
+          exact: 'Type `chmod 600 ~/diary`. 6 means read and write (4 + 2) for you; the two zeros mean nothing for anyone else.'
+        hints:
+          - 'Lock the diary so only you can read or change it.'
+          - '`chmod` with an octal mode: 6 for you, 0 for group, 0 for others.'
+          - 'Type exactly: chmod 600 ~/diary'
+        goal:
+          all:
+            - { perm: { path: /home/apprentice/diary, who: u, has: rw } }
+            - { perm: { path: /home/apprentice/diary, who: g, lacks: rwx } }
+            - { perm: { path: /home/apprentice/diary, who: o, lacks: rwx } }
+        success:
+          - '`ls -l ~/diary` would show -rw-------. Yours alone.'
+      - id: runnable
+        guide: goal
+        guidance:
+          exact: 'Type `chmod u+x ~/ritual-draft`. Symbolic modes say who (u, g, o, a), then + or -, then which wards.'
+          goal: 'Make your ritual draft runnable by you. Try the symbolic form this time.'
+        hints:
+          - 'Give yourself the run ward.'
+          - '`chmod u+x` adds execute for the owner.'
+          - 'Type exactly: chmod u+x ~/ritual-draft'
+        goal: { perm: { path: /home/apprentice/ritual-draft, who: u, has: x } }
+        success:
+          - 'Runnable. Not that it does anything yet. That comes later.'
+
+  - id: authority
+    spells: [sudo, chown]
+    intro:
+      - "Some things only root may do, like giving a book to someone else. `sudo` lets you borrow root's authority for one spell."
+      - 'sudo asks for YOUR password. The Archivist set it when they enrolled you, and left a riddle so you would remember: it is the first word of the name lionX tried to erase, in small letters.'
+    steps:
+      - id: reclaim
+        guide: exact
+        guidance:
+          exact: 'Type `sudo chown apprentice /archive/vault/ledgers/water-ledger` and give your password when asked. Nothing appears as you type it.'
+        hints:
+          - "Only root may change who owns a book. Borrow root's authority."
+          - '`sudo chown apprentice` and the ledger. Your password is oriel.'
+          - 'Type: sudo chown apprentice /archive/vault/ledgers/water-ledger   then enter your password: oriel'
+        goal: { owner: { path: /archive/vault/ledgers/water-ledger, owner: apprentice } }
+        coaching:
+          - line: '^\s*chown\b'
+            stderr: 'Operation not permitted'
+            say: 'Only root may give books away. Put `sudo` in front.'
+        success:
+          - 'Yours now. And lionX felt that, I promise you.'
+      - id: read-it
+        guide: goal
+        guidance:
+          exact: 'Type `cat /archive/vault/ledgers/water-ledger`.'
+          goal: 'Read the ledger you just reclaimed.'
+        hints:
+          - 'It is yours now; you may read it.'
+          - '`cat` the ledger.'
+          - 'Type exactly: cat /archive/vault/ledgers/water-ledger'
+        goal: { read: /archive/vault/ledgers/water-ledger }
+        success:
+          - '"Taken by lionX." Not anymore. sudo will not ask for your password again for a little while.'
+
+practice:
+  intro:
+    - 'lionX has warded half the Archive wrongly, on purpose. Set the wards right while you practice. Your password is still oriel.'
+  gateOpens:
+    - 'You handle authority carefully. Good. Now the inner Vault.'
+
+capstone:
+  intro:
+    - "The inner Vault holds the Archivist's seal. lionX owns it and has shut everyone else out."
+    - 'Give the inner Vault and the seal back to the Archivist. Let your own group in, so you can read the seal. But do not open them to everyone; that is how lionX got in the first time.'
+  steps:
+    - id: unseal
+      guide: problem
+      guidance:
+        exact: 'Type `sudo chown -R archivist:apprentice /archive/vault/inner`, then `sudo chmod 750 /archive/vault/inner`, then `sudo chmod 640 /archive/vault/inner/archivists-seal`, then `cat /archive/vault/inner/archivists-seal`.'
+        goal: 'The inner Vault and the seal should belong to archivist, with group apprentice. Group may read (and enter the Vault); others get nothing. Then read the seal.'
+        problem: 'Return the inner Vault and the seal to the Archivist, let your group read them, keep everyone else out, and read the seal.'
+      hints:
+        - 'Change who owns them, then change the wards, then read.'
+        - '`sudo chown -R archivist:apprentice`, then `sudo chmod` so the group can read and enter and others cannot.'
+        - 'Type: sudo chown -R archivist:apprentice /archive/vault/inner   then: sudo chmod 750 /archive/vault/inner   then: sudo chmod 640 /archive/vault/inner/archivists-seal   then: cat /archive/vault/inner/archivists-seal'
+      goal:
+        all:
+          - { owner: { path: /archive/vault/inner, owner: archivist, group: apprentice } }
+          - {
+              owner:
+                { path: /archive/vault/inner/archivists-seal, owner: archivist, group: apprentice },
+            }
+          - { perm: { path: /archive/vault/inner, who: g, has: rx } }
+          - { perm: { path: /archive/vault/inner, who: o, lacks: rwx } }
+          - { perm: { path: /archive/vault/inner/archivists-seal, who: o, lacks: rwx } }
+          - { read: /archive/vault/inner/archivists-seal }
+      success:
+        - '"Whoever holds this may speak for the Archive." Then speak for it.'
+        - 'Do you hear that? Purring. Close. lionX knows.'
+  outro:
+    - 'The stacks below the Vault have woken. Something is moving in them. Many somethings. `ls /archive`.'
+  unlocks:
+    dirs: [/archive/haunted-stacks]
+    files:
+      /archive/haunted-stacks/sign: "THE HAUNTED STACKS. Mind the spirits. Some bite.\n"
+
+rewards:
+  - id: iron-key
+    afterDuties: 2
+    say: 'An iron key appeared in your cell. It fits nothing yet. `cat ~/iron-key`'
+    decoration:
+      file: iron-key
+      content: "  O===m   An iron key, cold and heavy.\n"
+  - id: high-contrast
+    afterDuties: 4
+    say: 'The Lexicon learned to glow in hard, bright lines: high contrast. You can choose it later.'
+    theme: high-contrast
+
+outro:
+  - 'The Haunted Stacks wait: `cd /archive/haunted-stacks`. Bring your wits.'

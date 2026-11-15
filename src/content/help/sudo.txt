@@ -1,0 +1,7 @@
+usage: sudo [-S] [-k] [-u user] command [arg ...]
+
+Options:
+  -k, --reset-timestamp   invalidate timestamp file
+  -S, --stdin             read password from standard input
+  -u, --user=user         run command as specified user name or ID
+  -h, --help              display help message and exit

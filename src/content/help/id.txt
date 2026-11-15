@@ -1,0 +1,8 @@
+Usage: id [OPTION]... [USER]...
+Print user and group information for each specified USER,
+or (when USER omitted) for the current process.
+
+  -G, --groups   print all group IDs
+  -n, --name     print a name instead of a number, for -u,-G
+  -u, --user     print only the effective user ID
+      --help        display this help and exit

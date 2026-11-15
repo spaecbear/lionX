@@ -7,6 +7,7 @@ import { head, tail } from './headtail';
 import { less } from './less';
 import { ls } from './ls';
 import { man } from './man';
+import { chmod, chown, id, sudo, whoami } from './permops';
 import { pwd } from './pwd';
 import { find, grep, sort, uniq, wc } from './textops';
 import { falseCmd, trueCmd } from './truefalse';
@@ -41,6 +42,7 @@ export {
 export const allCommands: Command[] = [
   ...[cat, cd, clear, cp, echo, falseCmd, find, grep, head, less, ls, man],
   ...[mkdir, mv, pwd, rm, rmdir, sort, tail, touch, trueCmd, uniq, wc],
+  ...[chmod, chown, id, sudo, whoami],
 ];
 
 export function createRegistry(): CommandRegistry {

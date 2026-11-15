@@ -11,13 +11,17 @@ import { wingChain } from './test-support';
  * the letter, press Tab when told to, and walk where Quill's lines point.
  */
 
-/** Commands in a hint like "Type: cd x   then: ls" or "Type: cd an   then press Tab, then Enter". */
-function commandsFromHint(hint: string): { line: string; tab: boolean }[] {
+/**
+ * Commands in a hint like "Type: cd x   then: ls", "Type: cd an   then press Tab,
+ * then Enter", or "Type: sudo ...   then enter your password: oriel".
+ */
+function commandsFromHint(hint: string): { line: string; tab: boolean; password?: string }[] {
   const m = /Type(?: exactly)?:\s*(.*)$/.exec(hint);
   if (!m) throw new Error(`Hint has no command to type: ${hint}`);
   return m[1].split(/\s+then:\s+/).map((part) => ({
-    line: part.split(/\s+then press\b/)[0].trim(),
+    line: part.split(/\s+then (?:press|enter)\b/)[0].trim(),
     tab: /press Tab/.test(part),
+    password: /then enter your password: (\S+)/.exec(part)?.[1],
   }));
 }
 
@@ -27,6 +31,15 @@ async function playToBindery(seed: number) {
   const hear = (ns: Narration[]) => ns.forEach((n) => n.kind === 'quill' && said.push(n.text));
   const out: string[] = [];
   session.shell.terminal = { stdout: { write: (s) => out.push(s) }, stderr: { write: () => {} } };
+  // A real terminal: typed passwords when asked, otherwise q (to leave any pager) and Enter.
+  const keys: string[] = [];
+  session.shell.tty = {
+    rows: 24,
+    cols: 80,
+    readKey: async () => 'q', // leave any pager
+    // Passwords only when a hint said which one to type; otherwise nothing (so sudo fails).
+    readSecret: async () => keys.shift() ?? null,
+  };
   const type = async (line: string) => {
     const status = await session.shell.run(line);
     hear(session.afterCommand(line, status, ''));
@@ -52,7 +65,8 @@ async function playToBindery(seed: number) {
       }
       break; // the direction led somewhere with no new wing: the end of the road so far
     }
-    for (const { line, tab } of commandsFromHint(cur.step.hints[2])) {
+    for (const { line, tab, password } of commandsFromHint(cur.step.hints[2])) {
+      if (password) keys.push(password);
       let text = line;
       if (tab) {
         const r = complete(text, text.length, {

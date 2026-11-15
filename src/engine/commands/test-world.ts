@@ -55,6 +55,12 @@ export function worldSpec(): WorldSpec {
       '/home/apprentice/notes/page2': 'two\n',
       ...Object.fromEntries(manyNames.map((n) => [`/home/apprentice/many/${n}`, ''])),
       '/vault/seal': { content: 'lionX was here\n', owner: 'lionx', group: 'lionx' },
+      '/etc/passwd':
+        'root:x:0:0::/root:/bin/bash\napprentice:x:1000:1000::/home/apprentice:/bin/bash\narchivist:x:1001:1001::/home/archivist:/bin/bash\nlionx:x:999:999::/:/usr/sbin/nologin\n',
+      '/etc/group':
+        'root:x:0:\napprentice:x:1000:\narchivist:x:1001:\nlionx:x:999:\nscribes:x:1002:apprentice,archivist\n',
+      '/etc/sudoers': { content: 'apprentice ALL=(ALL) ALL\n', mode: '440' },
+      '/etc/shadow': { content: 'apprentice:oriel\narchivist:vane\n', mode: '600' },
     },
   };
 }

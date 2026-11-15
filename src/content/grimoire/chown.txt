@@ -1,0 +1,20 @@
+NAME
+    chown - change who owns a book or room
+
+SYNOPSIS
+    chown [OPTION]... [OWNER][:GROUP] FILE...
+
+DESCRIPTION
+    Chown gives each FILE a new OWNER, a new GROUP, or both. Owners and
+    groups must exist in /etc/passwd and /etc/group.
+
+    Only root may change ownership. Everyone else must ask through
+    `sudo`, and only if the sudoers file allows it.
+
+    -R, --recursive   change rooms and everything inside them
+    -v, --verbose     report every change
+
+EXAMPLES
+    sudo chown archivist ledger          new owner
+    sudo chown archivist:scribes ledger  new owner and group
+    sudo chown :scribes ledger           new group only

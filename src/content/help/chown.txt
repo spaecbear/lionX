@@ -1,0 +1,7 @@
+Usage: chown [OPTION]... [OWNER][:[GROUP]] FILE...
+Change the owner and/or group of each FILE to OWNER and/or GROUP.
+
+  -c, --changes          like verbose but report only when a change is made
+  -v, --verbose          output a diagnostic for every file processed
+  -R, --recursive        operate on files and directories recursively
+      --help        display this help and exit

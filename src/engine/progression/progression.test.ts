@@ -18,7 +18,7 @@ const templates: DutyTemplate[] = dutyFiles['lantern-hall'];
 import { CONSTRUCT_SPELLS } from '../shell/executor';
 const ALL_SPELLS = [...createRegistry().names(), ...CONSTRUCT_SPELLS];
 
-import { worldFor as worldForWing } from '../test-support';
+import { playerTty, worldFor as worldForWing } from '../test-support';
 
 /** The world as it stands when a duty file's duties are handed out (files are named for wings). */
 const worldFor = (dutyFile: string) => worldForWing(dutyFile);
@@ -38,6 +38,7 @@ async function solve(duty: Duty, dutyFile: string) {
     registry: createRegistry(),
     terminal: { stdout: { write() {} }, stderr: { write() {} } },
     onCommandRun: (command, args, status) => commands.push({ command, args, status }),
+    tty: playerTty(),
   });
   for (const line of duty.solution) await shell.run(line);
   return {

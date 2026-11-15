@@ -72,6 +72,22 @@ const solutions: Record<string, string[][]> = {
       'sort < ~/scratch > /archive/aqueducts/clean-record',
     ],
   ],
+  vault: [
+    [
+      'sudo chown -R archivist:apprentice /archive/vault/inner',
+      'sudo chmod 750 /archive/vault/inner',
+      'sudo chmod 640 /archive/vault/inner/archivists-seal',
+      'cat /archive/vault/inner/archivists-seal',
+    ],
+    [
+      // Symbolic modes, owner and group separately, and read with head.
+      'sudo chown archivist /archive/vault/inner /archive/vault/inner/archivists-seal',
+      'sudo chown :apprentice /archive/vault/inner /archive/vault/inner/archivists-seal',
+      'sudo chmod g+rx,o-rwx /archive/vault/inner',
+      'sudo chmod g+r /archive/vault/inner/archivists-seal',
+      'head -n 1 /archive/vault/inner/archivists-seal',
+    ],
+  ],
 };
 
 describe('capstones can be solved more than one way', () => {

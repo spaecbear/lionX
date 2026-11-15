@@ -12,6 +12,8 @@ export type Predicate =
   | { isFile: string }
   | { contains: { path: string; text?: string; pattern?: string } }
   | { mode: { path: string; mode: string } }
+  /** Some permission bits for owner (u), group (g), or others (o): has all of `has`, none of `lacks`. */
+  | { perm: { path: string; who: 'u' | 'g' | 'o'; has?: string; lacks?: string } }
   | { owner: { path: string; owner?: string; group?: string } }
   | { cwdIs: string }
   | { processRunning: string }
@@ -46,6 +48,7 @@ export const PREDICATE_KEYS = [
   'isFile',
   'contains',
   'mode',
+  'perm',
   'owner',
   'cwdIs',
   'processRunning',
@@ -100,6 +103,16 @@ export function evaluate(p: Predicate, w: WorldView): boolean {
     if ('mode' in p) {
       if (!vfs.exists(p.mode.path)) return false;
       return vfs.stat(p.mode.path).mode === parseInt(p.mode.mode, 8);
+    }
+    if ('perm' in p) {
+      if (!vfs.exists(p.perm.path)) return false;
+      const shift = { u: 6, g: 3, o: 0 }[p.perm.who];
+      const bits = (vfs.stat(p.perm.path).mode >> shift) & 7;
+      const bit = (c: string) => ({ r: 4, w: 2, x: 1 })[c as 'r' | 'w' | 'x'] ?? 0;
+      return (
+        [...(p.perm.has ?? '')].every((c) => bits & bit(c)) &&
+        [...(p.perm.lacks ?? '')].every((c) => !(bits & bit(c)))
+      );
     }
     if ('owner' in p) {
       if (!vfs.exists(p.owner.path)) return false;

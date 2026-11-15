@@ -52,6 +52,18 @@ describe('evaluate', () => {
     expect(w.vfs.credentials.user).toBe('apprentice');
   });
 
+  it('perm checks one set of bits', () => {
+    const w = view();
+    // /vault/seal is 640: owner rw-, group r--, others ---
+    expect(evaluate({ perm: { path: '/vault/seal', who: 'u', has: 'rw', lacks: 'x' } }, w)).toBe(
+      true,
+    );
+    expect(evaluate({ perm: { path: '/vault/seal', who: 'g', has: 'r' } }, w)).toBe(true);
+    expect(evaluate({ perm: { path: '/vault/seal', who: 'g', has: 'w' } }, w)).toBe(false);
+    expect(evaluate({ perm: { path: '/vault/seal', who: 'o', lacks: 'rwx' } }, w)).toBe(true);
+    expect(evaluate({ perm: { path: '/nope', who: 'o', lacks: 'r' } }, w)).toBe(false);
+  });
+
   it('mode and owner on missing paths are false', () => {
     expect(evaluate({ mode: { path: '/x', mode: '644' } }, view())).toBe(false);
     expect(evaluate({ owner: { path: '/x', owner: 'root' } }, view())).toBe(false);

@@ -24,6 +24,8 @@ export interface Tty {
   readonly cols: number;
   /** Wait for the next keypress (a character or escape sequence). */
   readKey(): Promise<string>;
+  /** Read a line without echoing it (passwords). Optional; programs fall back to readKey. */
+  readSecret?(): Promise<string | null>;
 }
 
 export interface ShellContext {

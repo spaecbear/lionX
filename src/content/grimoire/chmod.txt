@@ -1,0 +1,33 @@
+NAME
+    chmod - change the wards on a book or room
+
+SYNOPSIS
+    chmod [OPTION]... MODE FILE...
+
+DESCRIPTION
+    Every book and room has nine wards in three sets: what its owner
+    (u) may do, what its group (g) may do, and what everyone else (o)
+    may do. Each set allows reading (r), writing (w), and executing or
+    entering (x). `ls -l` shows them: -rwxr-x--- means the owner may do
+    everything, the group may read and run, and others may do nothing.
+
+    MODE can be symbolic:
+      u+x       give the owner execute
+      go-w      take writing away from group and others
+      a=r       everyone may read, and nothing else
+      u=rw,o=   owner reads and writes; others get nothing
+    A missing u/g/o/a means all three, but leaves alone anything your
+    umask protects.
+
+    Or MODE can be three octal digits, one per set, adding r=4, w=2,
+    x=1: 755 is rwxr-xr-x, 640 is rw-r-----, 700 is rwx------.
+
+    -R, --recursive   change rooms and everything inside them
+    -v, --verbose     report every change
+    -c, --changes     report only actual changes
+
+    Only the owner of a book (or root) may change its wards.
+
+EXAMPLES
+    chmod +x ritual.sh          make a script runnable
+    chmod 750 private-room      owner all, group read and enter, others none

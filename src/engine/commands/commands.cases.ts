@@ -289,8 +289,9 @@ export const commandCases: CommandCase[] = [
   {
     cmd: 'ls -l /',
     out:
-      'total 12\n' +
+      'total 16\n' +
       'drwxr-xr-x 2 root  root  4096 Nov 14 20:15 atrium\n' +
+      'drwxr-xr-x 2 root  root  4096 Nov 14 20:15 etc\n' +
       'drwxr-xr-x 3 root  root  4096 Nov 14 20:15 home\n' +
       'drwx------ 2 lionx lionx 4096 Nov 14 20:15 vault\n',
     game: true,
@@ -672,4 +673,166 @@ export const commandCases: CommandCase[] = [
   },
   { cmd: 'cat journal.txt notes/page1 | tail -n 2', out: 'entry 15\none\n' },
   { cmd: 'ls notes > notes/list; cat notes/list', out: 'list\npage1\npage2\n' },
+  // whoami, id, chmod, chown, sudo
+  { cmd: 'whoami', out: 'apprentice\n', game: true },
+  {
+    cmd: 'id',
+    out: 'uid=1000(apprentice) gid=1000(apprentice) groups=1000(apprentice)\n',
+    game: true,
+  },
+  { cmd: 'id -un', out: 'apprentice\n', game: true },
+  {
+    cmd: 'id archivist',
+    out: 'uid=1001(archivist) gid=1001(archivist) groups=1001(archivist),1002(scribes)\n',
+    game: true,
+  },
+  { cmd: 'id nobody2', err: "id: 'nobody2': no such user\n", status: 1, game: true },
+  {
+    cmd: 'chmod 600 letter.txt && ls -l letter.txt',
+    out: '-rw------- 1 apprentice apprentice 41 Nov 14 20:15 letter.txt\n',
+  },
+  {
+    cmd: 'chmod u+x letter.txt && ls -l letter.txt',
+    out: '-rwxr--r-- 1 apprentice apprentice 41 Nov 14 20:15 letter.txt\n',
+  },
+  {
+    cmd: 'chmod +x letter.txt && ls -l letter.txt',
+    out: '-rwxr-xr-x 1 apprentice apprentice 41 Nov 14 20:15 letter.txt\n',
+  },
+  {
+    cmd: 'chmod go-r letter.txt && ls -l letter.txt',
+    out: '-rw------- 1 apprentice apprentice 41 Nov 14 20:15 letter.txt\n',
+  },
+  {
+    cmd: 'chmod a=r letter.txt && ls -l letter.txt',
+    out: '-r--r--r-- 1 apprentice apprentice 41 Nov 14 20:15 letter.txt\n',
+  },
+  {
+    cmd: 'chmod u=rw,g=r,o= letter.txt && ls -l letter.txt',
+    out: '-rw-r----- 1 apprentice apprentice 41 Nov 14 20:15 letter.txt\n',
+  },
+  {
+    cmd: 'chmod -w letter.txt && ls -l letter.txt',
+    out: '-r--r--r-- 1 apprentice apprentice 41 Nov 14 20:15 letter.txt\n',
+  },
+  {
+    cmd: 'chmod +w letter.txt && ls -l letter.txt',
+    out: '-rw-r--r-- 1 apprentice apprentice 41 Nov 14 20:15 letter.txt\n',
+  },
+  {
+    cmd: 'chmod 750 notes && ls -ld notes',
+    out: 'drwxr-x--- 2 apprentice apprentice 4096 Nov 14 20:15 notes\n',
+  },
+  {
+    cmd: 'chmod -R go-rx notes && ls -l notes',
+    out: 'total 8\n-rw------- 1 apprentice apprentice 4 Nov 14 20:15 page1\n-rw------- 1 apprentice apprentice 4 Nov 14 20:15 page2\n',
+  },
+  {
+    cmd: 'chmod a+X notes/page1 && ls -l notes/page1',
+    out: '-rw-r--r-- 1 apprentice apprentice 4 Nov 14 20:15 notes/page1\n',
+  },
+  { cmd: 'chmod 644 letter.txt; chmod -c 644 letter.txt', out: '' },
+  {
+    cmd: 'chmod -v 640 letter.txt',
+    out: "mode of 'letter.txt' changed from 0644 (rw-r--r--) to 0640 (rw-r-----)\n",
+  },
+  {
+    cmd: 'chmod 640 letter.txt; chmod -v 640 letter.txt',
+    out: "mode of 'letter.txt' retained as 0640 (rw-r-----)\n",
+  },
+  {
+    cmd: 'chmod -c 700 notes',
+    out: "mode of 'notes' changed from 0755 (rwxr-xr-x) to 0700 (rwx------)\n",
+  },
+  {
+    cmd: 'chmod q+z letter.txt',
+    err: "chmod: invalid mode: 'q+z'\nTry 'chmod --help' for more information.\n",
+    status: 1,
+  },
+  {
+    cmd: 'chmod 644',
+    err: "chmod: missing operand after '644'\nTry 'chmod --help' for more information.\n",
+    status: 1,
+  },
+  {
+    cmd: 'chmod',
+    err: "chmod: missing operand\nTry 'chmod --help' for more information.\n",
+    status: 1,
+  },
+  {
+    cmd: 'chmod 644 ghost',
+    err: "chmod: cannot access 'ghost': No such file or directory\n",
+    status: 1,
+  },
+  {
+    cmd: 'chmod 777 /vault',
+    err: "chmod: changing permissions of '/vault': Operation not permitted\n",
+    status: 1,
+    game: true,
+  },
+  {
+    cmd: 'chown archivist letter.txt',
+    err: "chown: changing ownership of 'letter.txt': Operation not permitted\n",
+    status: 1,
+    game: true,
+  },
+  {
+    cmd: 'chown nobody2 letter.txt',
+    err: "chown: invalid user: 'nobody2'\n",
+    status: 1,
+    game: true,
+  },
+  {
+    cmd: 'chown :nogroup2 letter.txt',
+    err: "chown: invalid group: ':nogroup2'\n",
+    status: 1,
+    game: true,
+  },
+  {
+    cmd: 'chown',
+    err: "chown: missing operand\nTry 'chown --help' for more information.\n",
+    status: 1,
+  },
+  {
+    cmd: 'sudo whoami',
+    err: 'sudo: a terminal is required to read the password; either use the -S option to read from standard input or configure an askpass helper\nsudo: a password is required\n',
+    status: 1,
+    game: true,
+  },
+  {
+    cmd: 'echo wrong | sudo -S whoami',
+    err: '[sudo] password for apprentice: \nSorry, try again.\nsudo: no password was provided\nsudo: 1 incorrect password attempt\n',
+    status: 1,
+    game: true,
+  },
+  {
+    cmd: 'echo oriel | sudo -S whoami',
+    out: 'root\n',
+    err: '[sudo] password for apprentice: \n',
+    game: true,
+  },
+  {
+    cmd: 'echo oriel | sudo -S chown archivist:scribes letter.txt && ls -l letter.txt',
+    out: '-rw-r--r-- 1 archivist scribes 41 Nov 14 20:15 letter.txt\n',
+    err: '[sudo] password for apprentice: \n',
+    game: true,
+  },
+  {
+    cmd: 'echo oriel | sudo -S cat /vault/seal',
+    out: 'lionX was here\n',
+    err: '[sudo] password for apprentice: \n',
+    game: true,
+  },
+  {
+    cmd: 'echo oriel | sudo -S -u archivist whoami',
+    out: 'archivist\n',
+    err: '[sudo] password for apprentice: \n',
+    game: true,
+  },
+  {
+    cmd: 'echo oriel | sudo -S lionX',
+    err: '[sudo] password for apprentice: \nsudo: lionX: command not found\n',
+    status: 1,
+    game: true,
+  },
 ];

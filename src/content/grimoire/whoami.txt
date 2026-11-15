@@ -1,0 +1,9 @@
+NAME
+    whoami - say whose authority you hold
+
+SYNOPSIS
+    whoami
+
+DESCRIPTION
+    Whoami prints the name of the user you are acting as. Usually that
+    is you. Under `sudo`, it is root.

@@ -1,0 +1,13 @@
+NAME
+    id - show who you are and which groups you belong to
+
+SYNOPSIS
+    id [-u] [-G] [-n] [USER]
+
+DESCRIPTION
+    Id prints a user's number and name, their main group, and every
+    group they belong to. Groups decide which of a book's wards apply.
+
+    -u    only the user
+    -G    only the groups
+    -n    names instead of numbers (with -u or -G)

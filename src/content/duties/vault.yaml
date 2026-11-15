@@ -1,0 +1,164 @@
+# Duties for the Vault: wards and authority. Password for sudo: oriel.
+templates:
+  - id: private-letter
+    spells: [chmod]
+    params:
+      room: { pick: [cell-a, cell-b, cell-c, cell-d] }
+      letter: { pick: [confession, love-letter, will, secret-recipe] }
+    setup:
+      files:
+        '/archive/vault/workroom/{room}/{letter}': { content: "Private.\n", mode: '644' }
+    cleanup: ['/archive/vault/workroom/{room}']
+    brief: 'The {letter} in /archive/vault/workroom/{room} is readable by everyone. Make it readable and writable by its owner only.'
+    hints:
+      - 'Take every ward away from group and others; keep read and write for the owner.'
+      - '`chmod 600`, or `chmod go-rwx`.'
+      - 'Type: chmod 600 /archive/vault/workroom/{room}/{letter}'
+    goal:
+      all:
+        - { perm: { path: '/archive/vault/workroom/{room}/{letter}', who: u, has: rw } }
+        - { perm: { path: '/archive/vault/workroom/{room}/{letter}', who: g, lacks: rwx } }
+        - { perm: { path: '/archive/vault/workroom/{room}/{letter}', who: o, lacks: rwx } }
+    solution: ['chmod 600 /archive/vault/workroom/{room}/{letter}']
+
+  - id: make-runnable
+    spells: [chmod]
+    params:
+      room: { pick: [cell-a, cell-b, cell-c, cell-d] }
+      script: { pick: [light-lamps, ring-bells, count-books, wind-clocks] }
+    setup:
+      files:
+        '/archive/vault/workroom/{room}/{script}': { content: "A small ritual.\n", mode: '644' }
+    cleanup: ['/archive/vault/workroom/{room}']
+    brief: 'The {script} ritual in /archive/vault/workroom/{room} cannot be run. Give its owner the run ward.'
+    hints:
+      - 'Add execute for the owner.'
+      - '`chmod u+x` the ritual.'
+      - 'Type: chmod u+x /archive/vault/workroom/{room}/{script}'
+    goal: { perm: { path: '/archive/vault/workroom/{room}/{script}', who: u, has: x } }
+    solution: ['chmod u+x /archive/vault/workroom/{room}/{script}']
+
+  - id: shut-out-others
+    spells: [chmod]
+    params:
+      room: { pick: [cell-a, cell-b, cell-c, cell-d] }
+    setup:
+      dirs: [{ path: '/archive/vault/workroom/{room}/strongroom', mode: '777' }]
+    cleanup: ['/archive/vault/workroom/{room}']
+    brief: 'lionX left the strongroom in /archive/vault/workroom/{room} wide open to everyone. Take every ward away from others; leave the owner and group alone.'
+    hints:
+      - 'Only the third set of wards should change.'
+      - '`chmod o-rwx` the strongroom.'
+      - 'Type: chmod o-rwx /archive/vault/workroom/{room}/strongroom'
+    goal:
+      all:
+        - { perm: { path: '/archive/vault/workroom/{room}/strongroom', who: o, lacks: rwx } }
+        - { perm: { path: '/archive/vault/workroom/{room}/strongroom', who: u, has: rwx } }
+    solution: ['chmod o-rwx /archive/vault/workroom/{room}/strongroom']
+
+  - id: share-with-group
+    spells: [chmod]
+    params:
+      room: { pick: [cell-a, cell-b, cell-c, cell-d] }
+      notes: { pick: [lecture-notes, star-notes, binding-notes] }
+    setup:
+      files:
+        '/archive/vault/workroom/{room}/{notes}': { content: "Notes worth sharing.\n", mode: '600' }
+    cleanup: ['/archive/vault/workroom/{room}']
+    brief: 'Let your group read the {notes} in /archive/vault/workroom/{room}. Nobody else.'
+    hints:
+      - 'Add read for the group only.'
+      - '`chmod g+r` the notes.'
+      - 'Type: chmod g+r /archive/vault/workroom/{room}/{notes}'
+    goal:
+      all:
+        - { perm: { path: '/archive/vault/workroom/{room}/{notes}', who: g, has: r } }
+        - { perm: { path: '/archive/vault/workroom/{room}/{notes}', who: o, lacks: rwx } }
+    solution: ['chmod g+r /archive/vault/workroom/{room}/{notes}']
+
+  - id: exact-wards
+    spells: [chmod]
+    params:
+      room: { pick: [cell-a, cell-b, cell-c, cell-d] }
+      mode: { pick: ['640', '750', '600', '755', '700', '644'] }
+    setup:
+      files:
+        '/archive/vault/workroom/{room}/charter': { content: "A charter.\n", mode: '666' }
+    cleanup: ['/archive/vault/workroom/{room}']
+    brief: 'The charter in /archive/vault/workroom/{room} must carry exactly the wards {mode}, as the old rules say.'
+    hints:
+      - 'Three octal digits: owner, group, others. r=4, w=2, x=1.'
+      - '`chmod {mode}` the charter.'
+      - 'Type: chmod {mode} /archive/vault/workroom/{room}/charter'
+    goal: { mode: { path: '/archive/vault/workroom/{room}/charter', mode: '{mode}' } }
+    solution: ['chmod {mode} /archive/vault/workroom/{room}/charter']
+
+  - id: reclaim-from-lionx
+    spells: [sudo, chown]
+    params:
+      room: { pick: [cell-a, cell-b, cell-c, cell-d] }
+      ledger: { pick: [salt-ledger, ink-ledger, candle-ledger, bell-ledger] }
+    setup:
+      files:
+        '/archive/vault/workroom/{room}/{ledger}':
+          { content: "Taken by lionX.\n", owner: lionx, group: lionx, mode: '644' }
+    cleanup: ['/archive/vault/workroom/{room}']
+    brief: 'lionX took the {ledger} in /archive/vault/workroom/{room}. Give it back to the Archivist.'
+    hints:
+      - 'Only root may change an owner. Borrow the authority.'
+      - '`sudo chown archivist` the ledger. Your password is oriel.'
+      - 'Type: sudo chown archivist /archive/vault/workroom/{room}/{ledger}   then enter your password: oriel'
+    goal: { owner: { path: '/archive/vault/workroom/{room}/{ledger}', owner: archivist } }
+    solution: ['sudo chown archivist /archive/vault/workroom/{room}/{ledger}']
+
+  - id: take-it-yourself
+    spells: [sudo, chown]
+    params:
+      room: { pick: [cell-a, cell-b, cell-c, cell-d] }
+      book: { pick: [old-map, spare-key-list, lamp-roster] }
+    setup:
+      files:
+        '/archive/vault/workroom/{room}/{book}':
+          { content: "Abandoned.\n", owner: root, group: root, mode: '644' }
+    cleanup: ['/archive/vault/workroom/{room}']
+    brief: 'Nobody wants the {book} in /archive/vault/workroom/{room}. Make it yours, owner and group.'
+    hints:
+      - 'Owner and group can change at once, with a colon.'
+      - '`sudo chown apprentice:apprentice` the book.'
+      - 'Type: sudo chown apprentice:apprentice /archive/vault/workroom/{room}/{book}   then enter your password: oriel'
+    goal:
+      {
+        owner:
+          { path: '/archive/vault/workroom/{room}/{book}', owner: apprentice, group: apprentice },
+      }
+    solution: ['sudo chown apprentice:apprentice /archive/vault/workroom/{room}/{book}']
+
+  - id: read-sealed
+    spells: [sudo, cat]
+    params:
+      room: { pick: [cell-a, cell-b, cell-c, cell-d] }
+      order: { pick: [seal-the-doors, burn-the-maps, silence-the-bells] }
+    setup:
+      files:
+        '/archive/vault/workroom/{room}/order':
+          { content: "lionX: {order}.\n", owner: root, group: root, mode: '600' }
+    cleanup: ['/archive/vault/workroom/{room}']
+    brief: 'lionX left a sealed order in /archive/vault/workroom/{room}. Only root may read it. Read it anyway.'
+    hints:
+      - "Borrow root's authority for one reading."
+      - '`sudo cat` the order. Your password is oriel.'
+      - 'Type: sudo cat /archive/vault/workroom/{room}/order   then enter your password: oriel'
+    goal: { read: '/archive/vault/workroom/{room}/order' }
+    solution: ['sudo cat /archive/vault/workroom/{room}/order']
+
+  - id: roll-call
+    spells: [whoami, id]
+    params:
+      officer: { pick: [the-night-porter, the-ledger-keeper, the-gate-warden] }
+    brief: 'Roll call: {officer} wants to know who you are and which groups you belong to. Answer both questions.'
+    hints:
+      - 'One spell names you; another names your groups.'
+      - '`whoami`, then `id`.'
+      - 'Type: whoami   then: id'
+    goal: { all: [{ ran: whoami }, { ran: id }] }
+    solution: ['whoami', 'id']

@@ -1,0 +1,10 @@
+Usage: chmod [OPTION]... MODE[,MODE]... FILE...
+  or:  chmod [OPTION]... OCTAL-MODE FILE...
+Change the mode of each FILE to MODE.
+
+  -c, --changes          like verbose but report only when a change is made
+  -v, --verbose          output a diagnostic for every file processed
+  -R, --recursive        change files and directories recursively
+      --help        display this help and exit
+
+Each MODE is of the form '[ugoa]*([-+=]([rwxXst]*|[ugo]))+|[-+=][0-7]+'.

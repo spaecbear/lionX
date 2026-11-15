@@ -38,6 +38,19 @@ export function worldFor(wingId: string): Vfs {
   throw new Error(`Wing ${wingId} is not in the chain`);
 }
 
+/** The apprentice's password, as the story gives it. */
+export const PASSWORD = 'oriel';
+
+/** A terminal that answers the way a player would: the password when asked, q in any pager. */
+export function playerTty() {
+  return {
+    rows: 24,
+    cols: 80,
+    readKey: async () => 'q',
+    readSecret: async () => PASSWORD,
+  };
+}
+
 /** A runner standing at the start of `wingId`'s capstone, with a shell wired to it. */
 export function atCapstone(wingId: string) {
   const wing = content.wings[wingId];
@@ -71,6 +84,7 @@ export function atCapstone(wingId: string) {
     terminal: { stdout: { write() {} }, stderr: { write() {} } },
     onCommandRun: (n, a, s) => runner.recordCommand(n, a, s),
     isUnlocked: (c) => c.unlockedInAct === 0 || runner.knows(c.name),
+    tty: playerTty(),
   });
   const type = async (line: string) => {
     const status = await shell.run(line);

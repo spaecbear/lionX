@@ -234,6 +234,13 @@ export class LessonRunner {
   /** Record a command as it runs (wire to Shell.onCommandRun). */
   recordCommand(command: string, args: string[], status: number): void {
     this.commands.push({ command, args, status });
+    // `sudo chown ...` is a cast of chown too.
+    if (command === 'sudo') {
+      let i = 0;
+      while (i < args.length && args[i].startsWith('-')) i += args[i] === '-u' ? 2 : 1;
+      if (i < args.length)
+        this.commands.push({ command: args[i], args: args.slice(i + 1), status });
+    }
   }
 
   /**
@@ -287,8 +294,17 @@ export class LessonRunner {
     return (
       this.phase === 'capstone' ||
       this.phase === 'free' ||
-      gateOpen(this.progress.mastery, this.wingSpells, this.wing.gate ?? DEFAULT_GATE)
+      gateOpen(this.progress.mastery, this.gatedSpells(), this.wing.gate ?? DEFAULT_GATE)
     );
+  }
+
+  /**
+   * The wing spells the gate waits on: those some duty can practice. A spell
+   * no duty uses can never grow, and must not lock the player out.
+   */
+  private gatedSpells(): string[] {
+    const practicable = new Set(this.templates.flatMap((t) => t.spells));
+    return this.wingSpells.filter((s) => practicable.has(s));
   }
 
   get statusLine(): string {
@@ -299,7 +315,7 @@ export class LessonRunner {
 
   private weakSpells(): string[] {
     const gate = this.wing.gate ?? DEFAULT_GATE;
-    const weak = this.wingSpells.filter((s) => (this.progress.mastery[s] ?? 0) < gate);
+    const weak = this.gatedSpells().filter((s) => (this.progress.mastery[s] ?? 0) < gate);
     return weak.length ? weak : this.wingSpells;
   }
 

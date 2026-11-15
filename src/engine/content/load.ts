@@ -103,8 +103,27 @@ export function checkPredicate(c: Checker, v: unknown, path: string): Predicate 
     case 'mode': {
       const m = c.obj(val, p);
       const mode = String(m.mode ?? '');
-      if (!/^[0-7]{3,4}$/.test(mode)) c.fail(`${p}.mode`, 'expected octal like "640"');
+      if (!/^[0-7]{3,4}$/.test(mode) && !/^\{[A-Za-z_]\w*\}$/.test(mode))
+        c.fail(`${p}.mode`, 'expected octal like "640"');
       return { mode: { path: c.str(m.path, `${p}.path`), mode } };
+    }
+    case 'perm': {
+      const m = c.obj(val, p);
+      c.noExtra(m, ['path', 'who', 'has', 'lacks'], p);
+      if (!['u', 'g', 'o'].includes(String(m.who))) c.fail(`${p}.who`, 'expected u, g, or o');
+      for (const k of ['has', 'lacks'] as const) {
+        if (m[k] !== undefined && !/^[rwx]+$/.test(String(m[k])))
+          c.fail(`${p}.${k}`, 'expected letters from rwx');
+      }
+      if (m.has === undefined && m.lacks === undefined) c.fail(p, 'needs has or lacks');
+      return {
+        perm: {
+          path: c.str(m.path, `${p}.path`),
+          who: m.who as 'u' | 'g' | 'o',
+          has: m.has === undefined ? undefined : String(m.has),
+          lacks: m.lacks === undefined ? undefined : String(m.lacks),
+        },
+      };
     }
     case 'owner': {
       const m = c.obj(val, p);
