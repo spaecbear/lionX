@@ -6,6 +6,7 @@ import {
   createHintCommand,
   createStatusCommand,
   LessonRunner,
+  type Narration,
 } from './narrative';
 import { newProgress, type DutyTemplate } from './progression';
 import { SAVE_VERSION, type SaveData } from './save';
@@ -33,14 +34,17 @@ export interface SessionOptions {
 }
 
 export interface GameSession {
-  runner: LessonRunner;
+  /** The current wing's runner (replaced when the player enters the next wing). */
+  readonly runner: LessonRunner;
   shell: Shell;
   /** True when this session continues a save (so the UI shows `resume()`, not the opening). */
   resumed: boolean;
   /** Command history from the save, for the terminal's up arrow. */
   history: string[];
   /** What to show first: the wing's opening for a new game, or a welcome back for a save. */
-  opening(): import('./narrative').Narration[];
+  opening(): Narration[];
+  /** After each command: the runner's response, plus the next wing's opening if the player just entered it. */
+  afterCommand(line: string, status: number, stderr: string): Narration[];
   /** Capture the whole game as save data. */
   toSave(history: string[]): SaveData;
 }
@@ -54,7 +58,7 @@ export function createSession(o: SessionOptions): GameSession {
   const wing = content.wings[wingId];
   if (!wing) throw new Error(`Unknown wing "${wingId}"`);
   const now = o.now ?? Date.now;
-  const runner = new LessonRunner(wing, {
+  let runner = new LessonRunner(wing, {
     coaching: content.coaching,
     dutyFiles: content.dutyFiles,
     lines: content.lines,
@@ -95,12 +99,37 @@ export function createSession(o: SessionOptions): GameSession {
     isUnlocked: (cmd) => cmd.unlockedInAct === 0 || runner.knows(cmd.name),
   });
 
+  /** If this wing is done and the player stands in the next wing's entrance, begin it. */
+  const enterNextWing = (): Narration[] => {
+    const nextId = runner.wing.next;
+    const next = nextId ? content.wings[nextId] : undefined;
+    if (!runner.done || !next?.entrance) return [];
+    const entrance = runner.vfs.resolve(next.entrance);
+    const cwd = runner.vfs.cwd;
+    if (cwd !== entrance && !cwd.startsWith(entrance + '/')) return [];
+    runner = new LessonRunner(next, {
+      coaching: content.coaching,
+      dutyFiles: content.dutyFiles,
+      lines: content.lines,
+      progress: runner.progress,
+      vfs: runner.vfs,
+      now,
+    });
+    return runner.start();
+  };
+
   return {
-    runner,
+    get runner() {
+      return runner;
+    },
     shell,
     resumed: !!save,
     history: save?.history ?? [],
     opening: () => (save ? runner.resume() : runner.start()),
+    afterCommand: (line, status, stderr) => [
+      ...runner.afterCommand(line, status, stderr),
+      ...enterNextWing(),
+    ],
     toSave: (history) => ({
       version: SAVE_VERSION,
       savedAt: now(),

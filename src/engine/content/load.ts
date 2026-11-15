@@ -252,14 +252,25 @@ export function loadWing(yamlText: string, source = 'wing.yaml'): Wing {
       'practice',
       'capstone',
       'rewards',
+      'setup',
+      'entrance',
+      'next',
     ],
     '(root)',
   );
-  const world = c.obj(o.world, 'world');
-  const user = c.obj(world.user, 'world.user');
-  c.str(user.name, 'world.user.name');
-  c.str(user.home, 'world.user.home');
-  c.arr(user.groups, 'world.user.groups');
+  let world: Obj | undefined;
+  if (o.world !== undefined) {
+    world = c.obj(o.world, 'world');
+    const user = c.obj(world.user, 'world.user');
+    c.str(user.name, 'world.user.name');
+    c.str(user.home, 'world.user.home');
+    c.arr(user.groups, 'world.user.groups');
+  } else if (o.entrance === undefined) {
+    c.fail(
+      'world',
+      'a wing needs a starting world, or an entrance if it continues an earlier wing',
+    );
+  }
   const lessons = c.arr(o.lessons, 'lessons').map((l, i) => checkLesson(c, l, `lessons[${i}]`));
   if (lessons.length === 0) c.fail('lessons', 'a wing needs at least one lesson');
   uniqueIds(c, lessons, 'lessons');
@@ -268,6 +279,9 @@ export function loadWing(yamlText: string, source = 'wing.yaml'): Wing {
     id: c.str(o.id, 'id'),
     banner: c.optStr(o.banner, 'banner'),
     world: world as unknown as Wing['world'],
+    setup: checkPatch(c, o.setup, 'setup'),
+    entrance: c.optStr(o.entrance, 'entrance'),
+    next: c.optStr(o.next, 'next'),
     intro: checkSay(c, o.intro, 'intro'),
     lessons,
     outro: checkSay(c, o.outro, 'outro'),

@@ -62,6 +62,8 @@ export interface RunnerOptions {
   lines?: QuillLines;
   /** Progress carried in from earlier wings or a save. */
   progress?: ProgressState;
+  /** Continue in an existing world (entering a later wing). */
+  vfs?: Vfs;
   /** Resume from a save instead of starting the wing fresh. */
   restore?: { vfs: VfsSnapshot; runner: RunnerSnapshot };
   now?: () => number;
@@ -124,15 +126,19 @@ export class LessonRunner {
     if (opts.restore && opts.restore.runner.wingId !== wing.id) {
       throw new Error(`Save is for wing "${opts.restore.runner.wingId}", not "${wing.id}"`);
     }
-    this.vfs = opts.restore
-      ? Vfs.load(opts.restore.vfs, { now: opts.now })
-      : buildWorld(wing.world, { now: opts.now });
+    if (opts.restore) this.vfs = Vfs.load(opts.restore.vfs, { now: opts.now });
+    else if (opts.vfs) {
+      this.vfs = opts.vfs;
+      if (wing.setup) applyPatch(this.vfs, wing.setup, this.user);
+    } else if (wing.world) this.vfs = buildWorld(wing.world, { now: opts.now });
+    else
+      throw new Error(`Wing "${wing.id}" has no world of its own; enter it from an earlier wing`);
     this.vfs.onRead = (p) => this.reads.add(p);
     this.progress = opts.progress ?? newProgress();
     this.rng = new Rng(this.progress.rngState);
     this.lines = opts.lines ?? FALLBACK_LINES;
-    // Every template the game has, so duties can mix in older spells; eligibility is by known spells.
-    this.templates = Object.values(opts.dutyFiles ?? {}).flat();
+    // Templates from the files this wing names (list earlier wings' files to mix in older spells).
+    this.templates = (wing.duties ?? []).flatMap((id) => opts.dutyFiles?.[id] ?? []);
     if (opts.restore) {
       const r = opts.restore.runner;
       this.phase = r.phase;
@@ -145,6 +151,15 @@ export class LessonRunner {
       this.commands = [...r.commands];
       this.reads = new Set(r.reads);
     }
+  }
+
+  /** The player's account, for placing files in their home. */
+  get user() {
+    return {
+      name: this.vfs.credentials.user,
+      groups: [...this.vfs.credentials.groups],
+      home: this.vfs.home,
+    };
   }
 
   snapshot(): RunnerSnapshot {
@@ -321,7 +336,7 @@ export class LessonRunner {
 
   private beginLesson(): Narration[] {
     const lesson = this.wing.lessons[this.lessonIndex];
-    if (lesson.setup) applyPatch(this.vfs, lesson.setup, this.wing.world.user);
+    if (lesson.setup) applyPatch(this.vfs, lesson.setup, this.user);
     return [...this.learn(lesson.spells), ...quill(lesson.intro), ...this.beginStep()];
   }
 
@@ -412,7 +427,7 @@ export class LessonRunner {
     }
     this.duty = duty;
     this.progress.recentDuties = [...this.progress.recentDuties, duty.signature].slice(-30);
-    if (duty.setup) applyPatch(this.vfs, duty.setup, this.wing.world.user);
+    if (duty.setup) applyPatch(this.vfs, duty.setup, this.user);
     this.stepIndex = 0;
     return this.beginStep();
   }
@@ -466,7 +481,7 @@ export class LessonRunner {
   }
 
   private grant(r: Reward) {
-    const home = this.wing.world.user.home;
+    const home = this.user.home;
     const files: Record<string, string> = {};
     if (r.lore) {
       files[`${home}/${r.lore.file}`] = r.lore.text;
@@ -474,7 +489,7 @@ export class LessonRunner {
     }
     if (r.decoration) files[`${home}/${r.decoration.file}`] = r.decoration.content;
     if (r.theme && !this.progress.themes.includes(r.theme)) this.progress.themes.push(r.theme);
-    if (Object.keys(files).length) applyPatch(this.vfs, { files }, this.wing.world.user);
+    if (Object.keys(files).length) applyPatch(this.vfs, { files }, this.user);
   }
 
   private openCapstone(): Narration[] {
@@ -503,7 +518,7 @@ export class LessonRunner {
       this.stepIndex++;
       return [...out, ...this.beginStep()];
     }
-    if (cap.unlocks) applyPatch(this.vfs, cap.unlocks, this.wing.world.user);
+    if (cap.unlocks) applyPatch(this.vfs, cap.unlocks, this.user);
     return [...out, ...quill(cap.outro), ...this.finishWing()];
   }
 

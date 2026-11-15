@@ -4,7 +4,8 @@ import { loadGameContent } from '../content/game';
 import { artFor } from '../content';
 import { Director, TITLE_CHIPS } from './director';
 
-const content = loadGameContent();
+// These tests use the small sample wing.
+const content = { ...loadGameContent(), startWing: 'lantern-hall' };
 const LESSONS = [
   'pwd',
   'ls -a',

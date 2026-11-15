@@ -81,7 +81,14 @@ export interface Wing {
   rewards?: Reward[];
   /** Art name: art/<banner>.narrow.txt and art/<banner>.wide.txt. */
   banner?: string;
-  world: WorldSpec;
+  /** The starting world. Required for the first wing; later wings continue the same world. */
+  world?: WorldSpec;
+  /** Added to the world when the player enters this wing (later wings). */
+  setup?: WorldPatch;
+  /** Walking into this directory (once the previous wing is done) begins this wing. */
+  entrance?: string;
+  /** The wing that follows this one. */
+  next?: string;
   intro?: string[];
   lessons: Lesson[];
   outro?: string[];

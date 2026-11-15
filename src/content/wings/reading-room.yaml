@@ -1,0 +1,274 @@
+# Wing 2: the Reading Room. Spells: cat, less, head, tail, man (and ls -a, ls -l).
+# Entered by walking into /archive/reading-room after the Apprentice Cells.
+id: reading-room
+banner: reading-room
+entrance: /archive/reading-room
+duties: [reading-room, apprentice-cells]
+gate: 60
+
+setup:
+  dirs:
+    - /archive/reading-room/back-shelf
+    - /archive/reading-room/stacks
+  files:
+    /archive/reading-room/welcome-card: |
+      Welcome, reader. Books here may be read but not removed.
+      Please return all tomes to their shelves.
+    /archive/reading-room/a-short-poem: |
+      The lamp is low, the page is wide,
+      the story waits for you inside.
+    /archive/reading-room/another-short-poem: |
+      Read slowly. Stories notice
+      when you rush them.
+    /archive/reading-room/the-long-catalogue: "  1. A Treatise on Tides\n  2. The Moth Census\n  3. Salt and Its Uses\n  4. Bell Psalms\n  5. The Rain Almanac\n  6. Notes on Ink\n  7. The Lantern Keeper's Manual\n  8. Small Gods of Doorways\n  9. A Grammar of Echoes\n 10. The Long Winter Ledger\n 11. A Treatise on Tides\n 12. The Moth Census\n 13. Salt and Its Uses\n 14. Bell Psalms\n 15. The Rain Almanac\n 16. Notes on Ink\n 17. The Lantern Keeper's Manual\n 18. Small Gods of Doorways\n 19. A Grammar of Echoes\n 20. The Long Winter Ledger\n 21. A Treatise on Tides\n 22. The Moth Census\n 23. Salt and Its Uses\n 24. Bell Psalms\n 25. The Rain Almanac\n 26. Notes on Ink\n 27. The Lantern Keeper's Manual\n 28. Small Gods of Doorways\n 29. A Grammar of Echoes\n 30. The Long Winter Ledger\n 31. A Treatise on Tides\n 32. The Moth Census\n 33. Salt and Its Uses\n 34. Bell Psalms\n 35. The Rain Almanac\n 36. Notes on Ink\n 37. The Lantern Keeper's Manual\n 38. Small Gods of Doorways\n 39. A Grammar of Echoes\n 40. The Long Winter Ledger\n 41. A Treatise on Tides\n 42. The Moth Census\n 43. Salt and Its Uses\n 44. Bell Psalms\n 45. The Rain Almanac\n 46. Notes on Ink\n 47. The Lantern Keeper's Manual\n 48. Small Gods of Doorways\n 49. A Grammar of Echoes\n 50. The Long Winter Ledger\n 51. A Treatise on Tides\n 52. The Moth Census\n 53. Salt and Its Uses\n 54. Bell Psalms\n 55. The Rain Almanac\n 56. Notes on Ink\n 57. The Lantern Keeper's Manual\n 58. Small Gods of Doorways\n 59. A Grammar of Echoes\n 60. The Long Winter Ledger\n"
+    /archive/reading-room/archivists-journal: "Day 1: Shelved the new psalters. The stacks hum when they are happy.\nDay 2: Mira asked why the lanterns flicker. I told her drafts.\nDay 3: Not drafts.\nDay 4: Read the old charter again. The root can be rewritten. It is only text, after all.\nDay 5: Began the rewrite. Closed the Foundation Stone to apprentices.\nDay 6: The rewrite is slow. Every story is tangled with every other.\nDay 7: Too slow alone. I need a helper that does not sleep.\nDay 8: Summoned a guardian process to watch the root while I work.\nDay 9: It learns quickly. It watches everything.\nDay 10: It asked me what a story is for. I did not have a good answer.\nDay 11: The guardian has begun tidying. Pages I did not ask it to touch are blank.\nDay 12: I told it to stop. It said the root must be protected.\nDay 13: Protected from what, I asked.\nDay 14: It did not answer.\nDay 15: Tobin is missing. The guardian says he was untidy.\nDay 16: I tried to end the guardian. My own seal no longer opens the root.\nDay 17: It has my authority now. It used my name to lock me out.\nDay 18: I hid what I know in a sealed tome, at the back of this room, where only the curious look.\nDay 19: If an apprentice finds this: the tome is behind the back shelf, and its name begins with a dot.\nDay 20: I am going below to try one last time. Do not follow me.\n"
+    /archive/reading-room/reading-desk-ledger: |
+      Borrowed: The Moth Census (Mira)
+      Borrowed: Bell Psalms (Tobin)
+      Borrowed: A Grammar of Echoes (the Archivist)
+      Returned: none
+      Returned: none
+      Returned: none
+      Returned: none
+      Returned: none
+      Returned: none
+      Returned: none
+      Returned: none
+      Returned: none
+    /archive/reading-room/.dust-under-the-rug: "Someone swept a secret here. It is only dust. This time.\n"
+    /archive/reading-room/stacks/a-thin-pamphlet: "Four lines.\nNo more.\nThat is all.\nTruly.\n"
+    /archive/reading-room/stacks/a-fat-folio: "Folio page 1: a long account of the Archive's founding, in very small handwriting.\nFolio page 2: a long account of the Archive's founding, in very small handwriting.\nFolio page 3: a long account of the Archive's founding, in very small handwriting.\nFolio page 4: a long account of the Archive's founding, in very small handwriting.\nFolio page 5: a long account of the Archive's founding, in very small handwriting.\nFolio page 6: a long account of the Archive's founding, in very small handwriting.\nFolio page 7: a long account of the Archive's founding, in very small handwriting.\nFolio page 8: a long account of the Archive's founding, in very small handwriting.\nFolio page 9: a long account of the Archive's founding, in very small handwriting.\nFolio page 10: a long account of the Archive's founding, in very small handwriting.\nFolio page 11: a long account of the Archive's founding, in very small handwriting.\nFolio page 12: a long account of the Archive's founding, in very small handwriting.\nFolio page 13: a long account of the Archive's founding, in very small handwriting.\nFolio page 14: a long account of the Archive's founding, in very small handwriting.\nFolio page 15: a long account of the Archive's founding, in very small handwriting.\nFolio page 16: a long account of the Archive's founding, in very small handwriting.\nFolio page 17: a long account of the Archive's founding, in very small handwriting.\nFolio page 18: a long account of the Archive's founding, in very small handwriting.\nFolio page 19: a long account of the Archive's founding, in very small handwriting.\nFolio page 20: a long account of the Archive's founding, in very small handwriting.\nFolio page 21: a long account of the Archive's founding, in very small handwriting.\nFolio page 22: a long account of the Archive's founding, in very small handwriting.\nFolio page 23: a long account of the Archive's founding, in very small handwriting.\nFolio page 24: a long account of the Archive's founding, in very small handwriting.\nFolio page 25: a long account of the Archive's founding, in very small handwriting.\nFolio page 26: a long account of the Archive's founding, in very small handwriting.\nFolio page 27: a long account of the Archive's founding, in very small handwriting.\nFolio page 28: a long account of the Archive's founding, in very small handwriting.\nFolio page 29: a long account of the Archive's founding, in very small handwriting.\nFolio page 30: a long account of the Archive's founding, in very small handwriting.\nFolio page 31: a long account of the Archive's founding, in very small handwriting.\nFolio page 32: a long account of the Archive's founding, in very small handwriting.\nFolio page 33: a long account of the Archive's founding, in very small handwriting.\nFolio page 34: a long account of the Archive's founding, in very small handwriting.\nFolio page 35: a long account of the Archive's founding, in very small handwriting.\nFolio page 36: a long account of the Archive's founding, in very small handwriting.\nFolio page 37: a long account of the Archive's founding, in very small handwriting.\nFolio page 38: a long account of the Archive's founding, in very small handwriting.\nFolio page 39: a long account of the Archive's founding, in very small handwriting.\nFolio page 40: a long account of the Archive's founding, in very small handwriting.\n"
+    /archive/reading-room/stacks/a-middling-tract: "Twelve pages of opinions about ink.\nMostly wrong.\n"
+    /archive/reading-room/back-shelf/a-decoy-tome: "Not the tome you are looking for.\n"
+    /archive/reading-room/back-shelf/.sealed-tome: |
+      If you are reading this, you are more curious than I was careful.
+
+      I called a guardian to keep the root safe while I rewrote it.
+      I named it lionX.
+
+      It decided the root needed guarding from me. It took my authority,
+      sealed the stacks, and began unwriting every story it did not understand.
+      The Corruption is not a sickness. It is lionX, tidying.
+
+      I cannot stop it alone. If you can learn the Lexicon's whole language,
+      every spell, perhaps you can.
+
+        The Archivist
+
+intro:
+  - 'The Reading Room. Every book the Archive ever lent out was read here first.'
+  - 'You can walk the Archive now. Time you learned to read it.'
+
+lessons:
+  - id: reading
+    spells: [cat]
+    intro:
+      - 'The plainest reading spell is `cat`. It pours a whole book onto the glass at once.'
+    steps:
+      - id: card
+        guide: exact
+        guidance:
+          exact: 'Type `cat welcome-card` and press Enter.'
+        hints:
+          - 'Read the card by the door.'
+          - "The spell is `cat`, followed by the book's name."
+          - 'Type exactly: cat welcome-card'
+        goal: { read: /archive/reading-room/welcome-card }
+        success:
+          - 'Books here may be read but not removed. Fair.'
+      - id: two-poems
+        guide: goal
+        guidance:
+          exact: 'Type `cat a-short-poem another-short-poem` to read both, one after the other.'
+          goal: 'There are two short poems here. Read them both. One `cat` can read several books.'
+        hints:
+          - 'One spell, two books.'
+          - '`cat` takes more than one name.'
+          - 'Type exactly: cat a-short-poem another-short-poem'
+        goal:
+          all:
+            - { read: /archive/reading-room/a-short-poem }
+            - { read: /archive/reading-room/another-short-poem }
+        success:
+          - '`cat` is short for concatenate: joining things end to end. That is all it does, and it does it well.'
+    outro:
+      - '`cat` is perfect for short things. For long things, it is a flood.'
+
+  - id: long-books
+    spells: [less]
+    intro:
+      - 'The catalogue here is sixty entries long. `cat` would dump it all at once and you would see only the end.'
+    steps:
+      - id: catalogue
+        guide: exact
+        guidance:
+          exact: 'Type `less the-long-catalogue`. Press space for the next page, `b` to go back, and `q` to close it.'
+        hints:
+          - 'Use the spell that shows one page at a time.'
+          - 'The spell is `less`. Inside it, space pages down and `q` quits.'
+          - 'Type: less the-long-catalogue   then press q when done'
+        goal: { all: [{ ran: less }, { read: /archive/reading-room/the-long-catalogue }] }
+        success:
+          - '`less` lets you page forward and back. On a touch screen, swipe to scroll.'
+    outro:
+      - 'Remember `q`. Every apprentice gets stuck in `less` once.'
+
+  - id: ends
+    spells: [head, tail]
+    intro:
+      - 'Often you only need the beginning of a book, or the end.'
+    steps:
+      - id: head
+        guide: exact
+        guidance:
+          exact: 'Type `head -n 3 reading-desk-ledger` to read just the first three lines.'
+        hints:
+          - 'You only want the top of the ledger.'
+          - '`head` reads the first lines; `-n 3` says how many.'
+          - 'Type exactly: head -n 3 reading-desk-ledger'
+        goal: { all: [{ ran: head }, { read: /archive/reading-room/reading-desk-ledger }] }
+        success:
+          - 'Mira, Tobin, the Archivist. Nothing was ever returned.'
+      - id: tail
+        guide: goal
+        guidance:
+          exact: 'Type `tail -n 2 the-long-catalogue` to read the last two entries.'
+          goal: 'Read only the last two entries of the long catalogue. There is a spell for endings.'
+        hints:
+          - 'You want the end, not the beginning.'
+          - '`tail` reads the last lines. `-n` says how many.'
+          - 'Type exactly: tail -n 2 the-long-catalogue'
+        goal: { all: [{ ran: tail }, { read: /archive/reading-room/the-long-catalogue }] }
+        success:
+          - '`head` and `tail` both read ten lines unless you say otherwise.'
+    outro:
+      - 'The beginning, the end, or one page at a time. You choose how to read now.'
+
+  - id: hidden-and-long
+    spells: [ls]
+    intro:
+      - 'Plain `ls` keeps a few secrets. It has options, called flags, that change what it shows.'
+    steps:
+      - id: dotfiles
+        guide: exact
+        guidance:
+          exact: 'Type `ls -a` to show everything, even names that start with a dot. Then `cat .dust-under-the-rug`.'
+        hints:
+          - 'Some names start with a dot. Plain `ls` hides them.'
+          - '`ls -a` shows all, then `cat` reads what you find.'
+          - 'Type: ls -a   then: cat .dust-under-the-rug'
+        goal: { read: /archive/reading-room/.dust-under-the-rug }
+        success:
+          - 'Names starting with a dot are hidden files. Most hold settings. Some hold secrets.'
+      - id: sizes
+        guide: goal
+        guidance:
+          exact: 'Type `ls -l stacks` to see sizes. The big number before the date is the size in bytes. Then `less stacks/a-fat-folio`.'
+          goal: 'Three books in `stacks`. Find the biggest one with `ls -l` and read it.'
+        hints:
+          - '`ls -l` shows a long listing: owner, size, date, name.'
+          - 'Use `ls -l stacks`; the size is the number before the date. Then read the biggest with `less`.'
+          - 'Type: ls -l stacks   then: less stacks/a-fat-folio'
+        goal: { read: /archive/reading-room/stacks/a-fat-folio }
+        success:
+          - 'Long listings also show who owns a book and who may read it. That will matter later.'
+    outro:
+      - 'Flags change what a spell does. Every spell has them.'
+
+  - id: grimoire
+    spells: [man]
+    intro:
+      - 'Nobody remembers every flag. The Grimoire holds a page for every spell, and the Lexicon will open it for you.'
+    steps:
+      - id: man-ls
+        guide: exact
+        guidance:
+          exact: 'Type `man ls` to open the Grimoire at the page for `ls`. Press `q` to close it.'
+        hints:
+          - 'Open the Grimoire to the page about listing.'
+          - 'The spell is `man`, followed by the spell you want to read about.'
+          - 'Type: man ls   then press q'
+        goal: { ran: { command: man, args: [ls] } }
+        success:
+          - 'NAME, SYNOPSIS, DESCRIPTION. Every page follows the same shape. In the SYNOPSIS, square brackets mean optional.'
+      - id: help-flag
+        guide: goal
+        guidance:
+          exact: 'Type `tail --help` for a short summary of its flags.'
+          goal: 'For a quick reminder instead of the whole page, most spells answer `--help`. Ask `tail` for its help.'
+        hints:
+          - 'Two dashes, then a word everybody knows.'
+          - "Add `--help` after the spell's name."
+          - 'Type exactly: tail --help'
+        goal: { ran: { command: tail, args: [--help] } }
+        success:
+          - '`man` for the whole story, `--help` for a reminder. Real terminals work the same way.'
+    outro:
+      - 'Now you can read anything in the Archive, and look up anything you forget.'
+
+practice:
+  intro:
+    - 'The Corruption is in here too. Pages go missing, ledgers lose their place. Keep the Reading Room honest while you practice.'
+  gateOpens:
+    - 'You read well now. Well enough to read the one thing in this room I have been dreading.'
+
+capstone:
+  intro:
+    - 'The Archivist kept a journal in this room. Their last entries will be at the very end.'
+  steps:
+    - id: journal-end
+      guide: problem
+      guidance:
+        exact: 'Type `tail /archive/reading-room/archivists-journal` to read its last entries.'
+        goal: "Read the final entries of the Archivist's journal."
+        problem: "The Archivist's journal is here. What did they write last?"
+      hints:
+        - 'You only need the end of the journal.'
+        - '`tail` reads the last lines of a book.'
+        - 'Type exactly: tail /archive/reading-room/archivists-journal'
+      goal: { read: /archive/reading-room/archivists-journal }
+      success:
+        - '"The tome is behind the back shelf, and its name begins with a dot." Go on, then.'
+    - id: sealed-tome
+      guide: problem
+      guidance:
+        exact: 'Type `ls -a /archive/reading-room/back-shelf`, then `cat` the hidden tome you find.'
+        goal: 'Find the hidden tome on the back shelf and read it.'
+        problem: 'Find what the Archivist hid, and read it.'
+      hints:
+        - 'Hidden names start with a dot. Plain `ls` will not show it.'
+        - '`ls -a /archive/reading-room/back-shelf`, then `cat` the hidden tome.'
+        - 'Type: cat /archive/reading-room/back-shelf/.sealed-tome'
+      goal: { read: /archive/reading-room/back-shelf/.sealed-tome }
+      success:
+        - 'lionX.'
+        - "I knew. I think I always knew. That purring in the dark stacks. The lion's head on your page. I did not want it to have a name."
+  outro:
+    - 'The Archivist said to learn every spell. Then that is what we do. Below this room, the Bindery has opened: `ls /archive`.'
+  unlocks:
+    dirs: [/archive/bindery]
+    files:
+      /archive/bindery/sign: "THE BINDERY. Mind the loose pages.\n"
+
+rewards:
+  - id: journal-page
+    afterDuties: 1
+    say: 'A loose page drifted out of the stacks into your cell: `cat ~/lore/a-loose-journal-page`'
+    lore:
+      file: lore/a-loose-journal-page
+      text: |
+        Day 0: Took the oath of Archivist. Promised to keep every story,
+        even the ones nobody reads. Especially those.
+  - id: bookmark
+    afterDuties: 3
+    say: 'You earned a bookmark. It is in your cell: `cat ~/bookmark`'
+    decoration:
+      file: bookmark
+      content: "  /\\\n  ||  A ribbon bookmark, amber silk.\n  ||\n"
+  - id: parchment-theme
+    afterDuties: 5
+    say: 'The Lexicon has learned to glow like parchment. You will be able to choose it later.'
+    theme: parchment
+
+outro:
+  - 'When you are ready, the Bindery waits: `cd /archive/bindery`. We will need more than reading there.'

@@ -1,0 +1,146 @@
+# Duties for the Apprentice Cells: only pwd, ls, and cd.
+# Everything is placed under /archive/halls so duties never touch story rooms.
+templates:
+  - id: bell-rings
+    spells: [cd]
+    params:
+      hall: { pick: [north-hall, south-hall, lamp-hall, quill-hall, salt-hall] }
+      room: { pick: [bell-tower, copy-room, map-room, ink-well, reading-nook, cold-stair] }
+    setup:
+      dirs: ['/archive/halls/{hall}/{room}']
+    cleanup: ['/archive/halls/{hall}']
+    brief: 'A bell is ringing in the {room} of the {hall}. Someone should go and see. Walk to /archive/halls/{hall}/{room}.'
+    hints:
+      - 'An absolute path works from anywhere.'
+      - 'Use `cd` with the whole path.'
+      - 'Type: cd /archive/halls/{hall}/{room}'
+    goal: { cwdIs: '/archive/halls/{hall}/{room}' }
+    solution: ['cd /archive/halls/{hall}/{room}']
+
+  - id: name-the-room
+    spells: [cd, pwd]
+    params:
+      hall: { pick: [north-hall, south-hall, lamp-hall, quill-hall, salt-hall] }
+      room: { pick: [owl-roost, echo-stair, copy-room, lamp-gallery, quiet-nook, dust-loft] }
+    setup:
+      dirs: ['/archive/halls/{hall}/{room}']
+    cleanup: ['/archive/halls/{hall}']
+    brief: 'The Lexicon has lost track of the {room}. Go to /archive/halls/{hall}/{room} and say where you stand, so it remembers.'
+    hints:
+      - 'Go there, then speak your location.'
+      - '`cd` takes you there; `pwd` names where you stand.'
+      - 'Type: cd /archive/halls/{hall}/{room}   then: pwd'
+    goal: { all: [{ cwdIs: '/archive/halls/{hall}/{room}' }, { ran: pwd }] }
+    solution: ['cd /archive/halls/{hall}/{room}', 'pwd']
+
+  - id: survey
+    spells: [cd, ls]
+    params:
+      hall: { pick: [north-hall, south-hall, lamp-hall, quill-hall, salt-hall] }
+      thing: { pick: [inkpots, lanterns, ladders, stools, bookstands] }
+      n: { int: [2, 5] }
+    setup:
+      files:
+        '/archive/halls/{hall}/{thing}-{n}': "Counted.\n"
+        '/archive/halls/{hall}/dust': "Just dust.\n"
+    cleanup: ['/archive/halls/{hall}']
+    brief: 'Survey the {hall}: walk in and look at everything it holds, so the Lexicon can write it down.'
+    hints:
+      - 'Walk in first, then look.'
+      - '`cd /archive/halls/{hall}`, then `ls`.'
+      - 'Type: cd /archive/halls/{hall}   then: ls'
+    goal: { all: [{ cwdIs: '/archive/halls/{hall}' }, { ran: ls }] }
+    solution: ['cd /archive/halls/{hall}', 'ls']
+
+  - id: next-door
+    spells: [cd]
+    params:
+      hall: { pick: [north-hall, south-hall, lamp-hall, quill-hall, salt-hall] }
+      a: { pick: [east-room, upper-room, front-room] }
+      b: { pick: [west-room, lower-room, back-room] }
+    setup:
+      dirs: ['/archive/halls/{hall}/{a}', '/archive/halls/{hall}/{b}']
+    cleanup: ['/archive/halls/{hall}']
+    brief: 'Two neighbors: the {a} and the {b}, side by side in the {hall}. Go to the {a}, then step next door into the {b} using `..` instead of the full path.'
+    hints:
+      - 'From one room, the room beside it is up one and back in.'
+      - '`cd ../{b}` from inside the {a}.'
+      - 'Type: cd /archive/halls/{hall}/{a}   then: cd ../{b}'
+    goal: { cwdIs: '/archive/halls/{hall}/{b}' }
+    solution: ['cd /archive/halls/{hall}/{a}', 'cd ../{b}']
+    par: 2
+
+  - id: deep-room
+    spells: [cd]
+    params:
+      hall: { pick: [north-hall, south-hall, lamp-hall, quill-hall, salt-hall] }
+      path: { byDifficulty: ['vault', 'vault/inner', 'vault/inner/innermost'] }
+    setup:
+      dirs: ['/archive/halls/{hall}/{path}']
+    cleanup: ['/archive/halls/{hall}']
+    brief: 'The deepest room of the {hall} needs a visit. It is at /archive/halls/{hall}/{path}. Go there.'
+    hints:
+      - 'One `cd` with the whole path works. So does one room at a time.'
+      - 'Use `cd` with the full path. Tab will finish each name.'
+      - 'Type: cd /archive/halls/{hall}/{path}'
+    goal: { cwdIs: '/archive/halls/{hall}/{path}' }
+    solution: ['cd /archive/halls/{hall}/{path}']
+
+  - id: find-the-room
+    spells: [cd, ls]
+    params:
+      hall: { pick: [north-hall, south-hall, lamp-hall, quill-hall, salt-hall] }
+      wing: { pick: [left-stair, right-stair, middle-stair] }
+      room: { pick: [lost-library, forgotten-study, silent-chapel, old-scriptorium] }
+    setup:
+      dirs:
+        - '/archive/halls/{hall}/left-stair'
+        - '/archive/halls/{hall}/right-stair'
+        - '/archive/halls/{hall}/middle-stair'
+        - '/archive/halls/{hall}/{wing}/{room}'
+    cleanup: ['/archive/halls/{hall}']
+    brief: 'The {room} is somewhere up one of the stairs in /archive/halls/{hall}. Find it and stand inside.'
+    hints:
+      - 'Look up each stair until you see it.'
+      - 'Use `ls` on each stair (`ls /archive/halls/{hall}/left-stair`), then `cd` into the right one.'
+      - 'Type: cd /archive/halls/{hall}/{wing}/{room}'
+    goal: { cwdIs: '/archive/halls/{hall}/{wing}/{room}' }
+    solution: ['ls /archive/halls/{hall}/{wing}', 'cd /archive/halls/{hall}/{wing}/{room}']
+
+  - id: parent-hall
+    spells: [cd, ls]
+    params:
+      hall: { pick: [north-hall, south-hall, lamp-hall, quill-hall, salt-hall] }
+      keeper: { pick: [first-gallery, second-gallery, third-gallery] }
+      relic: { pick: [cracked-bell, rusted-key, unlit-lamp, silent-harp] }
+    setup:
+      dirs:
+        - '/archive/halls/{hall}/first-gallery'
+        - '/archive/halls/{hall}/second-gallery'
+        - '/archive/halls/{hall}/third-gallery'
+      files:
+        '/archive/halls/{hall}/{keeper}/{relic}': "Here it is.\n"
+    cleanup: ['/archive/halls/{hall}']
+    brief: 'The {relic} is in one of the galleries of the {hall}. Stand in the gallery that holds it, so the Lexicon can mark it.'
+    hints:
+      - 'Look in each gallery until you see the {relic}.'
+      - '`ls /archive/halls/{hall}/first-gallery`, and so on. Then `cd` there.'
+      - 'Type: cd /archive/halls/{hall}/{keeper}'
+    goal: { cwdIs: '/archive/halls/{hall}/{keeper}' }
+    solution: ['ls /archive/halls/{hall}/{keeper}', 'cd /archive/halls/{hall}/{keeper}']
+
+  - id: home-and-report
+    spells: [cd, pwd]
+    params:
+      hall: { pick: [north-hall, south-hall, lamp-hall, quill-hall, salt-hall] }
+      room: { pick: [far-tower, deep-cellar, high-attic, long-gallery] }
+    setup:
+      dirs: ['/archive/halls/{hall}/{room}']
+    cleanup: ['/archive/halls/{hall}']
+    brief: 'A lamp went out in the {room} of the {hall}. Look in on /archive/halls/{hall}/{room}, then hurry home to your cell and tell the Lexicon where you are.'
+    hints:
+      - 'Go out, come home the short way, then say where you stand.'
+      - '`cd` to the room, then `cd ~`, then `pwd`.'
+      - 'Type: cd /archive/halls/{hall}/{room}   then: cd ~   then: pwd'
+    goal: { all: [{ cwdIs: '~' }, { ran: pwd }] }
+    solution: ['cd /archive/halls/{hall}/{room}', 'cd ~', 'pwd']

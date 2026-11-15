@@ -1,0 +1,173 @@
+# Duties for the Reading Room. Placed under /archive/reading-room/carrels.
+# Duties about one particular spell (less, head, tail, man, --help) ask for that
+# spell in their goal, so practice strengthens it; others accept any way to read.
+templates:
+  - id: misplaced-book
+    spells: [cd, ls, cat]
+    params:
+      carrel: { pick: [carrel-1, carrel-2, carrel-3, carrel-4, carrel-5, carrel-6] }
+      book:
+        {
+          pick:
+            [moth-census, bell-psalms, salt-and-its-uses, rain-almanac, notes-on-ink, tide-tables],
+        }
+    setup:
+      files:
+        '/archive/reading-room/carrels/{carrel}/{book}': "The {book}, restored. Its ink holds steady again.\n"
+    cleanup: ['/archive/reading-room/carrels/{carrel}']
+    brief: 'The {book} turned up in one of the reading carrels, /archive/reading-room/carrels/{carrel}. Read it so it remembers its words.'
+    hints:
+      - 'Go to the carrel, look, then read.'
+      - '`cd` to the carrel, `ls`, then `cat` the book.'
+      - 'Type: cat /archive/reading-room/carrels/{carrel}/{book}'
+    goal: { read: '/archive/reading-room/carrels/{carrel}/{book}' }
+    solution: ['cd /archive/reading-room/carrels/{carrel}', 'ls', 'cat {book}']
+
+  - id: last-entry
+    spells: [tail]
+    params:
+      carrel: { pick: [carrel-1, carrel-2, carrel-3, carrel-4, carrel-5, carrel-6] }
+      room: { pick: [map-room, bell-loft, ink-closet, copy-hall, owl-roost] }
+    setup:
+      files:
+        '/archive/reading-room/carrels/{carrel}/watch-log': "Entry 1: all quiet in the {room}.\nEntry 2: all quiet in the {room}.\nEntry 3: all quiet in the {room}.\nEntry 4: all quiet in the {room}.\nEntry 5: all quiet in the {room}.\nEntry 6: all quiet in the {room}.\nEntry 7: all quiet in the {room}.\nEntry 8: all quiet in the {room}.\nEntry 9: all quiet in the {room}.\nEntry 10: all quiet in the {room}.\nEntry 11: all quiet in the {room}.\nEntry 12: all quiet in the {room}.\nEntry 13: all quiet in the {room}.\nEntry 14: all quiet in the {room}.\nEntry 15: all quiet in the {room}.\nEntry 16: all quiet in the {room}.\nEntry 17: all quiet in the {room}.\nEntry 18: all quiet in the {room}.\nEntry 19: all quiet in the {room}.\nEntry 20: all quiet in the {room}.\nEntry 21: all quiet in the {room}.\nEntry 22: all quiet in the {room}.\nEntry 23: all quiet in the {room}.\nEntry 24: all quiet in the {room}.\nEntry 25: all quiet in the {room}.\nEntry 26: all quiet in the {room}.\nEntry 27: all quiet in the {room}.\nEntry 28: all quiet in the {room}.\nEntry 29: all quiet in the {room}.\nEntry 30: the {{room}} lamp went out at midnight. Something purred.\n"
+    cleanup: ['/archive/reading-room/carrels/{carrel}']
+    brief: 'The watch log in /archive/reading-room/carrels/{carrel} has thirty entries. Only the newest matters. Read the end of it with `tail`.'
+    hints:
+      - 'The newest entry is at the bottom.'
+      - '`tail` reads the last lines. `-n 1` reads just one.'
+      - 'Type: tail -n 1 /archive/reading-room/carrels/{carrel}/watch-log'
+    goal: { all: [{ ran: tail }, { read: '/archive/reading-room/carrels/{carrel}/watch-log' }] }
+    solution: ['tail -n 1 /archive/reading-room/carrels/{carrel}/watch-log']
+
+  - id: ledger-heading
+    spells: [head]
+    params:
+      carrel: { pick: [carrel-1, carrel-2, carrel-3, carrel-4, carrel-5, carrel-6] }
+      room: { pick: [map-room, bell-loft, ink-closet, copy-hall, owl-roost] }
+      keeper: { pick: [Mira, Tobin, the-Archivist, a-night-porter] }
+    setup:
+      files:
+        '/archive/reading-room/carrels/{carrel}/ledger': "Ledger of the {room}\nKept by {keeper}\nOpened in the year of quiet stacks\nLine 4: nothing of note.\nLine 5: nothing of note.\nLine 6: nothing of note.\nLine 7: nothing of note.\nLine 8: nothing of note.\nLine 9: nothing of note.\nLine 10: nothing of note.\nLine 11: nothing of note.\nLine 12: nothing of note.\nLine 13: nothing of note.\nLine 14: nothing of note.\nLine 15: nothing of note.\nLine 16: nothing of note.\nLine 17: nothing of note.\nLine 18: nothing of note.\nLine 19: nothing of note.\nLine 20: nothing of note.\nLine 21: nothing of note.\nLine 22: nothing of note.\nLine 23: nothing of note.\nLine 24: nothing of note.\nLine 25: nothing of note.\n"
+    cleanup: ['/archive/reading-room/carrels/{carrel}']
+    brief: 'Who kept the ledger in /archive/reading-room/carrels/{carrel}? The keeper is named in its first few lines. Read only the top with `head`.'
+    hints:
+      - 'The name is near the start.'
+      - '`head` reads the first lines; `-n 3` reads three.'
+      - 'Type: head -n 3 /archive/reading-room/carrels/{carrel}/ledger'
+    goal: { all: [{ ran: head }, { read: '/archive/reading-room/carrels/{carrel}/ledger' }] }
+    solution: ['head -n 3 /archive/reading-room/carrels/{carrel}/ledger']
+
+  - id: hidden-slip
+    spells: [ls, cat]
+    params:
+      carrel: { pick: [carrel-1, carrel-2, carrel-3, carrel-4, carrel-5, carrel-6] }
+      slip: { pick: [borrowing-slip, love-letter, overdue-notice, pressed-flower, margin-note] }
+    setup:
+      files:
+        '/archive/reading-room/carrels/{carrel}/.{slip}': "A {slip}, tucked away where only the curious look.\n"
+        '/archive/reading-room/carrels/{carrel}/empty-inkpot': "Dry.\n"
+    cleanup: ['/archive/reading-room/carrels/{carrel}']
+    brief: 'Something is tucked out of sight in /archive/reading-room/carrels/{carrel}. Find it and read it.'
+    hints:
+      - 'Hidden names begin with a dot.'
+      - '`ls -a` shows them. `cat` reads them.'
+      - 'Type: ls -a /archive/reading-room/carrels/{carrel}   then: cat /archive/reading-room/carrels/{carrel}/.{slip}'
+    goal: { read: '/archive/reading-room/carrels/{carrel}/.{slip}' }
+    solution:
+      [
+        'ls -a /archive/reading-room/carrels/{carrel}',
+        'cat /archive/reading-room/carrels/{carrel}/.{slip}',
+      ]
+
+  - id: long-scroll
+    spells: [less]
+    params:
+      carrel: { pick: [carrel-1, carrel-2, carrel-3, carrel-4, carrel-5, carrel-6] }
+      scroll: { pick: [tides, moths, bells, salt, rain, ink] }
+    setup:
+      files:
+        '/archive/reading-room/carrels/{carrel}/scroll-of-{scroll}': "Line 1 of the scroll of {scroll}: the ink runs on and on.\nLine 2 of the scroll of {scroll}: the ink runs on and on.\nLine 3 of the scroll of {scroll}: the ink runs on and on.\nLine 4 of the scroll of {scroll}: the ink runs on and on.\nLine 5 of the scroll of {scroll}: the ink runs on and on.\nLine 6 of the scroll of {scroll}: the ink runs on and on.\nLine 7 of the scroll of {scroll}: the ink runs on and on.\nLine 8 of the scroll of {scroll}: the ink runs on and on.\nLine 9 of the scroll of {scroll}: the ink runs on and on.\nLine 10 of the scroll of {scroll}: the ink runs on and on.\nLine 11 of the scroll of {scroll}: the ink runs on and on.\nLine 12 of the scroll of {scroll}: the ink runs on and on.\nLine 13 of the scroll of {scroll}: the ink runs on and on.\nLine 14 of the scroll of {scroll}: the ink runs on and on.\nLine 15 of the scroll of {scroll}: the ink runs on and on.\nLine 16 of the scroll of {scroll}: the ink runs on and on.\nLine 17 of the scroll of {scroll}: the ink runs on and on.\nLine 18 of the scroll of {scroll}: the ink runs on and on.\nLine 19 of the scroll of {scroll}: the ink runs on and on.\nLine 20 of the scroll of {scroll}: the ink runs on and on.\nLine 21 of the scroll of {scroll}: the ink runs on and on.\nLine 22 of the scroll of {scroll}: the ink runs on and on.\nLine 23 of the scroll of {scroll}: the ink runs on and on.\nLine 24 of the scroll of {scroll}: the ink runs on and on.\nLine 25 of the scroll of {scroll}: the ink runs on and on.\nLine 26 of the scroll of {scroll}: the ink runs on and on.\nLine 27 of the scroll of {scroll}: the ink runs on and on.\nLine 28 of the scroll of {scroll}: the ink runs on and on.\nLine 29 of the scroll of {scroll}: the ink runs on and on.\nLine 30 of the scroll of {scroll}: the ink runs on and on.\nLine 31 of the scroll of {scroll}: the ink runs on and on.\nLine 32 of the scroll of {scroll}: the ink runs on and on.\nLine 33 of the scroll of {scroll}: the ink runs on and on.\nLine 34 of the scroll of {scroll}: the ink runs on and on.\nLine 35 of the scroll of {scroll}: the ink runs on and on.\nLine 36 of the scroll of {scroll}: the ink runs on and on.\nLine 37 of the scroll of {scroll}: the ink runs on and on.\nLine 38 of the scroll of {scroll}: the ink runs on and on.\nLine 39 of the scroll of {scroll}: the ink runs on and on.\nLine 40 of the scroll of {scroll}: the ink runs on and on.\nLine 41 of the scroll of {scroll}: the ink runs on and on.\nLine 42 of the scroll of {scroll}: the ink runs on and on.\nLine 43 of the scroll of {scroll}: the ink runs on and on.\nLine 44 of the scroll of {scroll}: the ink runs on and on.\nLine 45 of the scroll of {scroll}: the ink runs on and on.\nLine 46 of the scroll of {scroll}: the ink runs on and on.\nLine 47 of the scroll of {scroll}: the ink runs on and on.\nLine 48 of the scroll of {scroll}: the ink runs on and on.\nLine 49 of the scroll of {scroll}: the ink runs on and on.\nLine 50 of the scroll of {scroll}: the ink runs on and on.\nLine 51 of the scroll of {scroll}: the ink runs on and on.\nLine 52 of the scroll of {scroll}: the ink runs on and on.\nLine 53 of the scroll of {scroll}: the ink runs on and on.\nLine 54 of the scroll of {scroll}: the ink runs on and on.\nLine 55 of the scroll of {scroll}: the ink runs on and on.\nLine 56 of the scroll of {scroll}: the ink runs on and on.\nLine 57 of the scroll of {scroll}: the ink runs on and on.\nLine 58 of the scroll of {scroll}: the ink runs on and on.\nLine 59 of the scroll of {scroll}: the ink runs on and on.\nLine 60 of the scroll of {scroll}: the ink runs on and on.\n"
+    cleanup: ['/archive/reading-room/carrels/{carrel}']
+    brief: 'The scroll of {scroll} in /archive/reading-room/carrels/{carrel} is too long to read in one gulp. Page through it with `less`.'
+    hints:
+      - 'Use the spell that shows one page at a time. Remember `q` to close it.'
+      - "`less` and the scroll's path."
+      - 'Type: less /archive/reading-room/carrels/{carrel}/scroll-of-{scroll}'
+    goal:
+      {
+        all: [{ ran: less }, { read: '/archive/reading-room/carrels/{carrel}/scroll-of-{scroll}' }],
+      }
+    solution: ['less /archive/reading-room/carrels/{carrel}/scroll-of-{scroll}']
+
+  - id: biggest-book
+    spells: [ls, cat]
+    params:
+      carrel: { pick: [carrel-1, carrel-2, carrel-3, carrel-4, carrel-5, carrel-6] }
+      room: { pick: [map-room, bell-loft, ink-closet, copy-hall, owl-roost] }
+      big: { pick: [atlas, compendium, chronicle, register] }
+      small: { pick: [pamphlet, leaflet, notecard] }
+      middle: { pick: [tract, primer, digest] }
+    setup:
+      files:
+        '/archive/reading-room/carrels/{carrel}/{big}': "Page 1: dense, careful prose about the history of the {room}.\nPage 2: dense, careful prose about the history of the {room}.\nPage 3: dense, careful prose about the history of the {room}.\nPage 4: dense, careful prose about the history of the {room}.\nPage 5: dense, careful prose about the history of the {room}.\nPage 6: dense, careful prose about the history of the {room}.\nPage 7: dense, careful prose about the history of the {room}.\nPage 8: dense, careful prose about the history of the {room}.\nPage 9: dense, careful prose about the history of the {room}.\nPage 10: dense, careful prose about the history of the {room}.\nPage 11: dense, careful prose about the history of the {room}.\nPage 12: dense, careful prose about the history of the {room}.\nPage 13: dense, careful prose about the history of the {room}.\nPage 14: dense, careful prose about the history of the {room}.\nPage 15: dense, careful prose about the history of the {room}.\nPage 16: dense, careful prose about the history of the {room}.\nPage 17: dense, careful prose about the history of the {room}.\nPage 18: dense, careful prose about the history of the {room}.\nPage 19: dense, careful prose about the history of the {room}.\nPage 20: dense, careful prose about the history of the {room}.\nPage 21: dense, careful prose about the history of the {room}.\nPage 22: dense, careful prose about the history of the {room}.\nPage 23: dense, careful prose about the history of the {room}.\nPage 24: dense, careful prose about the history of the {room}.\nPage 25: dense, careful prose about the history of the {room}.\nPage 26: dense, careful prose about the history of the {room}.\nPage 27: dense, careful prose about the history of the {room}.\nPage 28: dense, careful prose about the history of the {room}.\nPage 29: dense, careful prose about the history of the {room}.\nPage 30: dense, careful prose about the history of the {room}.\n"
+        '/archive/reading-room/carrels/{carrel}/{small}': "A few words.\n"
+        '/archive/reading-room/carrels/{carrel}/{middle}': "A few more words than that.\nBut not many.\n"
+    cleanup: ['/archive/reading-room/carrels/{carrel}']
+    brief: 'Three books in /archive/reading-room/carrels/{carrel}, and the biggest is fading fastest. Find which is biggest and read it.'
+    hints:
+      - "The long listing shows each book's size."
+      - '`ls -l` shows sizes in bytes, just before the date. Then read the biggest.'
+      - 'Type: ls -l /archive/reading-room/carrels/{carrel}   then: cat /archive/reading-room/carrels/{carrel}/{big}'
+    goal: { read: '/archive/reading-room/carrels/{carrel}/{big}' }
+    solution:
+      [
+        'ls -l /archive/reading-room/carrels/{carrel}',
+        'cat /archive/reading-room/carrels/{carrel}/{big}',
+      ]
+
+  - id: grimoire-page
+    spells: [man]
+    params:
+      spell: { pick: [ls, cd, pwd, cat, head, tail, less] }
+    brief: 'The Lexicon has forgotten what `{spell}` is for. Open its page in the Grimoire to remind it.'
+    hints:
+      - 'The Grimoire has a page for every spell.'
+      - "`man` and the spell's name. `q` closes the page."
+      - 'Type: man {spell}'
+    goal: { ran: { command: man, args: ['{spell}'] } }
+    solution: ['man {spell}']
+
+  - id: two-halves
+    spells: [cd, cat]
+    params:
+      carrel: { pick: [carrel-1, carrel-2, carrel-3, carrel-4, carrel-5, carrel-6] }
+      sender: { pick: [Mira, Tobin, the-cook, a-copyist] }
+    setup:
+      files:
+        '/archive/reading-room/carrels/{carrel}/letter-first-half': "Dear Archivist, the lamps on my floor\n"
+        '/archive/reading-room/carrels/{carrel}/letter-second-half': "keep going out. Please come quickly. {sender}\n"
+    cleanup: ['/archive/reading-room/carrels/{carrel}']
+    brief: 'A letter from {sender} was torn in two. Both halves are in /archive/reading-room/carrels/{carrel}. Read them together.'
+    hints:
+      - 'One spell can read both halves, one after the other.'
+      - '`cat` takes more than one name.'
+      - 'Type: cd /archive/reading-room/carrels/{carrel}   then: cat letter-first-half letter-second-half'
+    goal:
+      all:
+        - { read: '/archive/reading-room/carrels/{carrel}/letter-first-half' }
+        - { read: '/archive/reading-room/carrels/{carrel}/letter-second-half' }
+    solution:
+      ['cd /archive/reading-room/carrels/{carrel}', 'cat letter-first-half letter-second-half']
+
+  - id: help-reminder
+    spells: [cat, head, tail, ls]
+    params:
+      spell: { pick: [cat, head, tail, ls] }
+    brief: 'Quick: the Lexicon wants a reminder of the flags `{spell}` takes. Ask the spell itself for help.'
+    hints:
+      - 'Most spells answer a particular flag with a short summary.'
+      - "Add `--help` after the spell's name."
+      - 'Type: {spell} --help'
+    goal: { ran: { command: '{spell}', args: [--help] } }
+    solution: ['{spell} --help']

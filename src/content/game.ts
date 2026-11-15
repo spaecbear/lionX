@@ -2,8 +2,8 @@ import { loadCoaching, loadDuties, loadQuillLines, loadWing } from '../engine/co
 import type { GameContent } from '../engine/session';
 import { coachingSource, dutySources, quillSource, wingSources } from '.';
 
-/** The wing a new game begins in. Phase 9 replaces the sample with the real opening wing. */
-export const START_WING = 'lantern-hall';
+/** The wing a new game begins in. (lantern-hall is a small sample wing kept for tests.) */
+export const START_WING = 'apprentice-cells';
 
 /** Parse every content file into what a play session needs. */
 export function loadGameContent(): GameContent {

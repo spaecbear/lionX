@@ -124,7 +124,7 @@ export class Director {
       typeDelay: this.opts.typeDelay,
       narrator: {
         start: () => session.opening(),
-        afterCommand: (line, status, stderr) => session.runner.afterCommand(line, status, stderr),
+        afterCommand: (line, status, stderr) => session.afterCommand(line, status, stderr),
       },
       onCommand: () => {
         this.save();

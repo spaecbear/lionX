@@ -10,16 +10,36 @@ import { applyTask, gateOpen, GAIN, isSwift, masteryPhrase, nextDifficulty } fro
 import { Rng } from './rng';
 import { chooseParams, substitute } from './template';
 
-const templates: DutyTemplate[] = Object.entries(dutySources).flatMap(([id, src]) =>
-  loadDuties(src, `${id}.yaml`),
+const dutyFiles: Record<string, DutyTemplate[]> = Object.fromEntries(
+  Object.entries(dutySources).map(([id, src]) => [id, loadDuties(src, `${id}.yaml`)]),
 );
+/** The sample wing's templates, for the generator's unit tests. */
+const templates: DutyTemplate[] = dutyFiles['lantern-hall'];
 const ALL_SPELLS = ['pwd', 'ls', 'cd', 'cat', 'head', 'tail', 'less', 'man'];
 
-/** Run a duty's solution in a fresh lantern-hall world and report whether its goal is met. */
-async function solve(duty: Duty) {
-  const wing = loadWing(wingSources['lantern-hall']);
-  const vfs = buildWorld(wing.world);
-  if (duty.setup) applyPatch(vfs, duty.setup, wing.world.user);
+const wings = Object.fromEntries(
+  Object.entries(wingSources).map(([id, src]) => [id, loadWing(src, id)]),
+);
+
+/** The world as it stands when a duty file's duties are handed out. */
+function worldFor(dutyFile: string) {
+  if (dutyFile === 'lantern-hall') return buildWorld(wings['lantern-hall'].world!);
+  const cells = wings['apprentice-cells'];
+  const vfs = buildWorld(cells.world!);
+  applyPatch(vfs, cells.capstone!.unlocks!, cells.world!.user);
+  if (dutyFile === 'reading-room') applyPatch(vfs, wings['reading-room'].setup!, cells.world!.user);
+  return vfs;
+}
+
+/** Run a duty's solution in its world and report whether its goal is met. */
+async function solve(duty: Duty, dutyFile: string) {
+  const vfs = worldFor(dutyFile);
+  if (duty.setup)
+    applyPatch(vfs, duty.setup, {
+      name: 'apprentice',
+      groups: ['apprentice'],
+      home: '/home/apprentice',
+    });
   const reads = new Set<string>();
   vfs.onRead = (p) => reads.add(p);
   const commands: { command: string; args: string[]; status: number }[] = [];
@@ -38,16 +58,18 @@ async function solve(duty: Duty) {
 }
 
 describe('duty generator (done criterion)', () => {
-  it.each([1, 2, 3])(
-    '20 duties in a row at difficulty %i are unique and solvable with only their spells',
-    async (difficulty) => {
+  const cases = Object.keys(dutyFiles).flatMap((file) => [1, 2, 3].map((d) => [file, d] as const));
+  it.each(cases)(
+    '%s: 20 duties in a row at difficulty %i are unique and solvable with only their spells',
+    async (file, difficulty) => {
+      const templates = dutyFiles[file];
       const rng = new Rng(1234 + difficulty);
       const recent: string[] = [];
       const seen = new Set<string>();
       for (let i = 0; i < 20; i++) {
         const duty = generateDuty(templates, {
           known: ALL_SPELLS,
-          focus: ['cd', 'ls'],
+          focus: [],
           difficulty,
           rng,
           recent,
@@ -56,7 +78,7 @@ describe('duty generator (done criterion)', () => {
         expect(seen.has(duty.signature), `duplicate ${duty.signature}`).toBe(false);
         seen.add(duty.signature);
         recent.push(duty.signature);
-        const r = await solve(duty);
+        const r = await solve(duty, file);
         expect(r.met, `${duty.signature} not solved by its solution`).toBe(true);
         expect(r.failures, `${duty.signature} solution had failing commands`).toEqual([]);
         for (const s of r.usedSpells)
@@ -221,8 +243,8 @@ describe('mastery', () => {
 });
 
 describe('duty template files', () => {
-  it('every solution line parses and every template has unique params space', () => {
-    for (const t of templates)
+  it('every solution line parses', () => {
+    for (const t of Object.values(dutyFiles).flat())
       for (const line of t.solution) expect(() => parseLine(line)).not.toThrow();
     expect(templates.length).toBeGreaterThanOrEqual(4);
   });

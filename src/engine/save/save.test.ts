@@ -14,7 +14,8 @@ import {
 } from './save';
 import { createTitleRegistry, describeSlot } from './title';
 
-const content = loadGameContent();
+// These tests use the small sample wing.
+const content = { ...loadGameContent(), startWing: 'lantern-hall' };
 const LESSONS = [
   'pwd',
   'ls -a',

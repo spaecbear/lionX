@@ -1,0 +1,289 @@
+# Wing 1: the Apprentice Cells. Spells: pwd, ls, cd.
+# Teaches: where you are, what is around you, moving with relative and
+# absolute paths, ~ and .., and Tab completion.
+id: apprentice-cells
+banner: cells
+next: reading-room
+duties: [apprentice-cells]
+gate: 60
+
+world:
+  user: { name: apprentice, groups: [apprentice], home: /home/apprentice }
+  dirs:
+    - /home/apprentice/an-unreasonably-long-corridor-that-goes-nowhere
+    - /home/mira
+    - /home/tobin
+    - /archive/echo-hall/atrium
+    - /archive/echo-hall/whisper-gallery
+    - /archive/halls
+    - { path: /archive/sealed-stacks, mode: '700', owner: lionx, group: lionx }
+  files:
+    /home/apprentice/cell-rules.txt: "1. Keep your candle lit.\n2. Ask the Lexicon before you ask Quill.\n3. Never open a sealed stack.\n"
+    /home/apprentice/torn-page-with-a-lions-head: "Most of this page is blank, as if the ink was eaten. In the corner, a small lion's head.\n"
+    /home/apprentice/candle-stub: "A stub of candle. Still warm.\n"
+    /home/apprentice/an-unreasonably-long-corridor-that-goes-nowhere/a-single-sock: "Someone else's.\n"
+    /home/mira/unmade-bed: "Mira left in a hurry.\n"
+    /home/mira/note-to-self: "Ask the Archivist why the stacks went quiet.\n"
+    /home/tobin/half-eaten-apple: "Tobin, too, is gone.\n"
+    /archive/echo-hall/atrium/notice-the-root-is-closed-for-rewriting: |
+      BY ORDER OF THE ARCHIVIST
+      The Foundation Stone is closed while the root is rewritten.
+      No apprentice is to go below the Atrium until this notice is taken down.
+    /archive/echo-hall/whisper-gallery/echo: "Echo. echo. echo.\n"
+
+intro:
+  - 'Wake up. No, really, wake up. There you are.'
+  - "I'm Quill. I live in this Lexicon, the old terminal on your desk, and it seems you are the only one left who can use it."
+  - 'The Archivist has vanished. The other apprentices are gone. Something is eating the stories in the stacks, page by page. We call it the Corruption, because nobody wants to call it anything worse.'
+  - "The Lexicon speaks the Archive's true language. Every room is a directory. Every book is a file. Every command is a spell. Let us start small."
+
+lessons:
+  - id: waking
+    spells: [pwd, ls]
+    intro:
+      - 'First: where are you? Lost apprentices ask the Lexicon before anything else.'
+    steps:
+      - id: pwd
+        guide: exact
+        guidance:
+          exact: 'Type `pwd` and press Enter. It prints the room you stand in.'
+        hints:
+          - 'Ask the Lexicon where you are.'
+          - 'The spell is `pwd`, short for print working directory.'
+          - 'Type exactly: pwd'
+        goal: { ran: pwd }
+        success:
+          - '/home/apprentice. Read it from the left: the Foundation Stone `/`, then `home`, then `apprentice`. Your cell.'
+      - id: ls
+        guide: exact
+        guidance:
+          exact: 'Now type `ls` to list what your cell holds.'
+        hints:
+          - 'Look around. That is a spell too.'
+          - 'The spell is `ls`, short for list.'
+          - 'Type exactly: ls'
+        goal: { ran: ls }
+        success:
+          - "A rule sheet, a candle stub, a corridor with a ridiculous name, and a torn page with a lion's head on it."
+          - 'I would rather not talk about the page. Not yet.'
+    outro:
+      - '`pwd` tells you where you are; `ls` tells you what is there. You will use them more than any other spells.'
+
+  - id: doors
+    spells: [cd]
+    intro:
+      - "Rooms are inside other rooms. Your cell sits inside `home`, along with the other apprentices' cells."
+    steps:
+      - id: up
+        guide: exact
+        guidance:
+          exact: 'Type `cd ..` to step out of your cell into the room that holds it. Two dots always mean one room up.'
+        hints:
+          - 'You want the room above this one.'
+          - '`cd` changes rooms. Two dots, `..`, name the room above.'
+          - 'Type exactly: cd ..'
+        goal: { cwdIs: /home }
+        success:
+          - 'Look at your prompt: it says `/home` now. The prompt always shows where you stand.'
+      - id: look-home
+        guide: goal
+        guidance:
+          exact: 'Type `ls` to see the other cells.'
+          goal: 'See whose cells share this hall with yours.'
+        hints:
+          - 'Same spell as before.'
+          - 'Use `ls`.'
+          - 'Type exactly: ls'
+        goal: { all: [{ cwdIs: /home }, { ran: ls }] }
+        success:
+          - 'Mira and Tobin. Their cells are empty. I would like to know why.'
+      - id: into-mira
+        guide: goal
+        guidance:
+          exact: "Type `cd mira` to step into Mira's cell. A name with no `/` in front means a room right here."
+          goal: "Step into Mira's cell and look around."
+        hints:
+          - 'Her cell is right here in this hall.'
+          - '`cd` and the name of the cell. Then `ls`.'
+          - 'Type: cd mira   then: ls'
+        goal: { all: [{ cwdIs: /home/mira }, { ran: ls }] }
+        success:
+          - '"Ask the Archivist why the stacks went quiet." So Mira noticed too.'
+      - id: back-to-cell
+        guide: problem
+        guidance:
+          exact: 'Type `cd ../apprentice`: up one room, then into your cell.'
+          goal: "Go back to your own cell, using `..` to climb out of Mira's."
+          problem: "It feels wrong to stand in someone else's room. Back to your own cell."
+        hints:
+          - 'Up one, then into your cell. You can do both in a single path.'
+          - '`cd ..` then `cd apprentice`, or both at once with `/` between.'
+          - 'Type exactly: cd ../apprentice'
+        goal: { cwdIs: /home/apprentice }
+        success:
+          - 'Paths like `../apprentice` start from where you stand. We call them relative paths.'
+    outro:
+      - 'Doors open both ways. `..` takes you up; names take you in.'
+
+  - id: long-ways
+    spells: [cd]
+    intro:
+      - 'Climbing one room at a time is fine for neighbors. For the far reaches of the Archive, there is a better way.'
+    steps:
+      - id: absolute
+        guide: exact
+        guidance:
+          exact: 'Type `cd /archive`. A path that begins with `/` starts at the Foundation Stone, wherever you are.'
+        hints:
+          - 'Start your path from the very top.'
+          - 'A path beginning with `/` is absolute. Use `cd` with it.'
+          - 'Type exactly: cd /archive'
+        goal: { cwdIs: /archive }
+        success:
+          - 'The Archive proper. Absolute paths work from anywhere; relative ones depend on where you stand.'
+      - id: survey
+        guide: goal
+        guidance:
+          exact: 'Type `ls` to see the halls of the Archive.'
+          goal: 'Look at what the Archive holds.'
+        hints:
+          - 'Look around.'
+          - 'Use `ls`.'
+          - 'Type exactly: ls'
+        goal: { all: [{ cwdIs: /archive }, { ran: ls }] }
+        coaching:
+          - line: 'sealed-stacks'
+            stderr: 'Permission denied'
+            say: 'Sealed. Not by the Archivist, either. I do not know whose ward that is. I do not like not knowing.'
+        success:
+          - 'The echo hall, the halls, and the sealed stacks. Leave the sealed stacks alone.'
+      - id: tilde-home
+        guide: problem
+        guidance:
+          exact: 'Type `cd ~`. The squiggle, a tilde, always means your own cell.'
+          goal: 'Go straight home in one step. There is a single character that means your cell.'
+          problem: 'You have wandered far. Go home in one step.'
+        hints:
+          - 'There is a one-character name for your cell.'
+          - '`~` means your home. `cd` with nothing at all also goes home.'
+          - 'Type exactly: cd ~'
+        goal: { cwdIs: /home/apprentice }
+        success:
+          - 'Home. `~` works anywhere in any path: `~/candle-stub` is the stub in your cell.'
+    outro:
+      - 'Absolute paths start with `/`. Relative paths start where you stand. `~` is home. You have the map now.'
+
+  - id: tab
+    spells: [cd]
+    intro:
+      - 'Some rooms have absurd names. The Lexicon will finish them for you, if you ask.'
+    steps:
+      - id: corridor
+        guide: exact
+        guidance:
+          exact: 'Type `cd an` and then press the Tab key. The Lexicon fills in the rest. Then press Enter.'
+        hints:
+          - 'Type the start of the name, then let the Lexicon finish it.'
+          - 'Type `cd an` and press Tab.'
+          - 'Type: cd an   then press Tab, then Enter'
+        goal: { cwdIs: /home/apprentice/an-unreasonably-long-corridor-that-goes-nowhere }
+        success:
+          - 'Tab completion. Use it always: it saves typing, and if Tab does nothing, the name you are typing does not exist.'
+      - id: out-again
+        guide: goal
+        guidance:
+          exact: 'Type `cd ..` to leave the corridor.'
+          goal: 'This corridor really does go nowhere. Step back out.'
+        hints:
+          - 'One room up.'
+          - '`cd ..`'
+          - 'Type exactly: cd ..'
+        goal: { cwdIs: /home/apprentice }
+        success:
+          - 'Told you.'
+    outro:
+      - 'That is everything a new apprentice needs to find their way.'
+
+practice:
+  intro:
+    - 'Now, chores. The Corruption scrambles the halls and the Lexicon forgets where things are. Small repairs keep it honest. Cast `status` to see how your spells are coming along, and `hint` if you are stuck.'
+  gateOpens:
+    - 'Your feet know the Archive now. Good, because I need you to go somewhere for me.'
+
+capstone:
+  intro:
+    - 'Below the echo hall is the Atrium, where the Archivist kept their desk. I cannot give you the path plainly. Old wards on my tongue. Riddles only.'
+  steps:
+    - id: stone
+      guide: problem
+      guidance:
+        exact: 'Type `cd /` to stand on the Foundation Stone.'
+        goal: 'Go to the very top of the Archive, the root of every path.'
+        problem: 'First, stand where every path begins.'
+      hints:
+        - 'Every absolute path starts with the same single character.'
+        - '`/` alone is the Foundation Stone. Use `cd`.'
+        - 'Type exactly: cd /'
+      goal: { cwdIs: / }
+      success:
+        - 'The Foundation Stone. Everything grows from here.'
+    - id: stories
+      guide: problem
+      guidance:
+        exact: 'Type `cd archive`.'
+        goal: 'From here, go into the room that holds all the stories.'
+        problem: 'Now go down into the place where every story is kept.'
+      hints:
+        - 'Look at what grows from the Foundation Stone.'
+        - '`ls`, then `cd` into the one that sounds like a library.'
+        - 'Type exactly: cd archive'
+      goal: { cwdIs: /archive }
+    - id: echoes
+      guide: problem
+      guidance:
+        exact: 'Type `cd echo-hall`.'
+        goal: 'Find the hall named for echoes.'
+        problem: 'Find the hall where your own voice comes back to you.'
+      hints:
+        - 'Listen to the names here.'
+        - '`ls`, then `cd` into the hall of echoes.'
+        - 'Type exactly: cd echo-hall'
+      goal: { cwdIs: /archive/echo-hall }
+    - id: atrium
+      guide: problem
+      guidance:
+        exact: 'Type `cd atrium`, then `ls`.'
+        goal: 'Go into the Atrium at the center of this hall and look around.'
+        problem: 'At its heart, something waits. Go in, and look.'
+      hints:
+        - 'The heart of a great hall has a particular name.'
+        - '`cd atrium`, then `ls`.'
+        - 'Type: cd atrium   then: ls'
+      goal: { all: [{ cwdIs: /archive/echo-hall/atrium }, { ran: ls }] }
+      success:
+        - 'Read the name of that notice. "The root is closed for rewriting." The Archivist was rewriting the root of the Archive itself. Nobody does that. Nobody should.'
+  outro:
+    - 'Listen. Something unsealed when you came in here. `ls /archive` and look.'
+  unlocks:
+    dirs: [/archive/reading-room]
+    files:
+      /archive/reading-room/sign: "THE READING ROOM. Quiet, please.\n"
+
+rewards:
+  - id: map-of-the-cells
+    afterDuties: 2
+    say: 'Someone left a map in your cell while you were out. `ls ~/map-of-the-cells` shows it. You will be able to read it soon.'
+    lore:
+      file: map-of-the-cells/where-the-apprentices-sleep
+      text: |
+        /home holds the cells: yours, Mira's, Tobin's.
+        Three apprentices. One left.
+  - id: second-candle
+    afterDuties: 4
+    say: 'A second candle appeared on your desk. Quill pretends not to have done it.'
+    decoration:
+      file: second-candle
+      content: "A fresh candle. Quill denies everything.\n"
+
+outro:
+  - 'The Reading Room. Walk in when you are ready: `cd /archive/reading-room`.'
