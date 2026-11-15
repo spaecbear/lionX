@@ -208,6 +208,11 @@ export class TerminalController {
               );
             }
           }
+        } else if (item.kind === 'achievement') {
+          this.term.write(
+            `\r\n  ${QUILL_SGR.reward}* Achievement: ${item.title}${QUILL_SGR.reset}\r\n` +
+              `    ${QUILL_SGR.narrator}${item.says}${QUILL_SGR.reset}\r\n\r\n`,
+          );
         } else if (item.kind === 'breakdown') {
           this.term.write(renderBreakdown(item.command, item.pieces, this.term.cols));
         } else if (item.kind === 'quill' || item.kind === 'narrator') {

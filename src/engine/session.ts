@@ -1,11 +1,12 @@
 import { createRegistry } from './commands';
-import type { CoachingRule, QuillLines, Secret, Wing } from './content';
+import type { Achievement, CoachingRule, QuillLines, Secret, Wing } from './content';
 import {
   createDutyCommand,
   createQuestsCommand,
   createHintCommand,
   createSolutionCommand,
   createHelpCommand,
+  createAchievementsCommand,
   type Glossary,
   createStatusCommand,
   LessonRunner,
@@ -37,6 +38,7 @@ export interface GameContent {
   glossary?: Glossary;
   /** Hidden notes that unlock themes and songs. */
   secrets?: Secret[];
+  achievements?: Achievement[];
 }
 
 export interface SessionOptions {
@@ -131,6 +133,7 @@ export function createSession(o: SessionOptions): GameSession {
     artText: content.artText,
     glossary: content.glossary,
     secrets: content.secrets,
+    achievements: content.achievements,
     progress: save
       ? structuredClone(save.progress)
       : newProgress(o.seed ?? Math.floor(now() % 2 ** 32)),
@@ -144,6 +147,7 @@ export function createSession(o: SessionOptions): GameSession {
       createHintCommand(() => runner),
       createSolutionCommand(() => runner),
       createHelpCommand(() => runner, content.glossary),
+      createAchievementsCommand(() => runner, content.achievements ?? []),
       createStatusCommand(() => runner),
       createDutyCommand(() => runner),
       createQuestsCommand(() => runner, content.sideQuests ?? ''),
@@ -177,6 +181,7 @@ export function createSession(o: SessionOptions): GameSession {
       artText: content.artText,
       glossary: content.glossary,
       secrets: content.secrets,
+      achievements: content.achievements,
       progress: runner.progress,
       vfs: runner.vfs,
       now,

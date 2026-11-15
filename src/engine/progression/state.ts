@@ -21,6 +21,12 @@ export interface ProgressState {
   secrets?: string[];
   /** Songs unlocked by secrets. */
   songs?: string[];
+  /** Achievements earned. */
+  achievements?: string[];
+  /** Spells and symbols ever used successfully (for achievements). */
+  used?: string[];
+  /** Duties finished swiftly. */
+  swift?: number;
 }
 
 export function newProgress(seed = 1): ProgressState {

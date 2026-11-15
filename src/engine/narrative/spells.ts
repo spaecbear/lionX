@@ -1,5 +1,6 @@
 import { defineCommand, helpText } from '../commands/util';
 import type { Glossary } from './explain';
+import type { Achievement } from '../content';
 import { masteryPhrase } from '../progression';
 import type { LessonRunner } from './runner';
 
@@ -20,6 +21,8 @@ export function createStatusCommand(getRunner: () => LessonRunner | null) {
       lines.push('');
       lines.push(`  Duties done: ${p.dutiesDone}`);
       if (p.lore.length) lines.push(`  Lore fragments found: ${p.lore.length}`);
+      if (p.achievements?.length)
+        lines.push(`  Achievements: ${p.achievements.length} (see achievements)`);
       if (p.secrets?.length)
         lines.push(`  Secrets found: ${p.secrets.length} of ${runner.secretCount}`);
       lines.push(`  ${runner.statusLine}`);
@@ -79,7 +82,7 @@ export function createQuestsCommand(getRunner: () => LessonRunner | null, text: 
 }
 
 /** Spells every apprentice has from the start, for help's last line. */
-const HELPERS = ['hint', 'solution', 'status', 'duty', 'help', 'settings'];
+const HELPERS = ['hint', 'solution', 'status', 'duty', 'achievements', 'help', 'settings'];
 
 /**
  * `help`: an index of the spells you know, one line each. The Grimoire (`man`)
@@ -114,6 +117,34 @@ export function createHelpCommand(getRunner: () => LessonRunner | null, glossary
       if (known.length === 0) lines.push('  None yet.');
       lines.push('', `Always at hand: ${HELPERS.join(', ')}.`);
       lines.push('Flags, examples and the rest live in the Grimoire: `man NAME`.');
+      io.stdout.write(lines.join('\n') + '\n');
+      return 0;
+    },
+  });
+}
+
+/** `achievements`: what you have earned, what is left, and ??? for the hidden ones. */
+export function createAchievementsCommand(
+  getRunner: () => LessonRunner | null,
+  list: Achievement[],
+) {
+  return defineCommand({
+    name: 'achievements',
+    unlockedInAct: 0,
+    options: {},
+    run(_o, io) {
+      const runner = getRunner();
+      const earned = runner?.progress.achievements ?? [];
+      const width = io.tty?.cols ?? 80;
+      const lines = [
+        `Achievements: ${earned.filter((id) => list.some((a) => a.id === id)).length} of ${list.length}`,
+        '',
+      ];
+      for (const a of list) {
+        const got = earned.includes(a.id);
+        if (!got && a.hidden) lines.push('  [ ] ???');
+        else lines.push(wrapIndented(`  [${got ? '*' : ' '}] ${a.title}: ${a.says}`, width, 6));
+      }
       io.stdout.write(lines.join('\n') + '\n');
       return 0;
     },

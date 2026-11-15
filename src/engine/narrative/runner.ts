@@ -5,6 +5,7 @@ import type {
   QuillLines,
   Reward,
   Secret,
+  Achievement,
   Step,
   Wing,
 } from '../content';
@@ -36,6 +37,8 @@ export type Narration =
   | { kind: 'quill'; text: string }
   /** The narrator: what happens around the player, not anyone's speech. */
   | { kind: 'narrator'; text: string }
+  /** An achievement, just earned. */
+  | { kind: 'achievement'; title: string; says: string }
   /** A command, explained piece by piece (the `solution` spell). */
   | { kind: 'breakdown'; command: string; pieces: [string, string][] }
   /** An ASCII art piece by name; the UI picks the narrow or wide variant. */
@@ -79,6 +82,8 @@ export interface RunnerOptions {
   glossary?: Glossary;
   /** Hidden notes that unlock cosmetics, placed as their wing begins. */
   secrets?: Secret[];
+  /** Achievements, checked after every command. */
+  achievements?: Achievement[];
   /** Every loaded duty template, by file id. The wing names which files it draws from. */
   dutyFiles?: Record<string, DutyTemplate[]>;
   /** Quill's fixed lines for duties, swift casting, and the gate. */
@@ -281,6 +286,10 @@ export class LessonRunner {
   /** Record a command as it runs (wire to Shell.onCommandRun). */
   recordCommand(command: string, args: string[], status: number): void {
     this.commands.push({ command, args, status });
+    if (status === 0) {
+      const used = (this.progress.used ??= []);
+      if (!used.includes(command)) used.push(command);
+    }
   }
 
   /**
@@ -288,6 +297,40 @@ export class LessonRunner {
    * or offers coaching for a recognizable mistake.
    */
   afterCommand(line: string, status: number, stderr: string): Narration[] {
+    const out = this.respond(line, status, stderr);
+    return [...out, ...this.checkAchievements()];
+  }
+
+  /** Newly earned achievements, in order. */
+  checkAchievements(): Narration[] {
+    const p = this.progress;
+    const earned = (p.achievements ??= []);
+    const out: Narration[] = [];
+    for (const a of this.opts.achievements ?? []) {
+      if (earned.includes(a.id) || !this.achieved(a)) continue;
+      earned.push(a.id);
+      out.push({ kind: 'achievement', title: a.title, says: a.says });
+    }
+    return out;
+  }
+
+  private achieved(a: Achievement): boolean {
+    const p = this.progress;
+    const w = a.when;
+    if ('wingDone' in w) return p.wingsDone.includes(w.wingDone);
+    if ('dutiesDone' in w) return p.dutiesDone >= w.dutiesDone;
+    if ('swift' in w) return (p.swift ?? 0) >= w.swift;
+    if ('gallery' in w) return (p.gallery?.length ?? 0) >= w.gallery;
+    if ('secrets' in w)
+      return (
+        (p.secrets?.length ?? 0) >= (w.secrets === 'all' ? this.secretCount || Infinity : w.secrets)
+      );
+    if ('spells' in w) return p.known.length >= w.spells && (p.used?.length ?? 0) > 0;
+    if ('used' in w) return p.used?.includes(w.used) ?? false;
+    return false;
+  }
+
+  private respond(line: string, status: number, stderr: string): Narration[] {
     const out = this.pending.splice(0);
     // Rooms appear as lessons go on; hide any secret whose room now exists.
     this.placeSecrets();
@@ -561,12 +604,12 @@ export class LessonRunner {
     this.progress.dutiesDone++;
     this.cleanup(duty);
     this.duty = null;
+    const swift = isSwift(result);
+    if (swift) this.progress.swift = (this.progress.swift ?? 0) + 1;
     const out: Narration[] = [
       ...this.reward(duty.art),
       { kind: 'quill', text: duty.success ?? this.rng.pick(this.lines.dutyDone) },
-      ...(isSwift(result)
-        ? [{ kind: 'quill' as const, text: this.rng.pick(this.lines.swift) }]
-        : []),
+      ...(swift ? [{ kind: 'quill' as const, text: this.rng.pick(this.lines.swift) }] : []),
       { kind: 'event', event: 'duty-complete', id: duty.signature },
       ...this.giveRewards(),
     ];

@@ -1,0 +1,110 @@
+# Achievements. Each has one condition, checked after every command:
+#   wingDone: ID      a wing's capstone is solved
+#   dutiesDone: N     restoration duties finished
+#   swift: N          duties finished swiftly (few commands, no hints)
+#   gallery: N        art pieces hung in ~/gallery
+#   secrets: N        secrets found (all: every one)
+#   spells: N         spells known
+#   used: NAME        a spell or symbol (|, >, >>, <, &&, &) used successfully
+# hidden: true shows ??? in the list until earned.
+achievements:
+  - id: first-words
+    title: First Words
+    says: 'Cast your first spell.'
+    when: { spells: 1 }
+  - id: cells-done
+    title: Out of the Cell
+    says: 'Mend the Apprentice Cells.'
+    when: { wingDone: apprentice-cells }
+  - id: reading-room-done
+    title: Well Read
+    says: 'Mend the Reading Room.'
+    when: { wingDone: reading-room }
+  - id: bindery-done
+    title: Bound and Shelved
+    says: 'Mend the Bindery.'
+    when: { wingDone: bindery }
+  - id: observatory-done
+    title: Stargazer
+    says: 'Mend the Observatory.'
+    when: { wingDone: observatory }
+  - id: aqueducts-done
+    title: Clear Water
+    says: 'Mend the Aqueducts.'
+    when: { wingDone: aqueducts }
+  - id: vault-done
+    title: Keeper of Keys
+    says: 'Mend the Vault.'
+    when: { wingDone: vault }
+  - id: haunted-stacks-done
+    title: Quiet Stacks
+    says: 'Mend the Haunted Stacks.'
+    when: { wingDone: haunted-stacks }
+  - id: undercroft-done
+    title: Pathfinder
+    says: 'Mend the Undercroft.'
+    when: { wingDone: undercroft }
+  - id: root-done
+    title: Guardian's Guardian
+    says: 'Tame lionX at the root of the Archive.'
+    hidden: true
+    when: { wingDone: root }
+  - id: first-duty
+    title: Small Repairs
+    says: 'Finish your first duty.'
+    when: { dutiesDone: 1 }
+  - id: duties-25
+    title: Busy Apprentice
+    says: 'Finish 25 duties.'
+    when: { dutiesDone: 25 }
+  - id: duties-100
+    title: Tireless
+    says: 'Finish 100 duties.'
+    when: { dutiesDone: 100 }
+  - id: swift-10
+    title: Quick Hands
+    says: 'Finish 10 duties swiftly, with no hints.'
+    when: { swift: 10 }
+  - id: gallery-10
+    title: Curator
+    says: 'Hang 10 pieces in your gallery.'
+    when: { gallery: 10 }
+  - id: gallery-40
+    title: Grand Gallery
+    says: 'Hang 40 pieces in your gallery.'
+    when: { gallery: 40 }
+  - id: first-secret
+    title: Curious
+    says: 'Find a secret.'
+    when: { secrets: 1 }
+  - id: all-secrets
+    title: Nothing Stays Hidden
+    says: 'Find every secret in the Archive.'
+    hidden: true
+    when: { secrets: all }
+  - id: spells-40
+    title: Spellbound
+    says: 'Know 40 spells.'
+    when: { spells: 40 }
+  - id: first-pipe
+    title: Aqueduct
+    says: 'Pour one spell into another with a pipe.'
+    when: { used: '|' }
+  - id: first-sudo
+    title: With Great Power
+    says: "Cast a spell with root's authority."
+    when: { used: sudo }
+  - id: read-the-manual
+    title: Read the Manual
+    says: 'Open the Grimoire.'
+    when: { used: man }
+  - id: fresh-glass
+    title: Fresh Glass
+    says: 'Wipe the Lexicon clean.'
+    hidden: true
+    when: { used: clear }
+  - id: background-spirit
+    title: Multitasking
+    says: 'Send a spell into the background.'
+    hidden: true
+    when: { used: '&' }

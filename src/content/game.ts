@@ -1,4 +1,12 @@
-import { loadCoaching, loadDuties, loadQuillLines, loadSecrets, loadWing } from '../engine/content';
+import {
+  loadCoaching,
+  loadDuties,
+  loadQuillLines,
+  loadSecrets,
+  loadAchievements,
+  loadWing,
+} from '../engine/content';
+import achievementsSource from './achievements.yaml?raw';
 import secretsSource from './secrets.yaml?raw';
 import { loadGlossary } from '../engine/narrative';
 import type { GameContent } from '../engine/session';
@@ -24,5 +32,6 @@ export function loadGameContent(): GameContent {
     artText: (name) => art(name, 'narrow'),
     glossary: loadGlossary(glossarySource),
     secrets: loadSecrets(secretsSource),
+    achievements: loadAchievements(achievementsSource),
   };
 }

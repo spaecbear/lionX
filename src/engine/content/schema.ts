@@ -49,6 +49,25 @@ export interface Lesson {
   outro?: string[];
 }
 
+/** What earns an achievement (exactly one key). */
+export type AchievementWhen =
+  | { wingDone: string }
+  | { dutiesDone: number }
+  | { swift: number }
+  | { gallery: number }
+  | { secrets: number | 'all' }
+  | { spells: number }
+  | { used: string };
+
+export interface Achievement {
+  id: string;
+  title: string;
+  says: string;
+  /** Shown as ??? until earned. */
+  hidden?: boolean;
+  when: AchievementWhen;
+}
+
 /** A hidden note that unlocks one cosmetic (a theme or a song) when read. */
 export interface Secret {
   id: string;

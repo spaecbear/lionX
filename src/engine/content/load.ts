@@ -14,6 +14,7 @@ import {
   type Wing,
   type WorldPatch,
   Secret,
+  Achievement,
 } from './schema';
 
 export class ContentError extends Error {}
@@ -608,5 +609,34 @@ export function loadSecrets(yamlText: string, source = 'secrets.yaml'): Secret[]
     if (seen.has(s.id as string)) throw new Error(`${where}: duplicate id ${s.id}`);
     seen.add(s.id as string);
     return s as unknown as Secret;
+  });
+}
+
+const ACHIEVEMENT_KEYS = [
+  'wingDone',
+  'dutiesDone',
+  'swift',
+  'gallery',
+  'secrets',
+  'spells',
+  'used',
+];
+
+/** Parse src/content/achievements.yaml. */
+export function loadAchievements(yamlText: string, source = 'achievements.yaml'): Achievement[] {
+  const raw = parseYaml(yamlText) as { achievements?: unknown };
+  if (!Array.isArray(raw?.achievements))
+    throw new Error(`${source}: expected an achievements list`);
+  const seen = new Set<string>();
+  return raw.achievements.map((a: Record<string, unknown>, i: number) => {
+    const where = `${source}: achievements[${i}]`;
+    for (const k of ['id', 'title', 'says'])
+      if (typeof a[k] !== 'string') throw new Error(`${where}: ${k} must be text`);
+    const keys = Object.keys((a.when ?? {}) as object);
+    if (keys.length !== 1 || !ACHIEVEMENT_KEYS.includes(keys[0]))
+      throw new Error(`${where}: when needs exactly one of ${ACHIEVEMENT_KEYS.join(', ')}`);
+    if (seen.has(a.id as string)) throw new Error(`${where}: duplicate id ${a.id}`);
+    seen.add(a.id as string);
+    return a as unknown as Achievement;
   });
 }

@@ -1,0 +1,3 @@
+Usage: achievements
+List the achievements you have earned and the ones still ahead.
+Hidden ones show as ??? until you earn them.

@@ -181,3 +181,40 @@ describe('the Grimoire in your cell', () => {
       expect(vfs.readFile(`/home/apprentice/grimoire/${spell}`)).toContain('NAME');
   });
 });
+
+describe('achievements', () => {
+  it('earns them as you play, each once, and lists them', async () => {
+    const { session } = await playToBindery(3);
+    const earned = session.runner.progress.achievements ?? [];
+    for (const id of [
+      'first-words',
+      'cells-done',
+      'root-done',
+      'first-duty',
+      'first-pipe',
+      'first-sudo',
+      'read-the-manual',
+      'gallery-10',
+    ])
+      expect(earned).toContain(id);
+    expect(new Set(earned).size).toBe(earned.length);
+    let out = '';
+    session.shell.terminal = { stdout: { write: (t) => (out += t) }, stderr: { write: () => {} } };
+    await session.shell.run('achievements');
+    expect(out).toContain('[*] Out of the Cell: Mend the Apprentice Cells.');
+    expect(out).toMatch(/Achievements: \d+ of 24/);
+  });
+
+  it('announces a new one right after the command that earns it', async () => {
+    const s: GameSession = createSession({ content: loadGameContent(), seed: 1 });
+    s.opening();
+    await s.shell.run('pwd');
+    expect(s.afterCommand('pwd', 0, '')).toContainEqual({
+      kind: 'achievement',
+      title: 'First Words',
+      says: 'Cast your first spell.',
+    });
+    await s.shell.run('pwd');
+    expect(s.afterCommand('pwd', 0, '').some((n) => n.kind === 'achievement')).toBe(false);
+  });
+});

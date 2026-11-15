@@ -312,6 +312,7 @@ export class Shell {
     const job = this.jobs.add(p.pid, argv.join(' '));
     this.terminal.stderr.write(`[${job.id}] ${p.pid}\n`);
     this.onCommandRun?.(argv[0], argv.slice(1), 0);
+    this.onCommandRun?.('&', [], 0);
     this.lastStatus = 0;
     return true;
   }
