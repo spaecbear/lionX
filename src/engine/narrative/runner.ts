@@ -824,7 +824,13 @@ export class LessonRunner {
     const s = this.opts.secrets?.find((x) => x.file === path);
     const found = (this.progress.secrets ??= []);
     // While story mode plays for you, it does not find secrets for you.
-    if (!s || found.includes(s.id) || this.storyActive) return;
+    if (!s || found.includes(s.id)) return;
+    if (this.storyActive) {
+      // Say so, rather than seem broken: the secret waits until story mode is off.
+      if (!this.pending.some((n) => n.kind === 'narrator' && n.text === this.lines.secretWaits))
+        this.pending.push({ kind: 'narrator', text: this.lines.secretWaits ?? '' });
+      return;
+    }
     found.push(s.id);
     if (s.theme && !this.progress.themes.includes(s.theme)) this.progress.themes.push(s.theme);
     if (s.song) {

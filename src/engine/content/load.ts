@@ -588,6 +588,7 @@ export function loadQuillLines(yamlText: string, source = 'quill.yaml'): QuillLi
     idle: one('idle'),
     gateSealed: one('gateSealed'),
     gateOpen: one('gateOpen'),
+    secretWaits: o.secretWaits === undefined ? undefined : one('secretWaits'),
     untilTrialEasy: o.untilTrialEasy === undefined ? undefined : one('untilTrialEasy'),
     untilTrial:
       o.untilTrial === undefined

@@ -191,4 +191,6 @@ export interface QuillLines {
   untilTrial?: string;
   /** The same, in easy mode (hints count). */
   untilTrialEasy?: string;
+  /** A secret read while story mode is on. */
+  secretWaits?: string;
 }

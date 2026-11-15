@@ -269,3 +269,55 @@ describe('settings and tints in the director', () => {
     expect(g.screen()).toContain('The Tarred Chests');
   });
 });
+
+describe('secret themes reach settings', () => {
+  it('reading the gray hair makes grigio choosable, in this save and others', async () => {
+    const { THEMES, ALWAYS_AVAILABLE } = await import('./theme');
+    const storage = memoryStorage();
+    let saved: import('../engine/settings').Settings = {
+      theme: 'candlelit',
+      motion: 'auto',
+      reader: false,
+      music: false,
+      volume: 4,
+      song: 'auto',
+      easy: false,
+    };
+    const term = new Terminal({ cols: 80, rows: 40, allowProposedApi: true });
+    const game = loadGameContent();
+    const d = new Director(
+      { cols: 80, rows: 40, write: (s) => term.write(s) },
+      {
+        storage,
+        content: game,
+        artFor,
+        titleHelp: '',
+        settings: {
+          get: () => saved,
+          set: (n) => (saved = n),
+          themes: Object.keys(THEMES),
+          alwaysAvailable: ALWAYS_AVAILABLE,
+        },
+      },
+    );
+    d.showTitle();
+    await d.ready;
+    await d.handleData('play 1\r');
+    await d.ready;
+    const hair = game.secrets!.find((s) => s.theme === 'grigio')!;
+    // Put the hair where the Observatory would, then read it as the player would.
+    const vfs = d.session!.runner.vfs;
+    vfs.credentials = { user: 'root', groups: ['root'] };
+    vfs.mkdir(hair.file.slice(0, hair.file.lastIndexOf('/')), { parents: true });
+    vfs.writeFile(hair.file, hair.text);
+    vfs.chmod(hair.file, 0o644);
+    vfs.credentials = { user: 'apprentice', groups: ['apprentice'] };
+    d.session!.runner.progress.known.push('cat');
+    await d.handleData(`cat ${hair.file}\r`);
+    await d.ready;
+    expect(d.session!.runner.progress.themes).toContain('grigio');
+    await d.handleData('settings theme grigio\r');
+    await d.ready;
+    expect(saved.theme).toBe('grigio');
+  });
+});

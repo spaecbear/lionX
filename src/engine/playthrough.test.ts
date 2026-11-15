@@ -349,8 +349,9 @@ describe('story mode and secrets', () => {
     expect(s.runner.vfs.exists(rain.file)).toBe(true);
     s.setStoryActive(true);
     s.runner.vfs.readFile(rain.file);
-    s.afterCommand('true', 0, '');
+    const said = s.afterCommand('true', 0, '');
     expect(s.runner.progress.secrets ?? []).toEqual([]);
+    expect(said.some((n) => n.kind === 'narrator' && n.text.includes('story off'))).toBe(true);
     s.setStoryActive(false);
     s.runner.vfs.readFile(rain.file);
     s.afterCommand('true', 0, '');
