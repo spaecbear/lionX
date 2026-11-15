@@ -8,6 +8,7 @@ async function run(name: string, args: string[]) {
   const io: IO = {
     stdin: '',
     stdinIsTerminal: true,
+    stdoutIsTerminal: false,
     stdout: { write: (s) => (stdout += s) },
     stderr: { write: (s) => (stderr += s) },
   };
@@ -56,10 +57,41 @@ describe('clear', () => {
 describe('registry', () => {
   it('lists, finds, and ships man pages for every command', () => {
     const r = createRegistry();
-    expect(r.names()).toEqual(['clear', 'echo']);
+    expect(r.names()).toEqual([
+      'cat',
+      'cd',
+      'clear',
+      'echo',
+      'head',
+      'less',
+      'ls',
+      'man',
+      'pwd',
+      'tail',
+    ]);
     expect(r.has('echo')).toBe(true);
     expect(r.has('lionX')).toBe(false);
     for (const n of r.names()) expect(r.get(n)!.manPage).toMatch(/^NAME/);
     expect(new CommandRegistry().names()).toEqual([]);
+  });
+
+  it('every command declares the wing that teaches it', () => {
+    const wings = Object.fromEntries(
+      createRegistry()
+        .names()
+        .map((n) => [n, createRegistry().get(n)!.unlockedInAct]),
+    );
+    expect(wings).toEqual({
+      cat: 2,
+      cd: 1,
+      clear: 1,
+      echo: 8,
+      head: 2,
+      less: 2,
+      ls: 1,
+      man: 2,
+      pwd: 1,
+      tail: 2,
+    });
   });
 });

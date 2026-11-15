@@ -38,7 +38,15 @@ export function buildWorld(spec: WorldSpec, opts: { now?: () => number } = {}): 
   for (const d of spec.dirs ?? []) {
     const entry = typeof d === 'string' ? { path: d } : d;
     vfs.mkdir(entry.path, { parents: true });
-    deferredDirMeta.push([entry.path, entry]);
+    const inHome = entry.path.startsWith(spec.user.home + '/');
+    deferredDirMeta.push([
+      entry.path,
+      {
+        ...entry,
+        owner: entry.owner ?? (inHome ? spec.user.name : undefined),
+        group: entry.group ?? (inHome ? spec.user.groups[0] : undefined),
+      },
+    ]);
   }
   for (const [path, f] of Object.entries(spec.files ?? {})) {
     const entry = typeof f === 'string' ? { content: f } : f;

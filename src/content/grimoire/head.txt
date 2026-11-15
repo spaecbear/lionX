@@ -1,0 +1,23 @@
+NAME
+    head - read the first lines of a book
+
+SYNOPSIS
+    head [OPTION]... [FILE]...
+
+DESCRIPTION
+    Head prints the first 10 lines of each FILE. With more than one
+    FILE, each is introduced by a header naming it. With no FILE, or
+    when FILE is -, it reads standard input.
+
+    -n, --lines=[-]NUM
+           print the first NUM lines instead; with a leading -, print
+           all but the last NUM lines
+    -q, --quiet, --silent
+           never print headers
+    -v, --verbose
+           always print headers
+    --help display this help and exit
+
+EXAMPLES
+    head journal.txt      the first 10 lines
+    head -n 3 journal.txt the first 3 lines

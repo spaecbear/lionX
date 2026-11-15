@@ -1,0 +1,4 @@
+Usage: man PAGE...
+Show the Grimoire page for each PAGE.
+
+      --help     display this help and exit

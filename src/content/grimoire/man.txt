@@ -1,0 +1,21 @@
+NAME
+    man - open the Grimoire to a spell's page
+
+SYNOPSIS
+    man SPELL
+
+DESCRIPTION
+    The Grimoire holds a page for every spell you can learn. Each page
+    gives the spell's true name, how to cast it (SYNOPSIS), what it does,
+    and its options. Pages open in the same reader as less: space for
+    the next page, q to close.
+
+    In the SYNOPSIS, words in [brackets] are optional, and ... means
+    you may give more than one.
+
+EXAMPLES
+    man ls                read about ls
+    man man               read this page
+
+EXIT STATUS
+    0 if the page was found, 16 if there is no such page.

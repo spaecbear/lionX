@@ -1,0 +1,4 @@
+Usage: clear [options]
+
+Options:
+  -x           do not try to clear scrollback

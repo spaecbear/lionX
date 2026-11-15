@@ -1,0 +1,22 @@
+Usage: ls [OPTION]... [FILE]...
+List information about the FILEs (the current directory by default).
+Sort entries alphabetically.
+
+  -a, --all                  do not ignore entries starting with .
+  -A, --almost-all           do not list implied . and ..
+  -C                         list entries by columns
+      --color[=WHEN]         color the output WHEN; more info below
+  -d, --directory            list directories themselves, not their contents
+  -F, --classify             append indicator (one of */) to entries
+  -h, --human-readable       with -l, print sizes like 1K 234M 2G etc.
+  -l                         use a long listing format
+  -r, --reverse              reverse order while sorting
+  -1                         list one file per line
+      --help                 display this help and exit
+
+The WHEN argument defaults to 'always' and can also be 'auto' or 'never'.
+
+Exit status:
+ 0  if OK,
+ 1  if minor problems (e.g., cannot access subdirectory),
+ 2  if serious trouble (e.g., cannot access command-line argument).

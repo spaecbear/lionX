@@ -1,0 +1,23 @@
+NAME
+    cat - read books aloud, one after another
+
+SYNOPSIS
+    cat [OPTION]... [FILE]...
+
+DESCRIPTION
+    Cat prints each FILE in order, joined together. With no FILE, or
+    when FILE is -, it reads what is poured into it (standard input).
+
+    -n, --number
+           number every line
+    -b, --number-nonblank
+           number only lines that are not empty
+    -E, --show-ends
+           mark the end of each line with $
+    -s, --squeeze-blank
+           fold runs of empty lines into one
+    --help display this help and exit
+
+EXAMPLES
+    cat letter.txt        read one letter
+    cat a.txt b.txt       read two, as if bound into one book

@@ -95,7 +95,8 @@ const encoder = new TextEncoder();
 
 export class Vfs {
   private root: DirNode;
-  private now: () => number;
+  /** The world clock (epoch ms). */
+  readonly now: () => number;
   credentials: Credentials;
   home: string;
   umask: number;

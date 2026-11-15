@@ -115,7 +115,7 @@ export function Game() {
       vfs,
       registry,
       terminal: { stdout: { write() {} }, stderr: { write() {} } },
-      env: { USER: vfs.credentials.user, PWD: vfs.cwd },
+      env: { USER: vfs.credentials.user, PWD: vfs.cwd, TERM: 'xterm-256color' },
     });
     const controller = new TerminalController(term, shell, { motd: devWorld.motd });
     session.current = { term, fit, controller, shell };
@@ -132,6 +132,8 @@ export function Game() {
       const size = fontSizeFor(width, charRatio);
       if (term.options.fontSize !== size) term.options.fontSize = size;
       fit.fit();
+      shell.env.set('COLUMNS', String(term.cols));
+      shell.env.set('LINES', String(term.rows));
       term.scrollToBottom();
     };
     resize();
@@ -165,6 +167,25 @@ export function Game() {
     el.addEventListener('pointerdown', onDown, true); // capture: xterm stops bubbling
     el.addEventListener('pointerup', onUp, true);
 
+    // In a pager (alternate screen), vertical swipes scroll by sending arrow keys.
+    let swipeY: number | null = null;
+    const onTouchStart = (e: TouchEvent) => {
+      swipeY = term.buffer.active.type === 'alternate' ? e.touches[0].clientY : null;
+    };
+    const onTouchMove = (e: TouchEvent) => {
+      if (swipeY === null || term.buffer.active.type !== 'alternate') return;
+      e.preventDefault();
+      const rowHeight = el.clientHeight / term.rows;
+      const dy = e.touches[0].clientY - swipeY;
+      const steps = Math.trunc(dy / rowHeight);
+      if (steps === 0) return;
+      swipeY += steps * rowHeight;
+      // Finger moves up = read further down, like scrolling a page.
+      send((steps < 0 ? '\x1b[B' : '\x1b[A').repeat(Math.abs(steps)));
+    };
+    el.addEventListener('touchstart', onTouchStart, { passive: true });
+    el.addEventListener('touchmove', onTouchMove, { passive: false });
+
     const ro = new ResizeObserver(resize);
     ro.observe(el);
     window.visualViewport?.addEventListener('resize', resize);
@@ -176,6 +197,8 @@ export function Game() {
       window.visualViewport?.removeEventListener('scroll', resize);
       el.removeEventListener('pointerdown', onDown, true);
       el.removeEventListener('pointerup', onUp, true);
+      el.removeEventListener('touchstart', onTouchStart);
+      el.removeEventListener('touchmove', onTouchMove);
       sub.dispose();
       term.dispose();
       session.current = null;

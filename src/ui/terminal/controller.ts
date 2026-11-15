@@ -8,6 +8,7 @@ import { normalizeSmartPunctuation } from '../mobile/input';
 export interface TerminalLike {
   write(data: string): void;
   readonly cols: number;
+  readonly rows: number;
 }
 
 export interface ControllerOptions {
@@ -41,6 +42,8 @@ export class TerminalController {
   private busy = false;
   private queue: string[] = [];
   private drain: Promise<void> = Promise.resolve();
+  private keyReader: ((key: string) => void) | null = null;
+  private idleWaiters: (() => void)[] = [];
   /** Cursor offset (in cells) from the start of the prompt, as last drawn. */
   private drawnOffset = 0;
   private hostname: string;
@@ -56,6 +59,15 @@ export class TerminalController {
     this.hostname = opts.hostname ?? 'archive';
     const out = { write: (s: string) => this.writeOutput(s) };
     shell.terminal = { stdout: out, stderr: out };
+    shell.tty = {
+      get rows() {
+        return term.rows;
+      },
+      get cols() {
+        return term.cols;
+      },
+      readKey: () => this.readKey(),
+    };
   }
 
   private writeOutput(s: string) {
@@ -73,7 +85,25 @@ export class TerminalController {
   handleData(data: string): Promise<void> {
     this.queue.push(...splitKeys(normalizeSmartPunctuation(data)));
     this.drain = this.drain.then(() => this.processQueue());
-    return this.drain;
+    this.wakeReader();
+    // Settle when everything is processed, or when a running program is waiting for more keys.
+    return Promise.race([this.drain, new Promise<void>((r) => this.idleWaiters.push(r))]);
+  }
+
+  /** Keys for interactive programs (pagers) while a command runs. */
+  private readKey(): Promise<string> {
+    const key = this.queue.shift();
+    if (key !== undefined) return Promise.resolve(key);
+    const waiters = this.idleWaiters.splice(0);
+    waiters.forEach((w) => w());
+    return new Promise((r) => (this.keyReader = r));
+  }
+
+  private wakeReader() {
+    if (!this.keyReader || this.queue.length === 0) return;
+    const r = this.keyReader;
+    this.keyReader = null;
+    r(this.queue.shift()!);
   }
 
   /** Plain-text prompt, e.g. `apprentice@archive:~$ ` or `> ` for continuation lines. */
@@ -198,7 +228,12 @@ export class TerminalController {
     const status = await this.shell.run(source);
     // Keep the prompt at column 0 so line redraws stay accurate (zsh does the same).
     const t = this.outputTail;
-    if (!t.endsWith('\n') && !t.endsWith('\x1b[2J') && !t.endsWith('\x1b[3J')) {
+    if (
+      !t.endsWith('\n') &&
+      !t.endsWith('\x1b[2J') &&
+      !t.endsWith('\x1b[3J') &&
+      !t.endsWith('\x1b[?1049l')
+    ) {
       this.term.write('\r\n');
     }
     this.opts.onCommand?.(source, status);

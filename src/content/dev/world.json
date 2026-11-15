@@ -1,12 +1,23 @@
 {
-  "motd": "The Lexicon flickers to life. Candlelight pools on the glass.\nType echo hello to test your voice, or press Tab to see what the glass knows.\n",
+  "motd": "The Lexicon flickers to life. Candlelight pools on the glass.\nTry ls to look around, cd to move, cat to read. Every spell has a page: man ls\n",
   "world": {
-    "user": { "name": "apprentice", "groups": ["apprentice"], "home": "/home/apprentice" },
+    "user": {
+      "name": "apprentice",
+      "groups": [
+        "apprentice"
+      ],
+      "home": "/home/apprentice"
+    },
     "dirs": [
       "/home/apprentice/notes",
       "/atrium",
       "/reading-room",
-      { "path": "/vault", "mode": "700", "owner": "lionx", "group": "lionx" }
+      {
+        "path": "/vault",
+        "mode": "700",
+        "owner": "lionx",
+        "group": "lionx"
+      }
     ],
     "files": {
       "/home/apprentice/welcome.txt": "Welcome to the Archive, apprentice.\n",
@@ -18,7 +29,8 @@
         "owner": "lionx",
         "group": "lionx",
         "mode": "600"
-      }
+      },
+      "/reading-room/archivist-journal.txt": "Day 1: the stacks grow quieter.\nDay 2: the stacks grow quieter.\nDay 3: the stacks grow quieter.\nDay 4: the stacks grow quieter.\nDay 5: the stacks grow quieter.\nDay 6: the stacks grow quieter.\nDay 7: the stacks grow quieter.\nDay 8: the stacks grow quieter.\nDay 9: the stacks grow quieter.\nDay 10: the stacks grow quieter.\nDay 11: the stacks grow quieter.\nDay 12: the stacks grow quieter.\nDay 13: the stacks grow quieter.\nDay 14: the stacks grow quieter.\nDay 15: the stacks grow quieter.\nDay 16: the stacks grow quieter.\nDay 17: the stacks grow quieter.\nDay 18: the stacks grow quieter.\nDay 19: the stacks grow quieter.\nDay 20: the stacks grow quieter.\nDay 21: the stacks grow quieter.\nDay 22: the stacks grow quieter.\nDay 23: the stacks grow quieter.\nDay 24: the stacks grow quieter.\nDay 25: the stacks grow quieter.\nDay 26: the stacks grow quieter.\nDay 27: the stacks grow quieter.\nDay 28: the stacks grow quieter.\nDay 29: the stacks grow quieter.\nDay 30: the stacks grow quieter.\nDay 31: the stacks grow quieter.\nDay 32: the stacks grow quieter.\nDay 33: the stacks grow quieter.\nDay 34: the stacks grow quieter.\nDay 35: the stacks grow quieter.\nDay 36: the stacks grow quieter.\nDay 37: the stacks grow quieter.\nDay 38: the stacks grow quieter.\nDay 39: the stacks grow quieter.\nDay 40: I called a guardian. I named it lionX.\n"
     }
   }
 }

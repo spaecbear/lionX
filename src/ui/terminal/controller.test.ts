@@ -26,6 +26,9 @@ async function setup(cols = 80, opts: { history?: string[] } = {}) {
     get cols() {
       return term.cols;
     },
+    get rows() {
+      return term.rows;
+    },
     write(s: string) {
       writes.push(s);
       pending.push(new Promise<void>((r) => term.write(s, r)));
@@ -267,7 +270,7 @@ describe('TerminalController regressions', () => {
     });
     const done: Promise<void>[] = [];
     const ctl = new TerminalController(
-      { cols: 40, write: (s) => void done.push(new Promise((r) => term.write(s, r))) },
+      { cols: 40, rows: 5, write: (s) => void done.push(new Promise((r) => term.write(s, r))) },
       shell,
       { motd: 'one\ntwo\n' },
     );
@@ -305,4 +308,43 @@ describe('wrapText', () => {
     ['', 5, ''],
     ['keep', 0, 'keep'],
   ])('%j at %i', (text, w, want) => expect(wrapText(text, w)).toBe(want));
+});
+
+describe('TerminalController with interactive programs', () => {
+  it('less takes over the screen, reads keys, and gives the prompt back', async () => {
+    const { type, screen, vfs, term } = await setup(40);
+    vfs.writeFile(
+      'tall.txt',
+      Array.from({ length: 50 }, (_, i) => `row ${i + 1}`).join('\n') + '\n',
+    );
+    await type('less tall.txt\r');
+    expect(term.buffer.active.type).toBe('alternate');
+    expect(screen()[0]).toBe('row 1');
+    await type(' ');
+    expect(screen()[0]).toBe('row 24');
+    await type('q');
+    expect(term.buffer.active.type).toBe('normal');
+    expect(screen().slice(-2)).toEqual([P + 'less tall.txt', P]);
+  });
+
+  it('typing ahead while a pager runs is delivered to the pager in order', async () => {
+    const { type, screen, vfs } = await setup(40);
+    vfs.writeFile(
+      'tall.txt',
+      Array.from({ length: 50 }, (_, i) => `row ${i + 1}`).join('\n') + '\n',
+    );
+    await type('less tall.txt\r  qecho done\r');
+    expect(screen().slice(-2)).toEqual(['done', P]);
+  });
+
+  it('ls output is laid out for the terminal width', async () => {
+    const { type, screen, vfs } = await setup(40);
+    for (const n of ['alpha', 'beta', 'gamma']) vfs.createFile(n);
+    await type('ls\r');
+    expect(screen().slice(-3)).toEqual([
+      'alpha  gamma       notes',
+      'beta   nightshade  welcome.txt',
+      P,
+    ]);
+  });
 });

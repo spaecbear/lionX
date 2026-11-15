@@ -1,0 +1,16 @@
+NAME
+    pwd - print the name of the room you stand in
+
+SYNOPSIS
+    pwd [-LP]
+
+DESCRIPTION
+    Pwd speaks your full location in the Archive, starting from the
+    Foundation Stone (/) and naming every hall on the way to where you
+    stand. Lost? Cast pwd before anything else.
+
+    -L     print the path as you walked it (the default)
+    -P     print the true path, with no shortcuts (the same here)
+
+EXAMPLES
+    pwd                   prints something like /home/apprentice

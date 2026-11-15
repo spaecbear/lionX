@@ -12,6 +12,18 @@ export interface IO {
   stdinIsTerminal: boolean;
   stdout: OutStream;
   stderr: OutStream;
+  /** True when stdout goes straight to the terminal (not a pipe or file). */
+  stdoutIsTerminal: boolean;
+  /** Interactive terminal access, present only when stdout is the terminal. */
+  tty?: Tty;
+}
+
+/** What interactive programs like `less` need from the terminal. */
+export interface Tty {
+  readonly rows: number;
+  readonly cols: number;
+  /** Wait for the next keypress (a character or escape sequence). */
+  readKey(): Promise<string>;
 }
 
 export interface ShellContext {
@@ -28,6 +40,8 @@ export interface Command {
   /** Which wing teaches this spell (1-9). 0 means always available. */
   unlockedInAct: number;
   manPage: string;
+  /** Short usage text printed by `--help`. */
+  help?: string;
   run(args: string[], io: IO, ctx: ShellContext): Promise<number>;
 }
 

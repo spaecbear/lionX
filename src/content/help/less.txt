@@ -1,0 +1,11 @@
+Usage: less [-N] [FILE]...
+View FILE(s) or standard input one screen at a time.
+
+  -N   number lines
+
+Commands while viewing:
+  SPACE f        forward one window       b              backward one window
+  j ENTER DOWN   forward one line         k UP           backward one line
+  d              forward half a window    u              backward half a window
+  g <            go to first line         G >            go to last line
+  q              exit

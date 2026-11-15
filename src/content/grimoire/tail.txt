@@ -1,0 +1,23 @@
+NAME
+    tail - read the last lines of a book
+
+SYNOPSIS
+    tail [OPTION]... [FILE]...
+
+DESCRIPTION
+    Tail prints the last 10 lines of each FILE. Endings matter: the most
+    recent entry in a journal is usually at the bottom. With more than
+    one FILE, each is introduced by a header naming it.
+
+    -n, --lines=[+]NUM
+           print the last NUM lines instead; with a leading +, print
+           everything from line NUM onward
+    -q, --quiet, --silent
+           never print headers
+    -v, --verbose
+           always print headers
+    --help display this help and exit
+
+EXAMPLES
+    tail journal.txt      the last 10 lines
+    tail -n 2 journal.txt the last 2 lines

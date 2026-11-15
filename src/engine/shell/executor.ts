@@ -1,5 +1,5 @@
 import { VfsError, type Vfs } from '../vfs';
-import type { CommandRegistry, IO, OutStream, ShellContext } from '../commands/types';
+import type { Command, CommandRegistry, IO, OutStream, ShellContext, Tty } from '../commands/types';
 import type { AndOr, Pipeline, Redirect, SimpleCommand, Word } from './ast';
 import { expandWord, expandWordToString, type ExpandEnv } from './expand';
 import { ShellSyntaxError } from './lexer';
@@ -12,7 +12,14 @@ export interface ShellOptions {
   terminal: { stdout: OutStream; stderr: OutStream };
   env?: Record<string, string>;
   shellName?: string;
+  /** Interactive terminal for pagers. Absent in headless use. */
+  tty?: Tty;
+  /** Whether the player has learned a command yet. Defaults to everything known. */
+  isUnlocked?: (cmd: Command) => boolean;
 }
+
+/** In-world reply when a command exists but the player hasn't learned it. */
+export const LOCKED_MESSAGE = "You don't know that spell yet.";
 
 export const DEV_NULL = '/dev/null';
 
@@ -59,6 +66,8 @@ export class Shell {
   readonly env: Map<string, string>;
   readonly shellName: string;
   lastStatus = 0;
+  tty?: Tty;
+  isUnlocked: (cmd: Command) => boolean;
   /** Where command output goes when not redirected. The UI may swap these. */
   terminal: ShellOptions['terminal'];
   private nextJob = 1;
@@ -70,6 +79,8 @@ export class Shell {
     this.terminal = opts.terminal;
     this.shellName = opts.shellName ?? 'bash';
     this.env = new Map(Object.entries(opts.env ?? {}));
+    this.tty = opts.tty;
+    this.isUnlocked = opts.isUnlocked ?? (() => true);
     if (!this.env.has('HOME')) this.env.set('HOME', this.vfs.home);
   }
 
@@ -152,6 +163,11 @@ export class Shell {
       return 127;
     }
 
+    if (!this.isUnlocked(command)) {
+      fds.err.write(`${name}: ${LOCKED_MESSAGE}\n`);
+      return 127;
+    }
+
     const env = assigned.length ? new Map([...this.env, ...assigned]) : this.env;
     const ctx: ShellContext = {
       vfs: this.vfs,
@@ -164,7 +180,10 @@ export class Shell {
       stdinIsTerminal: fds.stdin === null,
       stdout: fds.out,
       stderr: fds.err,
+      // Only a real terminal counts; headless runs behave like output to a pipe.
+      stdoutIsTerminal: fds.out === this.terminal.stdout && this.tty !== undefined,
     };
+    if (io.stdoutIsTerminal && this.tty) io.tty = this.tty;
     try {
       return await command.run(args, io, ctx);
     } catch (e) {

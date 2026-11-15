@@ -1,0 +1,26 @@
+NAME
+    less - turn the pages of a long book
+
+SYNOPSIS
+    less [-N] [FILE]...
+
+DESCRIPTION
+    Less shows a book one screen at a time, so long texts don't rush past.
+    It reads FILE, or standard input when you pour something into it.
+
+    Inside the book:
+      space, f        next page
+      b               previous page
+      j, Enter, Down  next line
+      k, Up           previous line
+      d, u            half a page down or up
+      g, G            first or last page
+      q               close the book
+
+    On a touch screen, swipe up and down to scroll.
+
+    -N     number each line
+
+EXAMPLES
+    less journal.txt
+    ls -l | less

@@ -35,7 +35,7 @@ function unescape(s: string): [string, boolean] {
 /** GNU/Bash `echo`: options -n, -e, -E, only as leading words made purely of those letters. */
 export const echo: Command = {
   name: 'echo',
-  unlockedInAct: 0,
+  unlockedInAct: 8,
   manPage,
   async run(args, io) {
     let newline = true;

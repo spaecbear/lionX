@@ -1,0 +1,41 @@
+NAME
+    ls - list what a room holds
+
+SYNOPSIS
+    ls [OPTION]... [FILE]...
+
+DESCRIPTION
+    Ls shows the books and doorways in a room. With no FILE it lists the
+    room you stand in. Entries are sorted by name. Names that begin with
+    a dot are secret passages and stay hidden unless you ask.
+
+    -a, --all
+           show everything, including hidden entries and the . and ..
+           markers for this room and the one above
+    -A, --almost-all
+           like -a, but without . and ..
+    -l     long form: one entry per line with its wards (permissions),
+           link count, owner, group, size in bytes, and last change
+    -h, --human-readable
+           with -l, sizes like 4.0K instead of 4096
+    -1     one entry per line
+    -r, --reverse
+           reverse the order
+    -d, --directory
+           list a room itself, not what is inside it
+    -F, --classify
+           mark rooms with / and runnable scrolls with *
+    --color[=WHEN]
+           color rooms and runnable scrolls; WHEN is always, auto,
+           or never (the default)
+    --help display this help and exit
+
+READING THE LONG FORM
+    drwxr-xr-x 2 apprentice apprentice 4096 Nov 15 00:31 notes
+    The first letter is d for a room, - for a book. The next nine say
+    who may read (r), write (w), and enter or run (x): first the owner,
+    then the group, then everyone else.
+
+EXIT STATUS
+    0 if all went well, 1 for minor trouble, 2 if a FILE could not be
+    found or read.

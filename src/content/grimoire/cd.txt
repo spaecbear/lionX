@@ -1,0 +1,27 @@
+NAME
+    cd - walk to another room
+
+SYNOPSIS
+    cd [dir]
+
+DESCRIPTION
+    Cd moves you into DIR. Paths that begin with / start at the
+    Foundation Stone (absolute paths). All others start from where you
+    stand now (relative paths).
+
+    Some places have short names:
+      ~      your apprentice cell (your home directory)
+      .      the room you are in
+      ..     the room one step above this one
+      -      the room you were in before (cd prints it)
+
+    With no DIR at all, cd takes you home.
+
+EXAMPLES
+    cd atrium             step into the atrium, if it is here
+    cd /reading-room      go there from anywhere
+    cd ..                 step back out one level
+    cd                    return to your cell
+
+EXIT STATUS
+    0 if you arrived, 1 if the way is missing, sealed, or not a room.
