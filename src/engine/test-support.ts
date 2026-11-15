@@ -8,6 +8,7 @@ import type { Wing } from './content';
 import { LessonRunner } from './narrative';
 import { newProgress } from './progression';
 import { Shell } from './shell';
+import { DEFAULT_PATH, installSpells } from './session';
 import { ProcessTable } from './processes';
 import { applyPatch, buildWorld, type Vfs } from './vfs';
 
@@ -95,8 +96,29 @@ export function atCapstone(wingId: string) {
     isUnlocked: (c) => c.unlockedInAct === 0 || runner.knows(c.name),
     tty: playerTty(),
     processes,
+    env: { PATH: DEFAULT_PATH, HOME: '/home/apprentice' },
   });
+  installSpells(runner.vfs, shell.registry);
+  runner.shellState = { env: shell.env, exported: shell.exported, aliases: shell.aliases };
+  // The trouble the capstone is about, as when it opens.
+  const cap = wing.capstone!;
+  if (cap.setup) {
+    applyPatch(runner.vfs, cap.setup, {
+      name: 'apprentice',
+      groups: ['apprentice'],
+      home: '/home/apprentice',
+    });
+  }
+  const quiet = { write() {} };
+  const ready = cap.reloadShell
+    ? shell.source(
+        '/home/apprentice/.bashrc',
+        { stdin: '', stdinIsTerminal: true, stdoutIsTerminal: false, stdout: quiet, stderr: quiet },
+        { trusted: true },
+      )
+    : Promise.resolve(0);
   const type = async (line: string) => {
+    await ready;
     const status = await shell.run(line);
     runner.afterCommand(line, status, '');
     return status;

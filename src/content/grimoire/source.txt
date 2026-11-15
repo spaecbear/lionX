@@ -1,0 +1,15 @@
+NAME
+    source, . - read a scroll of commands into this shell
+
+SYNOPSIS
+    source FILE
+    . FILE
+
+DESCRIPTION
+    Source runs each line of FILE as if you had typed it, in your own
+    shell, so variables, exports, and aliases it sets stay set. The
+    Lexicon sources ~/.bashrc every time it wakes; after editing
+    ~/.bashrc, source it to apply the changes now.
+
+EXAMPLES
+    source ~/.bashrc

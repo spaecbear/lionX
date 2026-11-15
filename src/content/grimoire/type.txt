@@ -1,0 +1,11 @@
+NAME
+    type - say what a name means to the shell
+
+SYNOPSIS
+    type [-t] NAME...
+
+DESCRIPTION
+    Type tells you how NAME would run: as an alias, a shell builtin, or
+    a file found on PATH.
+
+    -t    print a single word: alias, builtin, or file

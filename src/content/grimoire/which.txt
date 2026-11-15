@@ -1,0 +1,18 @@
+NAME
+    which - find which file a spell comes from
+
+SYNOPSIS
+    which [-a] NAME...
+
+DESCRIPTION
+    When you cast a spell like ls, the Lexicon looks for a file named
+    ls in each directory listed in PATH, in order, and runs the first
+    one it finds. Which tells you which file that is.
+
+    Built-in spells like cd live inside the shell itself, so which
+    finds nothing for them; ask `type` instead.
+
+    -a    show every match on PATH, not just the first
+
+EXAMPLES
+    which ls          prints /usr/bin/ls, if all is well

@@ -1,0 +1,3 @@
+Usage: printenv [OPTION]... [VARIABLE]...
+Print the values of the specified environment VARIABLE(s).
+If no VARIABLE is specified, print name and value pairs for them all.

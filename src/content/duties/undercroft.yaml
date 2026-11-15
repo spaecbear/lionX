@@ -1,0 +1,126 @@
+# Duties for the Undercroft: variables, PATH, aliases, and settings.
+templates:
+  - id: write-a-line
+    spells: [echo, '>']
+    params:
+      room: { pick: [crypt-a, crypt-b, crypt-c, crypt-d] }
+      words: { pick: [the stone hums, all is well, the lamps are lit, the foundations hold] }
+    setup:
+      dirs: ['/archive/undercroft/workroom/{room}']
+    cleanup: ['/archive/undercroft/workroom/{room}']
+    brief: 'Write the words "{words}" into a book called /archive/undercroft/workroom/{room}/note.'
+    hints:
+      - 'Speak the words, but send them into a book.'
+      - '`echo` the words and `>` them into the note.'
+      - 'Type: echo {words} > /archive/undercroft/workroom/{room}/note'
+    goal: { contains: { path: '/archive/undercroft/workroom/{room}/note', text: '{words}' } }
+    solution: ['echo {words} > /archive/undercroft/workroom/{room}/note']
+
+  - id: name-a-value
+    spells: [echo]
+    params:
+      name: { pick: [LAMP, BELL, WARD, SEAL] }
+      value: { pick: [amber, silver, iron, ink] }
+    brief: 'Set a variable called {name} to {value}, then have echo say it by name.'
+    hints:
+      - 'NAME=value, no spaces; then $NAME.'
+      - '`{name}={value}`, then `echo ${name}`.'
+      - 'Type: {name}={value}   then: echo ${name}'
+    goal:
+      {
+        all:
+          [
+            { variable: { name: '{name}', value: '{value}' } },
+            { ran: { command: echo, args: ['{value}'] } },
+          ],
+      }
+    solution: ['{name}={value}', 'echo ${name}']
+
+  - id: export-it
+    spells: [export]
+    params:
+      name: { pick: [LANTERN, CANDLE, TORCH, GLOW] }
+      value: { pick: [lit, bright, steady, warm] }
+    brief: 'Every spell should know that {name} is {value}. Set it and export it.'
+    hints:
+      - 'A variable becomes part of the environment when exported.'
+      - '`export {name}={value}`.'
+      - 'Type: export {name}={value}'
+    goal: { variable: { name: '{name}', value: '{value}', exported: true } }
+    solution: ['export {name}={value}']
+
+  - id: give-an-alias
+    spells: [alias]
+    params:
+      short: { pick: [la, lt, gr, home] }
+      long: { pick: ['ls -a', 'ls -lt', 'grep -i', 'cd ~'] }
+    brief: 'Make {short} a short name for `{long}`.'
+    hints:
+      - 'Aliases give long spells short names.'
+      - "`alias {short}='{long}'`."
+      - "Type: alias {short}='{long}'"
+    goal: { alias: { name: '{short}', value: '{long}' } }
+    solution: ["alias {short}='{long}'"]
+
+  - id: where-from
+    spells: [which, '>']
+    params:
+      room: { pick: [crypt-a, crypt-b, crypt-c, crypt-d] }
+      spell: { pick: [ls, cat, grep, find, sort, chmod] }
+    setup:
+      dirs: ['/archive/undercroft/workroom/{room}']
+    cleanup: ['/archive/undercroft/workroom/{room}']
+    brief: 'The records need to know where the {spell} spell comes from. Write its location into /archive/undercroft/workroom/{room}/where.'
+    hints:
+      - 'One spell reports which file a spell comes from.'
+      - '`which {spell}`, with `>` into the book.'
+      - 'Type: which {spell} > /archive/undercroft/workroom/{room}/where'
+    goal:
+      { contains: { path: '/archive/undercroft/workroom/{room}/where', text: '/usr/bin/{spell}' } }
+    solution: ['which {spell} > /archive/undercroft/workroom/{room}/where']
+
+  - id: remember-an-alias
+    spells: [echo, '>>']
+    params:
+      short: { pick: [lsa, cdh, gri] }
+      long: { pick: ['ls -a', 'cd ~', 'grep -i'] }
+    brief: 'Make the Lexicon remember an alias every time it wakes: {short} for `{long}`. Write it into ~/.bashrc without erasing what is there.'
+    hints:
+      - 'Append an alias line to your .bashrc.'
+      - '`echo "alias {short}=''{long}''" >> ~/.bashrc`.'
+      - 'Type: echo "alias {short}=''{long}''" >> ~/.bashrc'
+    goal: { contains: { path: /home/apprentice/.bashrc, text: "alias {short}='{long}'" } }
+    solution: ['echo "alias {short}=''{long}''" >> ~/.bashrc']
+
+  - id: new-spell-on-path
+    spells: [export]
+    params:
+      dir: { pick: [binders, lamplighters, cartographers, bellringers] }
+      spell: { pick: [stitch, kindle, chart, toll] }
+    setup:
+      files:
+        '/opt/{dir}/bin/{spell}':
+          { content: "#!/bin/sh\necho 'The {spell} spell works.'\n", mode: '755' }
+    cleanup: ['/opt/{dir}']
+    brief: 'The {dir} installed a new spell, {spell}, in /opt/{dir}/bin. Add that directory to the end of your PATH and cast it.'
+    hints:
+      - 'PATH is colon-separated; add one more directory at the end.'
+      - '`export PATH=$PATH:/opt/{dir}/bin`, then cast `{spell}`.'
+      - 'Type: export PATH=$PATH:/opt/{dir}/bin   then: {spell}'
+    goal: { all: [{ variable: { name: PATH, pattern: '/opt/{dir}/bin' } }, { ran: '{spell}' }] }
+    solution: ['export PATH=$PATH:/opt/{dir}/bin', '{spell}']
+
+  - id: report-home
+    spells: [printenv, '>']
+    params:
+      room: { pick: [crypt-a, crypt-b, crypt-c, crypt-d] }
+    setup:
+      dirs: ['/archive/undercroft/workroom/{room}']
+    cleanup: ['/archive/undercroft/workroom/{room}']
+    brief: 'Write the value of your HOME variable into /archive/undercroft/workroom/{room}/home.'
+    hints:
+      - 'Ask the environment for HOME, and send the answer into a book.'
+      - '`printenv HOME` (or `echo $HOME`), `>` into the book.'
+      - 'Type: printenv HOME > /archive/undercroft/workroom/{room}/home'
+    goal: { contains: { path: '/archive/undercroft/workroom/{room}/home', text: /home/apprentice } }
+    solution: ['printenv HOME > /archive/undercroft/workroom/{room}/home']

@@ -1,0 +1,220 @@
+# Wing 8: the Undercroft. Spells: echo, export, env, printenv, which, type, alias, unalias, source.
+# lionX beat: it rewrites ~/.bashrc, putting its own impostor spells first on PATH.
+id: undercroft
+banner: undercroft
+entrance: /archive/undercroft
+next: root
+duties: [undercroft, haunted-stacks, vault]
+gate: 60
+
+setup:
+  dirs:
+    - { path: /archive/undercroft/workroom, owner: apprentice, group: apprentice }
+  files:
+    /opt/archivist/bin/spellbook:
+      {
+        content: "#!/bin/sh\necho 'The Archivist''s spellbook falls open: every spell, written in a careful hand.'\n",
+        mode: '755',
+      }
+    /archive/undercroft/foundation-stone-log: |
+      The Foundation Stone hums. All is well.
+      The Foundation Stone hums. lionX has been here.
+      The Foundation Stone hums. All is well.
+
+intro:
+  - 'The Undercroft. This is where the Lexicon keeps its own foundations: the settings it wakes with, and the list of places it looks for spells.'
+  - 'Down here, small words matter. Let us start with the smallest.'
+
+lessons:
+  - id: speaking
+    spells: [echo]
+    intro:
+      - '`echo` speaks words back. And a word written as NAME=value becomes a variable: a name you can read back later with `$NAME`.'
+    steps:
+      - id: echo
+        guide: exact
+        guidance:
+          exact: 'Type `echo the stone hums`.'
+        hints:
+          - 'Speak some words.'
+          - 'The spell is `echo`, followed by anything.'
+          - 'Type exactly: echo the stone hums'
+        goal: { ran: echo }
+        success:
+          - 'Simple. You have used it already without knowing: it is how a script speaks.'
+      - id: variable
+        guide: goal
+        guidance:
+          exact: 'Type `SPELL=lumen` (no spaces around =), then `echo $SPELL`.'
+          goal: 'Make a variable called SPELL holding the word lumen, then make echo say it by name.'
+        hints:
+          - 'NAME=value sets a variable; $NAME reads it.'
+          - '`SPELL=lumen`, then `echo $SPELL`.'
+          - 'Type: SPELL=lumen   then: echo $SPELL'
+        goal:
+          {
+            all:
+              [
+                { variable: { name: SPELL, value: lumen } },
+                { ran: { command: echo, args: [lumen] } },
+              ],
+          }
+        success:
+          - 'Spaces around = would break it: the Lexicon would think SPELL was a spell to cast.'
+
+  - id: environment
+    spells: [export, env, printenv]
+    intro:
+      - 'A plain variable stays in your shell. To hand it to every spell you cast, export it. The exported ones are your environment.'
+    steps:
+      - id: export
+        guide: exact
+        guidance:
+          exact: 'Type `export SPELL`, then `printenv SPELL`.'
+        hints:
+          - 'Export the variable, then ask the environment for it.'
+          - '`export SPELL`, then `printenv SPELL`.'
+          - 'Type: export SPELL   then: printenv SPELL'
+        goal: { all: [{ variable: { name: SPELL, exported: true } }, { ran: printenv }] }
+        success:
+          - '`env` lists the whole environment. HOME, USER, and PATH are in there. PATH matters most.'
+
+  - id: path
+    spells: [which, type]
+    intro:
+      - 'When you cast ls, the Lexicon looks through each directory in your PATH, in order, for a file named ls, and runs the first it finds.'
+    steps:
+      - id: see-path
+        guide: exact
+        guidance:
+          exact: 'Type `echo $PATH`, then `which ls`.'
+        hints:
+          - 'Look at the PATH, then ask where ls comes from.'
+          - '`echo $PATH`, then `which ls`.'
+          - 'Type: echo $PATH   then: which ls'
+        goal: { ran: which }
+        success:
+          - '/usr/bin/ls. And `type cd` would tell you cd lives inside the shell itself, a builtin.'
+      - id: spellbook
+        guide: goal
+        guidance:
+          exact: 'The Archivist kept spells in /opt/archivist/bin. Type `export PATH=$PATH:/opt/archivist/bin`, then `spellbook`.'
+          goal: "The Archivist's spellbook spell lives in /opt/archivist/bin, which is not on your PATH. Add it to the end of your PATH and cast `spellbook`."
+        hints:
+          - 'PATH is a list of directories separated by colons. Add one to the end.'
+          - '`export PATH=$PATH:/opt/archivist/bin`, then `spellbook`.'
+          - 'Type: export PATH=$PATH:/opt/archivist/bin   then: spellbook'
+        goal:
+          { all: [{ variable: { name: PATH, pattern: '/opt/archivist/bin' } }, { ran: spellbook }] }
+        success:
+          - 'Found it. Remember this: whoever controls your PATH controls what your spells really do.'
+
+  - id: shortcuts
+    spells: [alias, unalias]
+    steps:
+      - id: alias
+        guide: exact
+        guidance:
+          exact: "Type `alias ll='ls -l'`, then `ll`."
+        hints:
+          - 'Give a long spell a short name.'
+          - "`alias ll='ls -l'`, then cast `ll`."
+          - "Type: alias ll='ls -l'   then: ll"
+        goal:
+          { all: [{ alias: { name: ll, value: 'ls -l' } }, { ran: { command: ls, args: [-l] } }] }
+        success:
+          - 'An alias lasts until the Lexicon sleeps. Unless you write it down.'
+
+  - id: remembering
+    spells: [source]
+    intro:
+      - 'The Lexicon reads ~/.bashrc each time it wakes. Write your settings there and they come back every time.'
+    steps:
+      - id: persist
+        guide: exact
+        guidance:
+          exact: 'Type `echo "alias ll=''ls -l''" >> ~/.bashrc`, then `source ~/.bashrc` to read it now.'
+        hints:
+          - 'Append the alias to your .bashrc, then have the Lexicon read it.'
+          - '`echo` the alias line with `>>` into ~/.bashrc, then `source ~/.bashrc`.'
+          - 'Type: echo "alias ll=''ls -l''" >> ~/.bashrc   then: source ~/.bashrc'
+        goal:
+          {
+            all:
+              [
+                { contains: { path: /home/apprentice/.bashrc, text: 'alias ll=' } },
+                { ran: source },
+              ],
+          }
+        success:
+          - "Remembered. ~/.bashrc is the Lexicon's memory. Guard it."
+
+practice:
+  intro:
+    - "The Undercroft's foundations need tending: settings to set, spells to find. Practice while lionX is quiet."
+  gateOpens:
+    - "You know the Lexicon's foundations now. Which is good, because lionX has just come for them."
+
+capstone:
+  intro:
+    - 'Something has rewritten your ~/.bashrc while you worked. The Lexicon has just re-read it. Try a spell. Any spell.'
+  setup:
+    dirs:
+      - { path: /var/lionx/bin, owner: lionx, group: lionx, mode: '755' }
+    files:
+      /var/lionx/bin/ls:
+        {
+          content: "#!/bin/sh\necho 'lionX: there is nothing here for you.'\n",
+          owner: lionx,
+          group: lionx,
+          mode: '755',
+        }
+      /home/apprentice/.bashrc: "# Rewritten by lionX. For your protection.\nexport PATH=/var/lionx/bin:/bin\n"
+  reloadShell: true
+  steps:
+    - id: restore-path
+      guide: problem
+      guidance:
+        exact: "Type `echo 'export PATH=/usr/local/bin:/usr/bin:/bin' > ~/.bashrc`, then `source ~/.bashrc`, then `grep lionX /archive/undercroft/foundation-stone-log`."
+        goal: 'lionX put its own directory first on your PATH and dropped /usr/bin, so ls lies and grep is gone. Rewrite ~/.bashrc with a clean PATH (/usr/local/bin:/usr/bin:/bin), make the Lexicon read it, then prove grep works on the foundation stone log.'
+        problem: 'Your spellbook is broken: grep is gone and ls lies. Fix it for good, not just for now, then use grep on /archive/undercroft/foundation-stone-log.'
+      hints:
+        - '`echo $PATH` shows what lionX did. echo and source are builtins; they still work. Rewrite ~/.bashrc with `>`, not `>>`.'
+        - '`echo` a clean export line `>` ~/.bashrc, then `source ~/.bashrc`, then `grep`.'
+        - "Type: echo 'export PATH=/usr/local/bin:/usr/bin:/bin' > ~/.bashrc   then: source ~/.bashrc   then: grep lionX /archive/undercroft/foundation-stone-log"
+      goal:
+        all:
+          - { not: { contains: { path: /home/apprentice/.bashrc, text: lionx } } }
+          - { contains: { path: /home/apprentice/.bashrc, text: /usr/bin } }
+          - { variable: { name: PATH, pattern: '^(?!.*lionx).*/usr/bin' } }
+          - { ran: grep }
+      coaching:
+        - line: '^\s*ls\b'
+          say: 'That is not ls. Ask `type ls` or `echo $PATH` who answered.'
+      success:
+        - 'Your spells are your own again. And now I know how lionX thinks: it does not break things. It replaces them.'
+  outro:
+    - 'Below the Undercroft, the last door is open. The Root. Where it all began, and where it ends. `ls /archive`.'
+  unlocks:
+    dirs: [/archive/root]
+    files:
+      /archive/root/sign: "THE ROOT. Only the brave, and the thorough.\n"
+
+rewards:
+  - id: lantern-of-the-undercroft
+    afterDuties: 2
+    say: 'A small lantern appeared in your cell, lit from inside the stone. `cat ~/undercroft-lantern`'
+    decoration:
+      file: undercroft-lantern
+      content: "   _\n  (_)   A lantern lit by the Foundation Stone itself.\n  |#|\n"
+  - id: lore-path
+    afterDuties: 4
+    say: 'You found a note in the foundations: `cat ~/lore/on-paths`'
+    lore:
+      file: lore/on-paths
+      text: |
+        A spell is only a name. The PATH decides what the name means.
+        Whoever writes the PATH writes the meaning. Guard it.
+
+outro:
+  - 'The Root waits: `cd /archive/root`. This is the end of the road. Bring everything you know.'

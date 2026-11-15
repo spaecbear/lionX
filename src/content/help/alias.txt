@@ -1,0 +1,7 @@
+alias: alias [-p] [name[=value] ... ]
+    Define or display aliases.
+
+    Without arguments, `alias' prints the list of aliases in the reusable
+    form `alias NAME=VALUE' on standard output.
+
+    Otherwise, an alias is defined for each NAME whose VALUE is given.

@@ -16,6 +16,10 @@ export type Predicate =
   | { perm: { path: string; who: 'u' | 'g' | 'o'; has?: string; lacks?: string } }
   | { owner: { path: string; owner?: string; group?: string } }
   | { cwdIs: string }
+  /** A shell variable: set, equal to `value` or matching `pattern`, and (optionally) exported. */
+  | { variable: { name: string; value?: string; pattern?: string; exported?: boolean } }
+  /** An alias exists (with `value`, if given). */
+  | { alias: { name: string; value?: string } }
   | { processRunning: string }
   | { ran: string | { command: string; status?: number | 'any'; args?: string[] } }
   | { read: string }
@@ -39,6 +43,8 @@ export interface WorldView {
   reads: Set<string>;
   /** Names of running processes (empty until the process table exists). */
   processes: string[];
+  /** The shell's variables, exports, and aliases, when goals need them. */
+  shell?: { env: Map<string, string>; exported: Set<string>; aliases: Map<string, string> };
 }
 
 export const PREDICATE_KEYS = [
@@ -51,6 +57,8 @@ export const PREDICATE_KEYS = [
   'perm',
   'owner',
   'cwdIs',
+  'variable',
+  'alias',
   'processRunning',
   'ran',
   'read',
@@ -76,6 +84,18 @@ export function evaluate(p: Predicate, w: WorldView): boolean {
   if ('any' in p) return p.any.some((q) => evaluate(q, w));
   if ('not' in p) return !evaluate(p.not, w);
   if ('cwdIs' in p) return vfs.cwd === vfs.resolve(p.cwdIs);
+  if ('variable' in p) {
+    const v = w.shell?.env.get(p.variable.name);
+    if (v === undefined) return false;
+    if (p.variable.value !== undefined && v !== p.variable.value) return false;
+    if (p.variable.pattern !== undefined && !new RegExp(p.variable.pattern).test(v)) return false;
+    if (p.variable.exported && !w.shell?.exported.has(p.variable.name)) return false;
+    return true;
+  }
+  if ('alias' in p) {
+    const a = w.shell?.aliases.get(p.alias.name);
+    return a !== undefined && (p.alias.value === undefined || a === p.alias.value);
+  }
   if ('processRunning' in p) return w.processes.includes(p.processRunning);
   if ('read' in p) return w.reads.has(vfs.resolve(p.read));
   if ('ran' in p) {

@@ -43,6 +43,13 @@ export function tokenize(input: string): Token[] {
   /** Parse `$...` at input[i] (which is '$'). Returns false if it's a literal `$`. */
   const readVar = (quoted: boolean): boolean => {
     const next = input[i + 1];
+    if (next !== undefined && /[0-9@#*]/.test(next)) {
+      // Positional parameters: $1..$9, $@, $*, $# (and $0).
+      parts ??= [];
+      parts.push({ kind: 'var', name: next, quoted });
+      i += 2;
+      return true;
+    }
     if (next === '?') {
       parts ??= [];
       parts.push({ kind: 'var', name: '?', quoted });
@@ -76,6 +83,18 @@ export function tokenize(input: string): Token[] {
   while (i < input.length) {
     const c = input[i];
 
+    if (c === '\n') {
+      // A newline ends a command, like ;, unless the line ended mid-pipeline or mid-chain.
+      endWord();
+      const last = tokens[tokens.length - 1];
+      const continues = last?.type === 'op' && last.value !== ';' && last.value !== '&';
+      if (last && !continues && !(last.type === 'op' && last.value === ';')) {
+        tokens.push({ type: 'op', value: ';' });
+      }
+      i++;
+      continue;
+    }
+
     if (/\s/.test(c)) {
       endWord();
       i++;
@@ -83,7 +102,9 @@ export function tokenize(input: string): Token[] {
     }
 
     if (c === '#' && parts === null) {
-      break; // comment to end of line
+      // Comment to end of line.
+      while (i < input.length && input[i] !== '\n') i++;
+      continue;
     }
 
     if (c === '\\') {

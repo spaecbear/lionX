@@ -145,11 +145,13 @@ export class Director {
     this.controller = controller;
     controller.startSpirits();
     this.opts.onShell?.(session.shell);
-    this.ready = controller.start().then(() => {
-      // Save right away so a brand-new slot shows up on the title screen.
-      this.save();
-      chips();
-    });
+    this.ready = session.ready
+      .then(() => controller.start())
+      .then(() => {
+        // Save right away so a brand-new slot shows up on the title screen.
+        this.save();
+        chips();
+      });
   }
 
   /** Write the current session to its slot. Never throws; returns whether it stuck. */

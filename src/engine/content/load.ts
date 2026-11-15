@@ -107,6 +107,28 @@ export function checkPredicate(c: Checker, v: unknown, path: string): Predicate 
         c.fail(`${p}.mode`, 'expected octal like "640"');
       return { mode: { path: c.str(m.path, `${p}.path`), mode } };
     }
+    case 'variable': {
+      const m = c.obj(val, p);
+      c.noExtra(m, ['name', 'value', 'pattern', 'exported'], p);
+      return {
+        variable: {
+          name: c.str(m.name, `${p}.name`),
+          value: m.value === undefined ? undefined : String(m.value),
+          pattern: c.regex(m.pattern, `${p}.pattern`),
+          exported: m.exported === undefined ? undefined : Boolean(m.exported),
+        },
+      };
+    }
+    case 'alias': {
+      const m = c.obj(val, p);
+      c.noExtra(m, ['name', 'value'], p);
+      return {
+        alias: {
+          name: c.str(m.name, `${p}.name`),
+          value: m.value === undefined ? undefined : String(m.value),
+        },
+      };
+    }
     case 'perm': {
       const m = c.obj(val, p);
       c.noExtra(m, ['path', 'who', 'has', 'lacks'], p);
@@ -376,7 +398,7 @@ function checkPractice(c: Checker, v: unknown): Practice | undefined {
 function checkCapstone(c: Checker, v: unknown): Capstone | undefined {
   if (v === undefined) return undefined;
   const o = c.obj(v, 'capstone');
-  c.noExtra(o, ['intro', 'steps', 'outro', 'unlocks'], 'capstone');
+  c.noExtra(o, ['intro', 'steps', 'outro', 'unlocks', 'setup', 'reloadShell'], 'capstone');
   const steps = c
     .arr(o.steps, 'capstone.steps')
     .map((s, i) => checkStep(c, s, `capstone.steps[${i}]`));
@@ -387,6 +409,8 @@ function checkCapstone(c: Checker, v: unknown): Capstone | undefined {
     steps,
     outro: checkSay(c, o.outro, 'capstone.outro'),
     unlocks: checkPatch(c, o.unlocks, 'capstone.unlocks'),
+    setup: checkPatch(c, o.setup, 'capstone.setup'),
+    reloadShell: o.reloadShell === true ? true : undefined,
   };
 }
 

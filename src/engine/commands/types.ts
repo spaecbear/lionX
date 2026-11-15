@@ -43,6 +43,28 @@ export interface ShellContext {
   jobs?: JobTable;
   /** The pid of the shell itself (for ps and for parenting jobs). */
   shellPid?: number;
+  /** Shell internals for builtins like source, alias, export, type, and exit. */
+  exec?: ShellExec;
+}
+
+/** What builtins may ask of the shell running them. */
+export interface ShellExec {
+  /** Run a file's lines in this shell (source / .). */
+  source(path: string, io: IO): Promise<number>;
+  aliases: Map<string, string>;
+  exported: Set<string>;
+  /** How a name would run: builtin, alias, a file found on PATH, or not at all. */
+  lookup(
+    name: string,
+  ):
+    | { kind: 'builtin' }
+    | { kind: 'alias'; value: string }
+    | { kind: 'file'; path: string }
+    | { kind: 'none' };
+  /** True inside a script (so `exit` ends the script, not the session). */
+  inScript: boolean;
+  /** Ask to leave the shell (the game returns to the title screen). */
+  requestExit(code: number): void;
 }
 
 export interface Command {

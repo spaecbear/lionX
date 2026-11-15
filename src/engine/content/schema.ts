@@ -66,6 +66,10 @@ export interface Capstone {
   outro?: string[];
   /** World changes when solved: the way to the next wing opens. */
   unlocks?: WorldPatch;
+  /** World changes when the capstone opens (the trouble it is about). */
+  setup?: WorldPatch;
+  /** After setup, the Lexicon re-reads ~/.bashrc at once (so changes to it take hold). */
+  reloadShell?: boolean;
 }
 
 export interface Practice {

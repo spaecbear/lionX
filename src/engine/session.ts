@@ -1,5 +1,4 @@
 import { createRegistry } from './commands';
-import { defineCommand } from './commands/util';
 import type { CoachingRule, QuillLines, Wing } from './content';
 import {
   createDutyCommand,
@@ -11,6 +10,9 @@ import {
 import { newProgress, type DutyTemplate } from './progression';
 import { SAVE_VERSION, type SaveData } from './save';
 import { Shell } from './shell';
+import { BUILTINS, SPELL_MARKER } from './shell/executor';
+import type { CommandRegistry } from './commands/types';
+import type { Vfs } from './vfs';
 import { ProcessTable } from './processes';
 import type { OutStream } from './commands/types';
 
@@ -46,11 +48,53 @@ export interface GameSession {
   opening(): Narration[];
   /** After each command: the runner's response, plus the next wing's opening if the player just entered it. */
   afterCommand(line: string, status: number, stderr: string): Narration[];
+  /** Resolves once ~/.bashrc has been read (aliases and PATH from it apply). */
+  ready: Promise<void>;
   /** Capture the whole game as save data. */
   toSave(history: string[]): SaveData;
 }
 
 const quiet: OutStream = { write() {} };
+
+export const DEFAULT_PATH = '/usr/local/bin:/usr/bin:/bin';
+const DEFAULT_BASHRC = `# ~/.bashrc: read by the Lexicon each time it wakes.
+export PATH=${DEFAULT_PATH}
+`;
+
+/**
+ * Every spell that is not a shell builtin lives as a file in /usr/bin, so
+ * PATH means what it means on a real system. Only missing files are written.
+ */
+export function installSpells(vfs: Vfs, registry: CommandRegistry): void {
+  const saved = vfs.credentials;
+  vfs.credentials = { user: 'root', groups: ['root'] };
+  try {
+    for (const d of ['/bin', '/usr/bin', '/usr/local/bin'])
+      if (!vfs.exists(d)) vfs.mkdir(d, { parents: true });
+    for (const name of registry.names()) {
+      const path = `/usr/bin/${name}`;
+      if (BUILTINS.has(name) || vfs.exists(path)) continue;
+      vfs.writeFile(
+        path,
+        `${SPELL_MARKER}${name}\nThe spell of ${name}, written in the Archive's old tongue.\n`,
+      );
+      vfs.chmod(path, 0o755);
+    }
+  } finally {
+    vfs.credentials = saved;
+  }
+  const rc = `${vfs.home}/.bashrc`;
+  if (!vfs.exists(rc)) {
+    const savedCreds = vfs.credentials;
+    vfs.credentials = { user: 'root', groups: ['root'] };
+    try {
+      vfs.writeFile(rc, DEFAULT_BASHRC);
+      vfs.chown(rc, savedCreds.user, savedCreds.groups[0]);
+    } finally {
+      vfs.credentials = savedCreds;
+    }
+  }
+}
 
 /** Build a play session: a fresh game, or exactly where a save left off. */
 export function createSession(o: SessionOptions): GameSession {
@@ -74,31 +118,20 @@ export function createSession(o: SessionOptions): GameSession {
     now,
   });
 
-  // Bash's `exit` leaves the shell; here it leaves for the title screen (after saving).
-  const exit = defineCommand({
-    name: 'exit',
-    unlockedInAct: 0,
-    builtin: true,
-    options: {},
-    run() {
-      if (o.onExit) queueMicrotask(o.onExit);
-      return 0;
-    },
-  });
-
   const shell = new Shell({
     vfs: runner.vfs,
     registry: createRegistry().register(
       createHintCommand(() => runner),
       createStatusCommand(() => runner),
       createDutyCommand(() => runner),
-      exit,
     ),
+    onExit: o.onExit,
     terminal: { stdout: quiet, stderr: quiet },
     env: save?.env ?? {
       USER: runner.vfs.credentials.user,
       PWD: runner.vfs.cwd,
       TERM: 'xterm-256color',
+      PATH: DEFAULT_PATH,
     },
     onCommandRun: (name, args, status) => runner.recordCommand(name, args, status),
     processes,
@@ -122,10 +155,41 @@ export function createSession(o: SessionOptions): GameSession {
       vfs: runner.vfs,
       now,
     });
+    runner.shellState = shellState;
     return runner.start();
   };
 
+  const quietIo = {
+    stdin: '',
+    stdinIsTerminal: true,
+    stdoutIsTerminal: false,
+    stdout: quiet,
+    stderr: quiet,
+  };
+  /** Handle runner events that reach into the shell. */
+  const handleEvents = (ns: Narration[]): Narration[] => {
+    if (ns.some((n) => n.kind === 'event' && n.event === 'reload-shell')) {
+      void shell.source(`${runner.vfs.home}/.bashrc`, quietIo, { trusted: true });
+    }
+    return ns;
+  };
+
   if (save?.jobs) shell.jobs?.restore(save.jobs);
+  const shellState = { env: shell.env, exported: shell.exported, aliases: shell.aliases };
+  runner.shellState = shellState;
+  installSpells(runner.vfs, shell.registry);
+  if (!shell.env.has('PATH')) shell.env.set('PATH', DEFAULT_PATH);
+  // Like a login shell, read ~/.bashrc (trusted: startup files may use spells not yet learned).
+  const ready = shell
+    .source(
+      `${runner.vfs.home}/.bashrc`,
+      { stdin: '', stdinIsTerminal: true, stdoutIsTerminal: false, stdout: quiet, stderr: quiet },
+      { trusted: true },
+    )
+    .then(
+      () => undefined,
+      () => undefined,
+    );
 
   return {
     get runner() {
@@ -134,11 +198,10 @@ export function createSession(o: SessionOptions): GameSession {
     shell,
     resumed: !!save,
     history: save?.history ?? [],
+    ready,
     opening: () => (save ? runner.resume() : runner.start()),
-    afterCommand: (line, status, stderr) => [
-      ...runner.afterCommand(line, status, stderr),
-      ...enterNextWing(),
-    ],
+    afterCommand: (line, status, stderr) =>
+      handleEvents([...runner.afterCommand(line, status, stderr), ...enterNextWing()]),
     toSave: (history) => ({
       version: SAVE_VERSION,
       savedAt: now(),

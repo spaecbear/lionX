@@ -35,7 +35,8 @@ export type Narration =
         | 'capstone-open'
         | 'wing-complete'
         | 'reward'
-        | 'spells-changed';
+        | 'spells-changed'
+        | 'reload-shell';
       id: string;
     };
 
@@ -156,6 +157,9 @@ export class LessonRunner {
       this.reads = new Set(r.reads);
     }
   }
+
+  /** The shell's variables and aliases, for goals about them (set by the session). */
+  shellState?: { env: Map<string, string>; exported: Set<string>; aliases: Map<string, string> };
 
   /** Pids of spirits the current duty started, removed when it ends. */
   private dutyPids: number[] = [];
@@ -342,6 +346,7 @@ export class LessonRunner {
       commands: this.commands,
       reads: this.reads,
       processes: this.opts.processes?.names() ?? [],
+      shell: this.shellState,
     });
   }
 
@@ -540,7 +545,11 @@ export class LessonRunner {
     this.phase = 'capstone';
     this.duty = null;
     this.stepIndex = 0;
+    if (cap.setup) this.patch(cap.setup);
     return [
+      ...(cap.reloadShell
+        ? [{ kind: 'event' as const, event: 'reload-shell' as const, id: this.wing.id }]
+        : []),
       ...quill(this.wing.practice?.gateOpens),
       { kind: 'event', event: 'capstone-open', id: this.wing.id },
       ...quill(cap.intro),

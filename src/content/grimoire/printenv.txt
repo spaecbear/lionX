@@ -1,0 +1,9 @@
+NAME
+    printenv - print one exported variable, or all of them
+
+SYNOPSIS
+    printenv [NAME]...
+
+DESCRIPTION
+    Printenv prints the value of each exported NAME, or every exported
+    variable when no NAME is given. It fails quietly for unexported names.

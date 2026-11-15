@@ -1,0 +1,16 @@
+NAME
+    alias - give a spell a shorter name
+
+SYNOPSIS
+    alias [NAME[=VALUE]]...
+
+DESCRIPTION
+    An alias replaces the first word of a command with VALUE. With no
+    arguments, alias lists them all. Aliases last until the Lexicon
+    sleeps, unless you write them into ~/.bashrc.
+
+EXAMPLES
+    alias ll='ls -l'
+    alias                     list every alias
+SEE ALSO
+    unalias, type

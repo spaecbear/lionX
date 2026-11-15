@@ -1,0 +1,11 @@
+type: type [-afptP] name [name ...]
+    Display information about command type.
+
+    For each NAME, indicate how it would be interpreted if used as a
+    command name.
+
+    Options:
+      -t	output a single word which is one of `alias', `keyword',
+    		`function', `builtin', `file' or `', if NAME is an alias,
+    		shell reserved word, shell function, shell builtin, disk file,
+    		or not found, respectively

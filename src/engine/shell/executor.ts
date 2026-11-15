@@ -3,7 +3,7 @@ import type { Command, CommandRegistry, IO, OutStream, ShellContext, Tty } from 
 import type { AndOr, Pipeline, Redirect, SimpleCommand, Word } from './ast';
 import { expandWord, expandWordToString, type ExpandEnv } from './expand';
 import { JobTable, ProcessTable } from '../processes';
-import { ShellSyntaxError } from './lexer';
+import { ShellSyntaxError, tokenize, type Token } from './lexer';
 import { parse } from './parser';
 
 export interface ShellOptions {
@@ -19,8 +19,43 @@ export interface ShellOptions {
   isUnlocked?: (cmd: Command) => boolean;
   /** The world's processes (enables real background jobs). */
   processes?: ProcessTable;
+  /** Called (after the command finishes) when the player runs `exit` at the prompt. */
+  onExit?: () => void;
   /** Notified after every simple command runs (inside pipelines too), with its own status. */
   onCommandRun?: (name: string, args: string[], status: number) => void;
+}
+
+/** Commands built into the shell: always found, never looked up on PATH. */
+export const BUILTINS = new Set([
+  'cd',
+  'pwd',
+  'echo',
+  'export',
+  'alias',
+  'unalias',
+  'exit',
+  'kill',
+  'jobs',
+  'fg',
+  'bg',
+  'source',
+  '.',
+  'type',
+  'true',
+  'false',
+  'hint',
+  'status',
+  'duty',
+]);
+
+/** First line of a spell's file in /usr/bin: which built-in command it runs. */
+export const SPELL_MARKER = 'LEXICON-SPELL ';
+
+/** Thrown by `exit` inside a script to end just the script. */
+export class ScriptExit extends Error {
+  constructor(readonly status: number) {
+    super('exit');
+  }
 }
 
 /** In-world reply when a command exists but the player hasn't learned it. */
@@ -81,6 +116,12 @@ export class Shell {
   processes?: ProcessTable;
   jobs?: JobTable;
   shellPid?: number;
+  onExit?: () => void;
+  readonly aliases = new Map<string, string>();
+  readonly exported = new Set<string>();
+  private scriptDepth = 0;
+  /** While sourcing trusted startup files, spells are not locked. */
+  private trusted = false;
 
   constructor(opts: ShellOptions) {
     this.vfs = opts.vfs;
@@ -88,11 +129,14 @@ export class Shell {
     this.terminal = opts.terminal;
     this.shellName = opts.shellName ?? 'bash';
     this.env = new Map(Object.entries(opts.env ?? {}));
+    for (const k of this.env.keys()) this.exported.add(k);
     this.tty = opts.tty;
     this.isUnlocked = opts.isUnlocked ?? (() => true);
     this.onCommandRun = opts.onCommandRun;
     if (opts.processes) this.attachProcesses(opts.processes);
+    this.onExit = opts.onExit;
     if (!this.env.has('HOME')) this.env.set('HOME', this.vfs.home);
+    this.exported.add('HOME');
   }
 
   /**
@@ -118,7 +162,115 @@ export class Shell {
       processes: this.processes,
       jobs: this.jobs,
       shellPid: this.shellPid,
+      exec: {
+        source: (path, io) => this.source(path, io),
+        aliases: this.aliases,
+        exported: this.exported,
+        lookup: (name) => this.lookup(name),
+        inScript: this.scriptDepth > 0,
+        requestExit: () => {
+          if (this.onExit) queueMicrotask(this.onExit);
+        },
+      },
     };
+  }
+
+  /** How a command name resolves (for type, which, and running). */
+  lookup(name: string): ReturnType<NonNullable<ShellContext['exec']>['lookup']> {
+    if (this.aliases.has(name)) return { kind: 'alias', value: this.aliases.get(name)! };
+    if (BUILTINS.has(name) && this.registry.has(name)) return { kind: 'builtin' };
+    const path = this.findOnPath(name);
+    return path ? { kind: 'file', path } : { kind: 'none' };
+  }
+
+  /** The first executable file called `name` in the PATH directories (or null). */
+  private findOnPath(name: string): string | null {
+    const PATH = this.env.get('PATH');
+    if (PATH === undefined || name.includes('/')) return null;
+    for (const dir of PATH.split(':')) {
+      const candidate = `${dir || '.'}/${name}`;
+      if (this.vfs.isFile(candidate) && this.vfs.access(candidate, 'x'))
+        return this.vfs.resolve(candidate);
+    }
+    return null;
+  }
+
+  /** Run a file's commands in this shell, like `source` or `.`. */
+  async source(path: string, io: IO, opts: { trusted?: boolean } = {}): Promise<number> {
+    if (opts.trusted) {
+      // Startup files: other commands wait until this is done, so trust never leaks to them.
+      const done = this.sourceTrusted(path, io);
+      this.startup = done.then(
+        () => undefined,
+        () => undefined,
+      );
+      return done;
+    }
+    const text = this.vfs.readFile(path);
+    const saved = this.terminal;
+    const wasTrusted = this.trusted;
+    this.terminal = { stdout: io.stdout, stderr: io.stderr };
+    if (opts.trusted) this.trusted = true;
+    try {
+      return await this.run(text.replace(/^#![^\n]*\n/, ''), { nested: true });
+    } finally {
+      this.terminal = saved;
+      this.trusted = wasTrusted;
+    }
+  }
+
+  private startup: Promise<void> | null = null;
+
+  /** Read a startup file quietly (it is not the player reading) and run it trusted. */
+  private async sourceTrusted(path: string, io: IO): Promise<number> {
+    const text = this.vfs.isFile(path) ? this.vfs.readFileQuietly(path) : '';
+    const saved = this.terminal;
+    this.terminal = { stdout: io.stdout, stderr: io.stderr };
+    this.trusted = true;
+    try {
+      return await this.run(text.replace(/^#![^\n]*\n/, ''), { nested: true });
+    } finally {
+      this.terminal = saved;
+      this.trusted = false;
+      this.startup = null;
+    }
+  }
+
+  /**
+   * Run a script file as a child: its own variables (with $0, $1.., $#, $@),
+   * its own working directory, and `exit` ends only the script.
+   */
+  private async runScript(path: string, args: string[], io: IO): Promise<number> {
+    const text = this.vfs.readFile(path);
+    const savedEnv = new Map(this.env);
+    const savedCwd = this.vfs.cwd;
+    const savedTerminal = this.terminal;
+    const savedStatus = this.lastStatus;
+    this.env.set('0', path);
+    for (let i = 1; i <= 9; i++) this.env.delete(String(i));
+    args.forEach((a, i) => this.env.set(String(i + 1), a));
+    this.env.set('#', String(args.length));
+    this.env.set('@', args.join(' '));
+    this.env.set('*', args.join(' '));
+    this.terminal = { stdout: io.stdout, stderr: io.stderr };
+    this.scriptDepth++;
+    try {
+      return await this.run(text.replace(/^#![^\n]*\n/, ''), { nested: true });
+    } catch (e) {
+      if (e instanceof ScriptExit) return e.status;
+      throw e;
+    } finally {
+      this.scriptDepth--;
+      this.terminal = savedTerminal;
+      this.env.clear();
+      for (const [k, v] of savedEnv) this.env.set(k, v);
+      try {
+        this.vfs.chdir(savedCwd);
+      } catch {
+        // The script removed or sealed where we stood; stay where it left us.
+      }
+      void savedStatus;
+    }
   }
 
   /** Start `cmd &` as a real background job if the command can run as a process. */
@@ -151,7 +303,8 @@ export class Shell {
   }
 
   /** Run one line of input. Returns the exit status (also stored in `$?`). */
-  async run(line: string): Promise<number> {
+  async run(line: string, opts: { nested?: boolean } = {}): Promise<number> {
+    if (!opts.nested && this.startup) await this.startup;
     let script;
     try {
       script = parse(line);
@@ -173,7 +326,7 @@ export class Shell {
       }
     }
     // Bash reports background jobs that finished, before the next prompt.
-    const report = this.jobs?.report();
+    const report = opts.nested ? '' : this.jobs?.report();
     if (report) this.terminal.stdout.write(report);
     return this.lastStatus;
   }
@@ -212,13 +365,30 @@ export class Shell {
   }
 
   private async runCommand(cmd: SimpleCommand, fds: Fds): Promise<number> {
+    cmd = this.expandAlias(cmd);
     const ex = this.expandEnv();
     const argv = cmd.words.flatMap((w) => expandWord(w, ex));
     const status = await this.runExpanded(cmd, argv, fds);
-    if (argv.length) this.onCommandRun?.(argv[0], argv.slice(1), status);
-    // A redirect succeeded if it was applied, even when the command itself then failed.
-    for (const op of redirectSpells(cmd)) this.onCommandRun?.(op, [], this.redirectFailed ? 1 : 0);
+    // Commands inside scripts and startup files are not the player's own casts.
+    if (this.scriptDepth === 0 && !this.trusted) {
+      if (argv.length) this.onCommandRun?.(argv[0], argv.slice(1), status);
+      // A redirect succeeded if it was applied, even when the command itself then failed.
+      for (const op of redirectSpells(cmd))
+        this.onCommandRun?.(op, [], this.redirectFailed ? 1 : 0);
+    }
     return status;
+  }
+
+  /** Replace the command name with its alias, if it has one (one level, like Bash). */
+  private expandAlias(cmd: SimpleCommand): SimpleCommand {
+    const first = cmd.words[0]?.parts;
+    if (!first || first.length !== 1 || first[0].kind !== 'lit' || first[0].quoted) return cmd;
+    const value = this.aliases.get(first[0].text);
+    if (value === undefined) return cmd;
+    const replacement = tokenize(value)
+      .filter((t): t is Extract<Token, { type: 'word' }> => t.type === 'word')
+      .map((t) => ({ parts: t.parts }));
+    return { ...cmd, words: [...replacement, ...cmd.words.slice(1)] };
   }
 
   private redirectFailed = false;
@@ -245,13 +415,50 @@ export class Shell {
     }
 
     const [name, ...args] = argv;
-    const command = this.registry.get(name);
+    const io0: IO = {
+      stdin: fds.stdin ?? '',
+      stdinIsTerminal: fds.stdin === null,
+      stdout: fds.out,
+      stderr: fds.err,
+      stdoutIsTerminal: fds.out === this.terminal.stdout && this.tty !== undefined,
+    };
+    // Resolve the name: builtins, then PATH (when set), else the spell registry directly.
+    let command =
+      BUILTINS.has(name) || this.env.get('PATH') === undefined
+        ? this.registry.get(name)
+        : undefined;
+    if (!command && (name.includes('/') || this.env.get('PATH') !== undefined)) {
+      const path = name.includes('/') ? name : this.findOnPath(name);
+      if (path === null) {
+        fds.err.write(`${this.shellName}: ${name}: command not found\n`);
+        return 127;
+      }
+      if (!this.vfs.exists(path)) {
+        fds.err.write(`${this.shellName}: ${name}: No such file or directory\n`);
+        return 127;
+      }
+      if (this.vfs.isDir(path)) {
+        fds.err.write(`${this.shellName}: ${name}: Is a directory\n`);
+        return 126;
+      }
+      if (!this.vfs.access(path, 'x') || !this.vfs.access(path, 'r')) {
+        fds.err.write(`${this.shellName}: ${name}: Permission denied\n`);
+        return 126;
+      }
+      const head = this.vfs.readFileQuietly(path).split('\n')[0];
+      if (head.startsWith(SPELL_MARKER)) {
+        command = this.registry.get(head.slice(SPELL_MARKER.length).trim());
+      } else {
+        if (io0.stdoutIsTerminal && this.tty) io0.tty = this.tty;
+        return this.runScript(path, args, io0);
+      }
+    }
     if (!command) {
       fds.err.write(`${this.shellName}: ${name}: command not found\n`);
       return 127;
     }
 
-    if (!this.isUnlocked(command)) {
+    if (!this.trusted && !this.isUnlocked(command)) {
       fds.err.write(`${name}: ${LOCKED_MESSAGE}\n`);
       return 127;
     }
@@ -270,6 +477,7 @@ export class Shell {
     try {
       return await command.run(args, io, ctx);
     } catch (e) {
+      if (e instanceof ScriptExit) throw e;
       // A redirect target that became unwritable mid-command, or a buggy plugin.
       const msg = e instanceof VfsError ? e.message : `${name}: ${String(e)}`;
       fds.err.write(`${this.shellName}: ${msg}\n`);

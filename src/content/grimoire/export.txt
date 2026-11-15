@@ -1,0 +1,18 @@
+NAME
+    export - pass a variable on to every spell you cast
+
+SYNOPSIS
+    export NAME[=VALUE]...
+    export -p
+
+DESCRIPTION
+    A variable is a named value: NAME=value sets it, and $NAME reads it.
+    Plain variables belong to your shell alone. Exported variables are
+    handed to every spell you run: PATH, HOME, and USER are exported.
+
+    -n    stop exporting NAME
+    -p    list exported variables (also: export with no names)
+
+EXAMPLES
+    GREETING=hello; echo $GREETING
+    export PATH=/usr/local/bin:/usr/bin:/bin

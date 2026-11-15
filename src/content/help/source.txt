@@ -1,0 +1,5 @@
+source: source filename [arguments]
+    Execute commands from a file in the current shell.
+
+    Read and execute commands from FILENAME in the current shell.  The
+    entries in $PATH are used to find the directory containing FILENAME.

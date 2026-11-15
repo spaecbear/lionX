@@ -1,0 +1,10 @@
+NAME
+    exit - leave the shell, or end a script
+
+SYNOPSIS
+    exit [N]
+
+DESCRIPTION
+    Inside a script, exit ends the script at once, reporting status N
+    (0 means success). At the prompt, exit puts the Lexicon to sleep:
+    your progress is saved and you return to the title.

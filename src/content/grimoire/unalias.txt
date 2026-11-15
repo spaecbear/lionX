@@ -1,0 +1,8 @@
+NAME
+    unalias - forget an alias
+
+SYNOPSIS
+    unalias [-a] NAME...
+
+DESCRIPTION
+    Unalias removes each NAME. With -a, it removes them all.

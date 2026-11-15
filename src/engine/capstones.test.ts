@@ -99,6 +99,20 @@ const solutions: Record<string, string[][]> = {
       'sudo pkill -KILL -x gnawer',
     ],
   ],
+  undercroft: [
+    [
+      "echo 'export PATH=/usr/local/bin:/usr/bin:/bin' > ~/.bashrc",
+      'source ~/.bashrc',
+      'grep lionX /archive/undercroft/foundation-stone-log',
+    ],
+    [
+      // Fix the running shell first, then the file with cp from a clean copy, then read it with `.`.
+      'export PATH=/usr/bin:/bin',
+      "echo 'export PATH=/usr/bin:/bin:/usr/local/bin' > /archive/undercroft/workroom/clean-rc",
+      'cp /archive/undercroft/workroom/clean-rc ~/.bashrc',
+      'grep -c hums /archive/undercroft/foundation-stone-log',
+    ],
+  ],
 };
 
 describe('capstones can be solved more than one way', () => {

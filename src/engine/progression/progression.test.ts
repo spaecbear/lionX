@@ -5,6 +5,7 @@ import { Shell } from '../shell';
 import { evaluate } from '../validator';
 import { applyPatch } from '../vfs';
 import { ProcessTable } from '../processes';
+import { DEFAULT_PATH, installSpells } from '../session';
 import { dutySources } from '../../content';
 import { generateDuty, instantiate, type Duty, type DutyTemplate } from './duties';
 import { applyTask, gateOpen, GAIN, isSwift, masteryPhrase, nextDifficulty } from './mastery';
@@ -44,10 +45,18 @@ async function solve(duty: Duty, dutyFile: string) {
     onCommandRun: (command, args, status) => commands.push({ command, args, status }),
     tty: playerTty(),
     processes,
+    env: { PATH: DEFAULT_PATH },
   });
+  installSpells(vfs, shell.registry);
   for (const line of duty.solution) await shell.run(line);
   return {
-    met: evaluate(duty.goal, { vfs, commands, reads, processes: processes.names() }),
+    met: evaluate(duty.goal, {
+      vfs,
+      commands,
+      reads,
+      processes: processes.names(),
+      shell: { env: shell.env, exported: shell.exported, aliases: shell.aliases },
+    }),
     failures: commands.filter((c) => c.status !== 0),
     usedSpells: [...new Set(commands.map((c) => c.command))],
   };
@@ -80,7 +89,11 @@ describe('duty generator (done criterion)', () => {
           expect(r.failures, `${duty.signature} solution had failing commands`).toEqual([]);
         }
         // Commands must be declared; constructs (| > && ...) are never locked, so they may appear freely.
-        for (const s of r.usedSpells.filter((x) => !CONSTRUCT_SPELLS.includes(x))) {
+        // Scripts a duty installs (like `kindle`) are not Lexicon spells; only real spells must be declared.
+        const spellNames = createRegistry().names();
+        for (const s of r.usedSpells.filter(
+          (x) => !CONSTRUCT_SPELLS.includes(x) && spellNames.includes(x),
+        )) {
           expect(duty.spells, `${duty.signature} uses ${s}`).toContain(s);
         }
       }
