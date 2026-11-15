@@ -1,0 +1,9 @@
+         *
+          \
+           *-------*
+          /         \
+    *----*           *
+          \         /
+           *-------*
+
+  Gathered, like stars into a shape.

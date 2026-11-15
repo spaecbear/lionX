@@ -1,6 +1,7 @@
 # Duties for the Undercroft: variables, PATH, aliases, and settings.
 templates:
   - id: write-a-line
+    art: [quill]
     spells: [echo, '>']
     params:
       room: { pick: [crypt-a, crypt-b, crypt-c, crypt-d] }
@@ -17,6 +18,7 @@ templates:
     solution: ['echo {words} > /archive/undercroft/workroom/{room}/note']
 
   - id: name-a-value
+    art: [torch]
     spells: [echo]
     params:
       name: { pick: [LAMP, BELL, WARD, SEAL] }
@@ -37,6 +39,7 @@ templates:
     solution: ['{name}={value}', 'echo ${name}']
 
   - id: export-it
+    art: [torch]
     spells: [export]
     params:
       name: { pick: [LANTERN, CANDLE, TORCH, GLOW] }
@@ -50,6 +53,7 @@ templates:
     solution: ['export {name}={value}']
 
   - id: give-an-alias
+    art: [mushroom]
     spells: [alias]
     params:
       short: { pick: [la, lt, gr, home] }
@@ -63,6 +67,7 @@ templates:
     solution: ["alias {short}='{long}'"]
 
   - id: where-from
+    art: [arch]
     spells: [which, '>']
     params:
       room: { pick: [crypt-a, crypt-b, crypt-c, crypt-d] }
@@ -80,6 +85,7 @@ templates:
     solution: ['which {spell} > /archive/undercroft/workroom/{room}/where']
 
   - id: remember-an-alias
+    art: [mushroom]
     spells: [echo, '>>']
     params:
       short: { pick: [lsa, cdh, gri] }
@@ -93,6 +99,7 @@ templates:
     solution: ['echo "alias {short}=''{long}''" >> ~/.bashrc']
 
   - id: new-spell-on-path
+    art: [arch]
     spells: [export]
     params:
       dir: { pick: [binders, lamplighters, cartographers, bellringers] }
@@ -111,6 +118,7 @@ templates:
     solution: ['export PATH=$PATH:/opt/{dir}/bin', '{spell}']
 
   - id: report-home
+    art: [lamp, lantern-tall]
     spells: [printenv, '>']
     params:
       room: { pick: [crypt-a, crypt-b, crypt-c, crypt-d] }

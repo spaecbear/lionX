@@ -47,6 +47,7 @@ lessons:
       - 'A script is a book of spells. Its first line, starting with #!, says which shell should read it. Then it needs the run ward, and you cast it by its path.'
     steps:
       - id: write-script
+        art: runes
         guide: exact
         guidance:
           exact: "Type `echo '#!/bin/bash' > ~/hello.sh`, then `echo 'echo hello from a ritual' >> ~/hello.sh`, then `chmod +x ~/hello.sh`, then `~/hello.sh`."
@@ -88,6 +89,7 @@ lessons:
       - 'A loop casts the same spell for each word in a list: `for NAME in words; do spells; done`. Inside, $NAME is the current word.'
     steps:
       - id: for
+        art: candle-row
         guide: exact
         guidance:
           exact: 'Type `for n in 1 2 3; do touch ~/candles/candle-$n; done`.'
@@ -109,6 +111,7 @@ lessons:
       - 'One last spirit: cron. It wakes every minute and casts whatever your crontab tells it to, on schedule.'
     steps:
       - id: own-crontab
+        art: hourglass
         guide: exact
         guidance:
           exact: "Type `echo '0 * * * * echo the hour bell' | crontab -` to schedule a spell every hour, then `crontab -l` to see it."
@@ -144,6 +147,7 @@ capstone:
     - 'Then make it runnable, and cast it. One ritual. All at once. Before lionX can react.'
   steps:
     - id: the-ritual
+      art: tree
       guide: problem
       guidance:
         exact: "Type: `echo '#!/bin/bash' > ~/ritual.sh`, then append these lines with `>>`: `sudo crontab -r -u lionx`, `sudo pkill -9 lionX`, `sudo chown -R archivist:apprentice /archive/root/heart`, `sudo chmod -R g+rX,o-rwx /archive/root/heart`. Then `chmod +x ~/ritual.sh` and `~/ritual.sh`."

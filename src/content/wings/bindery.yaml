@@ -50,6 +50,7 @@ lessons:
       - 'Every binder needs a workbench. Make one in your cell.'
     steps:
       - id: workbench
+        art: shelf
         guide: exact
         guidance:
           exact: 'Type `mkdir ~/workbench` to make a new room in your cell.'
@@ -77,6 +78,7 @@ lessons:
     spells: [touch]
     steps:
       - id: touch
+        art: blank-page
         guide: exact
         guidance:
           exact: 'Type `touch ~/workbench/blank-page` to bring an empty page into being.'
@@ -94,6 +96,7 @@ lessons:
       - 'The Bindery keeps a sample page. Copy it; never take the original.'
     steps:
       - id: cp
+        art: two-pages
         guide: exact
         guidance:
           exact: 'Type `cp /archive/bindery/sample-page ~/workbench/` to copy it into your workbench.'
@@ -193,6 +196,7 @@ lessons:
       - 'Moving pages one at a time is a slow way to grow old. Wildcards name many at once: `*` matches anything, `?` matches exactly one character.'
     steps:
       - id: star
+        art: constellation
         guide: exact
         guidance:
           exact: 'Type `mkdir /archive/bindery/sorting/moths`, then `mv /archive/bindery/sorting/moth-* /archive/bindery/sorting/moths/`.'
@@ -253,6 +257,7 @@ capstone:
       success:
         - 'A shelf again. The pages remember their order.'
     - id: quarantine
+      art: crate
       guide: problem
       guidance:
         exact: 'Type `mkdir /archive/bindery/quarantine`, then `mv /archive/bindery/loose-pages/*.lx /archive/bindery/quarantine/`.'

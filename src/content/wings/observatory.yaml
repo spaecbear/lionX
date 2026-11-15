@@ -60,6 +60,7 @@ lessons:
       - '`find` walks every room below a place and names what matches.'
     steps:
       - id: find-name
+        art: magnifier
         guide: exact
         guidance:
           exact: 'Type `find /archive/observatory -name lens-cloth` to find where the lens cloth was hidden, then `cat` the path it prints.'
@@ -89,6 +90,7 @@ lessons:
       - '`grep` searches inside books and prints the lines that match.'
     steps:
       - id: grep
+        art: telescope
         guide: exact
         guidance:
           exact: 'Type `grep comet /archive/observatory/comet-log` to see every night the comet was mentioned.'
@@ -129,6 +131,7 @@ lessons:
         success:
           - 'Nine sightings. But nine of what?'
       - id: tally
+        art: owl
         guide: goal
         guidance:
           exact: 'Type `sort /archive/observatory/sightings | uniq -c`. `sort` gathers equal lines together; `uniq -c` counts each run.'
@@ -153,6 +156,7 @@ capstone:
     - 'But lionX is tidy, not careful. A few charts still carry the name. It begins: Oriel.'
   steps:
     - id: true-name
+      art: star-chart
       guide: problem
       guidance:
         exact: 'Type `grep -rl "Oriel Vane" /archive/observatory/star-charts` to list the charts. Then `mkdir /archive/observatory/true-name` and `mv` each chart it listed into that room.'

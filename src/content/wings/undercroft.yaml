@@ -32,6 +32,7 @@ lessons:
       - '`echo` speaks words back. And a word written as NAME=value becomes a variable: a name you can read back later with `$NAME`.'
     steps:
       - id: echo
+        art: torch
         guide: exact
         guidance:
           exact: 'Type `echo the stone hums`.'
@@ -85,6 +86,7 @@ lessons:
       - 'When you cast ls, the Lexicon looks through each directory in your PATH, in order, for a file named ls, and runs the first it finds.'
     steps:
       - id: see-path
+        art: arch
         guide: exact
         guidance:
           exact: 'Type `echo $PATH`, then `which ls`.'
@@ -113,6 +115,7 @@ lessons:
     spells: [alias, unalias]
     steps:
       - id: alias
+        art: mushroom
         guide: exact
         guidance:
           exact: "Type `alias ll='ls -l'`, then `ll`."
@@ -173,6 +176,7 @@ capstone:
   reloadShell: true
   steps:
     - id: restore-path
+      art: lantern-tall
       guide: problem
       guidance:
         exact: "Type `echo 'export PATH=/usr/local/bin:/usr/bin:/bin' > ~/.bashrc`, then `source ~/.bashrc`, then `grep lionX /archive/undercroft/foundation-stone-log`."

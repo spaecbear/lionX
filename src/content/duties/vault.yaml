@@ -1,6 +1,7 @@
 # Duties for the Vault: wards and authority. Password for sudo: oriel.
 templates:
   - id: private-letter
+    art: [padlock]
     spells: [chmod]
     params:
       room: { pick: [cell-a, cell-b, cell-c, cell-d] }
@@ -22,6 +23,7 @@ templates:
     solution: ['chmod 600 /archive/vault/workroom/{room}/{letter}']
 
   - id: make-runnable
+    art: [key]
     spells: [chmod]
     params:
       room: { pick: [cell-a, cell-b, cell-c, cell-d] }
@@ -39,6 +41,7 @@ templates:
     solution: ['chmod u+x /archive/vault/workroom/{room}/{script}']
 
   - id: shut-out-others
+    art: [shield]
     spells: [chmod]
     params:
       room: { pick: [cell-a, cell-b, cell-c, cell-d] }
@@ -57,6 +60,7 @@ templates:
     solution: ['chmod o-rwx /archive/vault/workroom/{room}/strongroom']
 
   - id: share-with-group
+    art: [keyring]
     spells: [chmod]
     params:
       room: { pick: [cell-a, cell-b, cell-c, cell-d] }
@@ -77,6 +81,7 @@ templates:
     solution: ['chmod g+r /archive/vault/workroom/{room}/{notes}']
 
   - id: exact-wards
+    art: [shield]
     spells: [chmod]
     params:
       room: { pick: [cell-a, cell-b, cell-c, cell-d] }
@@ -94,6 +99,7 @@ templates:
     solution: ['chmod {mode} /archive/vault/workroom/{room}/charter']
 
   - id: reclaim-from-lionx
+    art: [crown]
     spells: [sudo, chown]
     params:
       room: { pick: [cell-a, cell-b, cell-c, cell-d] }
@@ -112,6 +118,7 @@ templates:
     solution: ['sudo chown archivist /archive/vault/workroom/{room}/{ledger}']
 
   - id: take-it-yourself
+    art: [keyring]
     spells: [sudo, chown]
     params:
       room: { pick: [cell-a, cell-b, cell-c, cell-d] }
@@ -134,6 +141,7 @@ templates:
     solution: ['sudo chown apprentice:apprentice /archive/vault/workroom/{room}/{book}']
 
   - id: read-sealed
+    art: [crown]
     spells: [sudo, cat]
     params:
       room: { pick: [cell-a, cell-b, cell-c, cell-d] }
@@ -152,6 +160,7 @@ templates:
     solution: ['sudo cat /archive/vault/workroom/{room}/order']
 
   - id: roll-call
+    art: [signpost]
     spells: [whoami, id]
     params:
       officer: { pick: [the-night-porter, the-ledger-keeper, the-gate-warden] }

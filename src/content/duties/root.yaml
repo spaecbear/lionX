@@ -1,6 +1,7 @@
 # Duties for the Root: rituals, loops, and schedules. Password for sudo: oriel.
 templates:
   - id: write-and-cast
+    art: [runes]
     spells: [echo, chmod]
     params:
       room: { pick: [chamber-a, chamber-b, chamber-c, chamber-d] }
@@ -21,6 +22,7 @@ templates:
       - '/archive/root/workroom/{room}/chant.sh'
 
   - id: candles-in-a-loop
+    art: [candle-row]
     spells: [touch]
     params:
       room: { pick: [chamber-a, chamber-b, chamber-c, chamber-d] }
@@ -41,6 +43,7 @@ templates:
     solution: ['for n in 1 2 3 4 5; do touch /archive/root/workroom/{room}/{thing}-$n; done']
 
   - id: list-in-a-loop
+    art: [tree]
     spells: [echo, '>>']
     params:
       room: { pick: [chamber-a, chamber-b, chamber-c, chamber-d] }
@@ -77,6 +80,7 @@ templates:
       ]
 
   - id: give-it-the-ward
+    art: [runes]
     spells: [chmod]
     params:
       room: { pick: [chamber-a, chamber-b, chamber-c, chamber-d] }
@@ -102,6 +106,7 @@ templates:
       ]
 
   - id: ritual-with-an-argument
+    art: [runes]
     spells: [chmod]
     params:
       room: { pick: [chamber-a, chamber-b, chamber-c, chamber-d] }
@@ -123,6 +128,7 @@ templates:
     solution: ['/archive/root/workroom/{room}/bless.sh {name}']
 
   - id: schedule-a-bell
+    art: [hourglass, bell]
     spells: [crontab, echo]
     params:
       minute: { pick: ['0', '15', '30', '45'] }
@@ -144,6 +150,7 @@ templates:
     solution: ["echo '{minute} * * * * echo {bell}' | crontab -"]
 
   - id: clear-the-schedule
+    art: [hourglass]
     spells: [crontab]
     params:
       job: { pick: [ring-bells, count-candles, wind-clocks] }
@@ -159,6 +166,7 @@ templates:
     solution: ['crontab -r']
 
   - id: read-a-schedule
+    art: [scroll]
     spells: [sudo, crontab]
     params:
       who: { pick: [archivist] }

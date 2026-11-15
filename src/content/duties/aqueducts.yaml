@@ -2,6 +2,7 @@
 # the player writes, so any pipeline that produces the right text wins.
 templates:
   - id: save-listing
+    art: [waterwheel]
     spells: [ls, '>']
     params:
       room: { pick: [north-basin, south-basin, east-weir, west-weir, cistern] }
@@ -25,6 +26,7 @@ templates:
       ['ls /archive/aqueducts/workroom/{room} > /archive/aqueducts/workroom/{room}/inventory']
 
   - id: append-ledger
+    art: [ledger]
     spells: [cat, '>>']
     params:
       room: { pick: [north-basin, south-basin, east-weir, west-weir, cistern] }
@@ -49,6 +51,7 @@ templates:
       ['cat /archive/aqueducts/workroom/{room}/today >> /archive/aqueducts/workroom/{room}/ledger']
 
   - id: filter-noise
+    art: [faucet]
     spells: [grep, '>']
     params:
       room: { pick: [north-basin, south-basin, east-weir, west-weir, cistern] }
@@ -78,6 +81,7 @@ templates:
       ]
 
   - id: count-to-book
+    art: [gauge]
     spells: [wc, '<', '>']
     params:
       room: { pick: [north-basin, south-basin, east-weir, west-weir, cistern] }
@@ -104,6 +108,7 @@ templates:
       ]
 
   - id: catch-errors
+    art: [bucket]
     spells: [ls, '2>']
     params:
       room: { pick: [north-basin, south-basin, east-weir, west-weir, cistern] }
@@ -128,6 +133,7 @@ templates:
     solutionMayFail: true
 
   - id: make-and-enter
+    art: [stairs]
     spells: [mkdir, cd, '&&']
     params:
       room: { pick: [north-basin, south-basin, east-weir, west-weir, cistern] }
@@ -147,6 +153,7 @@ templates:
       ]
 
   - id: sorted-gauges
+    art: [gauge]
     spells: [sort, '>']
     params:
       room: { pick: [north-basin, south-basin, east-weir, west-weir, cistern] }
@@ -173,6 +180,7 @@ templates:
       ]
 
   - id: tally-to-book
+    art: [waterwheel]
     spells: [sort, uniq, '|', '>']
     params:
       room: { pick: [north-basin, south-basin, east-weir, west-weir, cistern] }

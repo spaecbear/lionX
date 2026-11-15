@@ -1,6 +1,7 @@
 # Duties for the Observatory: searching and counting.
 templates:
   - id: find-by-name
+    art: [magnifier]
     spells: [find, cat]
     params:
       room: { pick: [north-dome, south-dome, map-loft, clock-room, lens-room] }
@@ -22,6 +23,7 @@ templates:
       - 'cat /archive/observatory/workroom/{room}/{deep}/{thing}'
 
   - id: which-page
+    art: [magnifier, book]
     spells: [grep, cat]
     params:
       room: { pick: [north-dome, south-dome, map-loft, clock-room, lens-room] }
@@ -47,6 +49,7 @@ templates:
       - 'cat /archive/observatory/workroom/{room}/pages/page-{n}'
 
   - id: grep-the-log
+    art: [telescope]
     spells: [grep]
     params:
       room: { pick: [north-dome, south-dome, map-loft, clock-room, lens-room] }
@@ -65,6 +68,7 @@ templates:
     solution: ['grep -v nothing /archive/observatory/workroom/{room}/watch-log']
 
   - id: count-lines
+    art: [ledger]
     spells: [wc]
     params:
       room: { pick: [north-dome, south-dome, map-loft, clock-room, lens-room] }
@@ -88,6 +92,7 @@ templates:
     solution: ['wc -l /archive/observatory/workroom/{room}/ledger']
 
   - id: tally
+    art: [owl]
     spells: [sort, uniq]
     params:
       room: { pick: [north-dome, south-dome, map-loft, clock-room, lens-room] }
@@ -112,6 +117,7 @@ templates:
     solution: ['sort /archive/observatory/workroom/{room}/sightings | uniq -c']
 
   - id: sort-roster
+    art: [star-chart]
     spells: [sort]
     params:
       room: { pick: [north-dome, south-dome, map-loft, clock-room, lens-room] }
@@ -128,6 +134,7 @@ templates:
     solution: ['sort /archive/observatory/workroom/{room}/roster']
 
   - id: clear-blank-pages
+    art: [moon]
     spells: [find, rm]
     params:
       room: { pick: [north-dome, south-dome, map-loft, clock-room, lens-room] }
@@ -152,6 +159,7 @@ templates:
       - 'rm /archive/observatory/workroom/{room}/notes/blank-1 /archive/observatory/workroom/{room}/notes/blank-2'
 
   - id: gather-mentions
+    art: [constellation]
     spells: [grep, mkdir, mv]
     params:
       room: { pick: [north-dome, south-dome, map-loft, clock-room, lens-room] }

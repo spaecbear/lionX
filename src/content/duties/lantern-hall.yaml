@@ -3,6 +3,7 @@
 # Each `solution` is a tidy way to finish; tests run it to prove every duty is solvable.
 templates:
   - id: misplaced-scroll
+    art: [scroll]
     spells: [cd, ls, cat]
     params:
       room: { pick: [east-alcove, west-alcove, map-room, quiet-nook, ink-closet, bell-loft] }
@@ -23,6 +24,7 @@ templates:
     solution: ['cd {place}', 'ls', 'cat {scroll}.txt']
 
   - id: hidden-note
+    art: [envelope]
     spells: [ls, cat]
     params:
       room: { pick: [east-alcove, west-alcove, map-room, quiet-nook, ink-closet, bell-loft] }
@@ -40,6 +42,7 @@ templates:
     solution: ['ls -a /archive/stacks/{room}', 'cat /archive/stacks/{room}/.{note}']
 
   - id: name-the-room
+    art: [signpost]
     spells: [cd, pwd]
     params:
       room: { pick: [lamp-gallery, echo-stair, cold-vault-door, reading-pit, copy-hall, owl-roost] }
@@ -58,6 +61,7 @@ templates:
     solution: ['cd /archive/stacks/{room}', 'pwd']
 
   - id: letter-under-door
+    art: [letter]
     spells: [cat]
     params:
       sender: { pick: [the-cook, a-copyist, the-night-porter, an-old-reader, the-bindery-boy] }

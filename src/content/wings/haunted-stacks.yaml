@@ -88,6 +88,7 @@ lessons:
       - 'First, learn to see them.'
     steps:
       - id: ps
+        art: ghost
         guide: exact
         guidance:
           exact: 'Type `ps`. It lists your own spirits on this terminal, each with a number: its PID.'
@@ -129,6 +130,7 @@ lessons:
       - '`kill` sends a signal to a spirit by its PID. Despite the name, the default signal is a polite request to stop.'
     steps:
       - id: imp
+        art: bat
         guide: exact
         guidance:
           exact: 'The candle-imp is PID 4242, and it is yours. Type `kill 4242`.'
@@ -162,6 +164,7 @@ lessons:
       - '`sleep` waits, and does nothing else. The perfect practice spirit.'
     steps:
       - id: background
+        art: moon
         guide: exact
         guidance:
           exact: 'Type `sleep 600 &`. The Lexicon prints the job number and its PID, and gives you your prompt back.'
@@ -237,6 +240,7 @@ capstone:
     - "Banish the gnawer. Do not touch the lamplighter or the page-turner; they are the Archivist's, and they are all that keeps these stacks lit."
   steps:
     - id: banish-gnawer
+      art: spirit-jar
       guide: problem
       guidance:
         exact: 'Type `sudo pkill -STOP lionX` to freeze lionX, then `sudo pkill -9 gnawer`.'

@@ -36,6 +36,7 @@ lessons:
       - "`>` pours a spell's output into a book instead of onto the glass. Careful: it replaces whatever the book held."
     steps:
       - id: redirect
+        art: waterwheel
         guide: exact
         guidance:
           exact: 'Type `ls /archive > ~/archive-map` to write the list of halls into a new book, then `cat ~/archive-map`.'
@@ -72,6 +73,7 @@ lessons:
       - "The pipe, `|`, is the true aqueduct: it carries one spell's output into the next spell's input."
     steps:
       - id: pipe
+        art: faucet
         guide: exact
         guidance:
           exact: "Type `grep -v lionX /archive/aqueducts/channels/north | wc -l` to count the lines that are not lionX's noise."
@@ -118,6 +120,7 @@ lessons:
         success:
           - 'Gate 1, gate 2, gate 3, gate 4. Order restored.'
       - id: errors
+        art: bucket
         guide: goal
         guidance:
           exact: 'Type `grep -r flow /archive/aqueducts/channels 2> /dev/null`. `/dev/null` swallows whatever is poured into it.'
@@ -161,6 +164,7 @@ capstone:
     - "The master record of the Aqueducts is drowned in lionX's noise, and one channel is sealed against us. We need a clean record anyway."
   steps:
     - id: clean-record
+      art: gauge
       guide: problem
       guidance:
         exact: 'Type `cat /archive/aqueducts/channels/* 2> /dev/null | grep -v lionX | sort > /archive/aqueducts/clean-record`.'

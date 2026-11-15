@@ -1,6 +1,7 @@
 # Duties for the Haunted Stacks: spirits to banish, spare, and raise.
 templates:
   - id: banish-pest
+    art: [ghost]
     spells: [pkill]
     params:
       pest: { pick: [ink-mite, dust-sprite, page-louse, wick-gnat, shelf-weevil] }
@@ -16,6 +17,7 @@ templates:
     solution: ['pkill -x {pest}']
 
   - id: stubborn-pest
+    art: [ghost, bat]
     spells: [pkill]
     params:
       pest: { pick: [grumbler, nagging-echo, sulker, drone-wasp] }
@@ -31,6 +33,7 @@ templates:
     solution: ['pkill -9 -x {pest}']
 
   - id: lionx-pest
+    art: [bat]
     spells: [sudo, pkill]
     params:
       pest: { pick: [snoop, tally-clerk, ward-spider, hush-moth] }
@@ -46,6 +49,7 @@ templates:
     solution: ['sudo pkill -x {pest}']
 
   - id: spare-the-friend
+    art: [spirit-jar]
     spells: [top, pkill]
     params:
       hog: { pick: [glutton, page-eater, lamp-drinker, ink-hog] }
@@ -66,6 +70,7 @@ templates:
     solution: ['top -b -n 1', 'pkill -x {hog}']
 
   - id: raise-a-sleeper
+    art: [moon]
     spells: [sleep]
     params:
       n: { int: [300, 900] }
@@ -79,6 +84,7 @@ templates:
     solution: ['sleep {n} &']
 
   - id: tidy-jobs
+    art: [moon]
     spells: [sleep, jobs, kill]
     params:
       n: { int: [100, 500] }
@@ -92,6 +98,7 @@ templates:
     solution: ['sleep {n} &', 'jobs', 'kill %%']
 
   - id: census
+    art: [owl]
     spells: [ps]
     params:
       who: { pick: [the-night-porter, the-binders, the-lamplighters] }
@@ -104,6 +111,7 @@ templates:
     solution: ['ps aux']
 
   - id: name-the-pid
+    art: [spirit-jar]
     spells: [pgrep, '>']
     params:
       spirit: { pick: [cellar-ghost, attic-wisp, stair-shade] }

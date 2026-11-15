@@ -63,6 +63,7 @@ lessons:
     spells: [whoami, id]
     steps:
       - id: whoami
+        art: signpost
         guide: exact
         guidance:
           exact: 'Type `whoami`. Wards care very much who is asking.'
@@ -92,6 +93,7 @@ lessons:
       - '`ls -l` shows wards as nine letters: three for the owner, three for the group, three for everyone else. r is read, w is write, x is run, or for a room, enter.'
     steps:
       - id: private
+        art: padlock
         guide: exact
         guidance:
           exact: 'Type `chmod 600 ~/diary`. 6 means read and write (4 + 2) for you; the two zeros mean nothing for anyone else.'
@@ -126,6 +128,7 @@ lessons:
       - 'sudo asks for YOUR password. The Archivist set it when they enrolled you, and left a riddle so you would remember: it is the first word of the name lionX tried to erase, in small letters.'
     steps:
       - id: reclaim
+        art: crown
         guide: exact
         guidance:
           exact: 'Type `sudo chown apprentice /archive/vault/ledgers/water-ledger` and give your password when asked. Nothing appears as you type it.'
@@ -165,6 +168,7 @@ capstone:
     - 'Give the inner Vault and the seal back to the Archivist. Let your own group in, so you can read the seal. But do not open them to everyone; that is how lionX got in the first time.'
   steps:
     - id: unseal
+      art: shield
       guide: problem
       guidance:
         exact: 'Type `sudo chown -R archivist:apprentice /archive/vault/inner`, then `sudo chmod 750 /archive/vault/inner`, then `sudo chmod 640 /archive/vault/inner/archivists-seal`, then `cat /archive/vault/inner/archivists-seal`.'

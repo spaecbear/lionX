@@ -67,6 +67,8 @@ lessons:
           - 'A rule sheet and, well, a rather small room. Or so it seems.'
 
       - id: hidden
+
+        art: envelope
         guide: problem
         guidance:
           exact: 'Type `ls -a` to show hidden things, then `cat .under-the-floorboard` to read what you find.'
@@ -103,6 +105,8 @@ lessons:
           - 'Notice your prompt changed. It always shows where you stand.'
 
       - id: read-log
+
+        art: scroll
         guide: goal
         guidance:
           exact: 'Type `cat lantern-log.txt` to read the logbook.'
@@ -140,6 +144,7 @@ capstone:
     - 'The lantern-keeper went down the stair and never came back. Their last note is down there somewhere.'
   steps:
     - id: keepers-note
+      art: lamp
       guide: problem
       guidance:
         exact: 'Type `cd /archive/lantern-hall/stair/landing/cellar`, then `ls -a`, then `cat` the note you find.'
