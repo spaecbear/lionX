@@ -1,4 +1,5 @@
-import { loadCoaching, loadDuties, loadQuillLines, loadWing } from '../engine/content';
+import { loadCoaching, loadDuties, loadQuillLines, loadSecrets, loadWing } from '../engine/content';
+import secretsSource from './secrets.yaml?raw';
 import {
   art,
   artFor,
@@ -27,6 +28,8 @@ describe('content files', () => {
     }
     for (const [id, src] of Object.entries(dutySources))
       for (const d of loadDuties(src, id)) names.push(...(d.art ?? []));
+    for (const sec of loadSecrets(secretsSource)) names.push(sec.art!);
+    names.push('ribbon');
     expect(names.length).toBeGreaterThan(20);
     for (const n of names) expect(artNames(), n).toContain(n);
   });

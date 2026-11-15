@@ -79,6 +79,8 @@ export interface Secret {
   say: string;
   theme?: string;
   song?: string;
+  /** Art drawn when found, and hung in ~/gallery. */
+  art?: string;
 }
 
 export interface Reward {

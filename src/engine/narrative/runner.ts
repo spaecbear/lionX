@@ -309,7 +309,10 @@ export class LessonRunner {
     for (const a of this.opts.achievements ?? []) {
       if (earned.includes(a.id) || !this.achieved(a)) continue;
       earned.push(a.id);
-      out.push({ kind: 'achievement', title: a.title, says: a.says });
+      out.push(
+        { kind: 'art', name: 'ribbon', reward: true },
+        { kind: 'achievement', title: a.title, says: a.says },
+      );
     }
     return out;
   }
@@ -331,7 +334,7 @@ export class LessonRunner {
   }
 
   private respond(line: string, status: number, stderr: string): Narration[] {
-    const out = this.pending.splice(0);
+    const out = [...this.pending.splice(0), ...this.announceSecrets()];
     // Rooms appear as lessons go on; hide any secret whose room now exists.
     this.placeSecrets();
     this.fillGrimoire();
@@ -683,10 +686,21 @@ export class LessonRunner {
       const songs = (this.progress.songs ??= []);
       if (!songs.includes(s.song)) songs.push(s.song);
     }
-    this.pending.push(
-      { kind: 'narrator', text: s.say },
-      { kind: 'event', event: 'secret', id: s.id },
-    );
+    // The art (and its gallery copy) waits until the command finishes: no writing mid-read.
+    this.secretsJustFound.push(s);
+  }
+
+  private secretsJustFound: Secret[] = [];
+
+  /** Art and words for secrets found during the last command. */
+  private announceSecrets(): Narration[] {
+    return this.secretsJustFound
+      .splice(0)
+      .flatMap((s): Narration[] => [
+        ...this.reward(s.art ? [s.art] : undefined),
+        { kind: 'narrator', text: s.say },
+        { kind: 'event', event: 'secret', id: s.id },
+      ]);
   }
 
   /** How many secrets exist, for `status`. */

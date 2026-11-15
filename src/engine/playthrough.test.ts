@@ -166,6 +166,7 @@ describe('secrets', () => {
       expect.arrayContaining(['rose', 'ember', 'ink', 'moonlight', 'frost', 'moss']),
     );
     expect(said).toHaveLength(12);
+    expect(vfs.readFile('/home/apprentice/gallery/music-box')).toContain('tavern song');
     void vfs;
   });
 });
