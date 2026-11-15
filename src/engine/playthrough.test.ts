@@ -254,3 +254,52 @@ describe('the Book of Eco', () => {
     expect(vfs.readFile('/home/apprentice/library/02-missing')).toContain(lib.pages[1].where);
   });
 });
+
+describe('leftover duty rooms', () => {
+  it('do not starve the gate: duties needing a fresh workbench still come up', async () => {
+    const { generateDuty } = await import('./progression');
+    const { Rng } = await import('./progression/rng');
+    const content = loadGameContent();
+    const templates = content.dutyFiles.bindery;
+    const known = ['pwd', 'ls', 'cd', 'cat', 'mkdir', 'touch', 'cp', 'mv', 'rm', 'rmdir'];
+    const seen = new Set<string>();
+    const rng = new Rng(4);
+    // Every possible bench is already there, as if left behind by earlier duties.
+    for (let i = 0; i < 80; i++) {
+      const d = generateDuty(templates, {
+        known,
+        focus: ['mkdir', 'touch', 'rmdir'],
+        difficulty: 1,
+        rng,
+        recent: [],
+        exists: () => true,
+        clear: () => true,
+      });
+      if (d) seen.add(d.signature.split(':')[0]);
+    }
+    expect([...seen]).toEqual(expect.arrayContaining(['make-shelf', 'blank-pages', 'empty-shelf']));
+  });
+
+  it('the runner clears a stale bench, but never the one the player stands in', async () => {
+    const s: GameSession = createSession({ content: loadGameContent(), seed: 1 });
+    s.opening();
+    const vfs = s.runner.vfs;
+    vfs.credentials = { user: 'root', groups: ['root'] };
+    vfs.mkdir('/archive/bindery/work/bench-a', { parents: true });
+    vfs.writeFile('/archive/bindery/work/bench-a/old-scrap', 'x');
+    vfs.credentials = { user: 'apprentice', groups: ['apprentice'] };
+    const clear = (
+      s.runner as unknown as { clearLeftovers: (d: unknown) => boolean }
+    ).clearLeftovers.bind(s.runner);
+    const duty = {
+      cleanup: ['/archive/bindery/work/bench-a'],
+      setup: { dirs: ['/archive/bindery/work/bench-a'] },
+    };
+    vfs.chdir('/archive/bindery/work/bench-a');
+    expect(clear(duty)).toBe(false);
+    expect(vfs.exists('/archive/bindery/work/bench-a/old-scrap')).toBe(true);
+    vfs.chdir('/home/apprentice');
+    expect(clear(duty)).toBe(true);
+    expect(vfs.exists('/archive/bindery/work/bench-a')).toBe(false);
+  });
+});

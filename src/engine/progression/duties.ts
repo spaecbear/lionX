@@ -54,6 +54,11 @@ export interface GenerateOptions {
   recent: string[];
   /** True if a path already exists in the world (setup must not collide). */
   exists?: (path: string) => boolean;
+  /**
+   * Try to clear an earlier duty's leftovers in this duty's way; true if the
+   * way is now clear.
+   */
+  clear?: (duty: Duty) => boolean;
 }
 
 /** Chance of picking from all eligible templates instead of the focused ones, to mix in older spells. */
@@ -104,7 +109,8 @@ export function generateDuty(templates: DutyTemplate[], o: GenerateOptions): Dut
       ...(duty.setup?.dirs ?? []).map((d) => (typeof d === 'string' ? d : d.path)),
       ...Object.keys(duty.setup?.files ?? {}),
     ];
-    if (o.exists && paths.some((p) => o.exists!(p))) continue;
+    // Scraps of an earlier duty in the way: let the caller clear them (if the player is not standing there).
+    if (o.exists && paths.some((p) => o.exists!(p)) && !(o.clear?.(duty) ?? false)) continue;
     fallback ??= duty;
     if (!o.recent.includes(duty.signature)) return duty;
   }

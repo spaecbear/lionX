@@ -635,6 +635,7 @@ export class LessonRunner {
       rng: this.rng,
       recent: this.progress.recentDuties,
       exists: (p) => this.vfs.exists(p) || asRootExists(this.vfs, p),
+      clear: (d) => this.clearLeftovers(d),
     });
     this.progress.rngState = this.rng.state;
     if (!duty) {
@@ -670,6 +671,28 @@ export class LessonRunner {
     if (this.phase === 'free') return out;
     if (this.gateIsOpen()) return [...out, ...this.openCapstone()];
     return [...out, ...this.assignDuty()];
+  }
+
+  /**
+   * Remove an earlier duty's scraps that sit where this duty would be set up
+   * (duty scratch space only: paths this template cleans up), unless the
+   * player is standing in them. True if nothing is in the way any more.
+   */
+  private clearLeftovers(duty: Duty): boolean {
+    const cwd = this.vfs.cwd;
+    const setup = [
+      ...(duty.setup?.dirs ?? []).map((d) => (typeof d === 'string' ? d : d.path)),
+      ...Object.keys(duty.setup?.files ?? {}),
+    ];
+    return asRoot(this.vfs, () => {
+      for (const c of duty.cleanup) {
+        if (c.startsWith('process:') || !this.vfs.exists(c)) continue;
+        const abs = this.vfs.resolve(c);
+        if (cwd === abs || cwd.startsWith(abs + '/')) return false;
+        this.vfs.remove(c, { recursive: true });
+      }
+      return !setup.some((p) => this.vfs.exists(p));
+    });
   }
 
   private cleanup(duty: Duty) {
