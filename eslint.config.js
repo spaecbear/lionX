@@ -14,6 +14,11 @@ export default tseslint.config(
     rules: reactHooks.configs.recommended.rules,
   },
   {
+    // The service worker runs in a worker scope.
+    files: ['public/sw.js'],
+    languageOptions: { globals: globals.serviceworker },
+  },
+  {
     // The browser smoke test runs in Node and evaluates code in the page.
     files: ['e2e/**/*.mjs'],
     languageOptions: { globals: { ...globals.node, ...globals.browser } },

@@ -1,6 +1,7 @@
 import { loadCoaching, loadDuties, loadQuillLines, loadWing } from '../engine/content';
 import type { GameContent } from '../engine/session';
 import { coachingSource, dutySources, quillSource, wingSources } from '.';
+import sideQuests from './side-quests.txt?raw';
 
 /** The wing a new game begins in. (lantern-hall is a small sample wing kept for tests.) */
 export const START_WING = 'apprentice-cells';
@@ -17,5 +18,6 @@ export function loadGameContent(): GameContent {
     coaching: loadCoaching(coachingSource),
     lines: loadQuillLines(quillSource),
     startWing: START_WING,
+    sideQuests,
   };
 }

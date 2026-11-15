@@ -182,3 +182,86 @@ describe('title screen and saves', () => {
     expect(d.save()).toBe(false);
   });
 });
+
+describe('settings and tints in the director', () => {
+  it('settings works on the title and in play; earned themes come from saves', async () => {
+    const storage = memoryStorage();
+    let saved: import('../engine/settings').Settings = {
+      theme: 'candlelit',
+      motion: 'auto',
+      reader: false,
+    };
+    const term = new Terminal({ cols: 80, rows: 40, allowProposedApi: true });
+    const writes: Promise<void>[] = [];
+    const d = new Director(
+      { cols: 80, rows: 40, write: (s) => void writes.push(new Promise((r) => term.write(s, r))) },
+      {
+        storage,
+        content,
+        artFor,
+        titleHelp: '',
+        settings: {
+          get: () => saved,
+          set: (n) => (saved = n),
+          themes: ['candlelit', 'green-phosphor', 'high-contrast'],
+          alwaysAvailable: ['candlelit', 'high-contrast'],
+        },
+        wingTints: { 'lantern-hall': '\x1b[95m' },
+      },
+    );
+    d.showTitle();
+    await d.ready;
+    await d.handleData('settings theme green-phosphor\r');
+    expect(saved.theme).toBe('candlelit');
+    await d.handleData('settings theme high-contrast\r');
+    expect(saved.theme).toBe('high-contrast');
+    // A save that earned green phosphor makes it available.
+    await d.handleData('play 1\r');
+    await d.ready;
+    d.session!.runner.progress.themes.push('green-phosphor');
+    d.save();
+    await d.handleData('settings theme green-phosphor\r');
+    await d.ready;
+    expect(saved.theme).toBe('green-phosphor');
+    await Promise.all(writes);
+    expect(writes.length).toBeGreaterThan(0);
+  });
+
+  it('tints the prompt path by wing', async () => {
+    const term = new Terminal({ cols: 80, rows: 40, allowProposedApi: true });
+    const raw: string[] = [];
+    const d = new Director(
+      {
+        cols: 80,
+        rows: 40,
+        write: (s) => {
+          raw.push(s);
+          term.write(s);
+        },
+      },
+      {
+        storage: memoryStorage(),
+        content,
+        artFor,
+        titleHelp: '',
+        wingTints: { 'lantern-hall': '\x1b[95m' },
+      },
+    );
+    d.showTitle();
+    await d.ready;
+    await d.handleData('play 1\r');
+    await d.ready;
+    await d.handleData('\r');
+    expect(raw.join('')).toContain('\x1b[95m~');
+  });
+
+  it('quests stay sealed until the Archive is restored', async () => {
+    const g = boot();
+    await g.type('play 1');
+    await g.type('quests');
+    expect(g.screen()).toContain('The side quests open once the Archive is restored.');
+    g.director.session!.runner.progress.wingsDone.push('root');
+    await g.type('quests');
+    expect(g.screen()).toContain('The Tarred Chests');
+  });
+});

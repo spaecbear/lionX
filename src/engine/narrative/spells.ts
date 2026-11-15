@@ -57,3 +57,19 @@ export function wrapIndented(line: string, width: number): string {
   rows.push(cur);
   return rows.join('\n');
 }
+
+/** `quests`: the side quests after the main story (still to be written). */
+export function createQuestsCommand(getRunner: () => LessonRunner | null, text: string) {
+  return defineCommand({
+    name: 'quests',
+    unlockedInAct: 0,
+    options: {},
+    run(_o, io) {
+      const done = getRunner()?.progress.wingsDone.includes('root');
+      io.stdout.write(
+        done ? text : 'The side quests open once the Archive is restored. Keep going.\n',
+      );
+      return 0;
+    },
+  });
+}

@@ -1,0 +1,2 @@
+Usage: quests
+List the side quests (after the Archive is restored).

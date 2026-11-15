@@ -8,6 +8,7 @@ import {
   type SaveStorage,
 } from '../engine/save';
 import { Shell } from '../engine/shell';
+import { createSettingsCommand, type Settings } from '../engine/settings';
 import { Vfs } from '../engine/vfs';
 import { TerminalController, type TerminalLike } from './terminal/controller';
 
@@ -27,6 +28,15 @@ export interface DirectorOptions {
   now?: () => number;
   /** The chips the touch layer should show right now. */
   onChips?: (names: string[]) => void;
+  /** Preferences: read, save, and which themes exist. */
+  settings?: {
+    get(): Settings;
+    set(next: Settings): void;
+    themes: string[];
+    alwaysAvailable: string[];
+  };
+  /** Prompt path colors by wing id. */
+  wingTints?: Record<string, string>;
   /** The shell changed (title <-> play), e.g. to update COLUMNS or tap-to-insert. */
   onShell?: (shell: Shell) => void;
 }
@@ -70,6 +80,49 @@ export class Director {
     this.term.write('\x1bc');
   }
 
+  /** Themes this player may use: the always-available ones plus any earned in any save. */
+  private availableThemes(): string[] {
+    const s = this.opts.settings;
+    if (!s) return [];
+    const earned = new Set(s.alwaysAvailable);
+    if (this.session) for (const t of this.session.runner.progress.themes) earned.add(t);
+    for (let i = 1; i <= SLOT_COUNT; i++) {
+      const r = readSlot(this.opts.storage, i);
+      if (r.status === 'ok') for (const t of r.data.progress.themes) earned.add(t);
+    }
+    return [...earned];
+  }
+
+  /** Give a shell the `settings` spell. */
+  private addSettings(shell: Shell) {
+    const s = this.opts.settings;
+    if (!s) return;
+    shell.registry.register(
+      createSettingsCommand({
+        get: s.get,
+        set: s.set,
+        themes: () =>
+          s.themes.map((name) => ({ name, available: this.availableThemes().includes(name) })),
+      }),
+    );
+  }
+
+  /** Apply changed settings to the current screen (motion, reader mode). */
+  configure(change: {
+    typeDelay?: number;
+    animateSpirits?: boolean;
+    artFor?: DirectorOptions['artFor'];
+  }) {
+    Object.assign(this.opts, change);
+    this.controller?.configure(change);
+  }
+
+  private tint() {
+    const id = this.session?.runner.wing.id;
+    if (id && this.opts.wingTints?.[id])
+      this.controller.configure({ accent: this.opts.wingTints[id] });
+  }
+
   handleData(data: string): Promise<void> {
     return this.controller.handleData(data);
   }
@@ -93,6 +146,7 @@ export class Director {
       terminal: { stdout: { write() {} }, stderr: { write() {} } },
       shellName: 'lexicon',
     });
+    this.addSettings(this.shell);
     this.controller?.dispose();
     const art = this.opts.artFor('title', this.term.cols) ?? '';
     const listing = this.listSlots();
@@ -138,11 +192,14 @@ export class Director {
       },
       onCommand: () => {
         this.save();
+        this.tint();
         chips();
         if (pendingExit) this.switchTo(() => this.showTitle());
       },
     });
     this.controller = controller;
+    this.addSettings(session.shell);
+    this.tint();
     controller.startSpirits();
     this.opts.onShell?.(session.shell);
     this.ready = session.ready

@@ -128,3 +128,38 @@ body,
 .game[data-layout='wide'] .key {
   min-height: 40px;
 }
+
+/* Touch controls follow the theme. */
+.game[data-theme='green-phosphor'] {
+  --bg: #050c05;
+  --amber: #33ff66;
+  --amber-dim: #2a5c34;
+  --amber-glow: #66ff88;
+  --key-bg: #0a140a;
+  --key-bg-active: #145a24;
+}
+.game[data-theme='parchment'] {
+  --bg: #f4ecd8;
+  --amber: #3b2a14;
+  --amber-dim: #a8926a;
+  --amber-glow: #7a4a12;
+  --key-bg: #ebe0c4;
+  --key-bg-active: #d9c39a;
+}
+.game[data-theme='high-contrast'] {
+  --bg: #000000;
+  --amber: #ffffff;
+  --amber-dim: #ffffff;
+  --amber-glow: #ffff00;
+  --key-bg: #000000;
+  --key-bg-active: #333333;
+}
+.game {
+  background: var(--bg);
+}
+
+/* xterm's stylesheet paints the viewport black; follow the theme instead. */
+.terminal-host .xterm,
+.terminal-host .xterm-viewport {
+  background-color: var(--bg) !important;
+}

@@ -2,6 +2,7 @@ import { createRegistry } from './commands';
 import type { CoachingRule, QuillLines, Wing } from './content';
 import {
   createDutyCommand,
+  createQuestsCommand,
   createHintCommand,
   createStatusCommand,
   LessonRunner,
@@ -25,6 +26,8 @@ export interface GameContent {
   lines: QuillLines;
   /** The wing a new game begins in. */
   startWing: string;
+  /** Text of the post-game side quests list. */
+  sideQuests?: string;
 }
 
 export interface SessionOptions {
@@ -129,6 +132,7 @@ export function createSession(o: SessionOptions): GameSession {
       createHintCommand(() => runner),
       createStatusCommand(() => runner),
       createDutyCommand(() => runner),
+      createQuestsCommand(() => runner, content.sideQuests ?? ''),
     ),
     onExit: o.onExit,
     terminal: { stdout: quiet, stderr: quiet },

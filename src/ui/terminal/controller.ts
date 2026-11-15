@@ -24,6 +24,8 @@ export interface ControllerOptions {
   narrator?: Narrator;
   /** Art text by name for the current width. */
   artFor?: (name: string, cols: number) => string | undefined;
+  /** Color code for the path in the prompt (each wing tints it). */
+  accent?: string;
   /** A fixed prompt instead of user@host:path$ (the title screen uses one). */
   prompt?: string;
   /** Draw running spirits drifting across the top row while the prompt is idle. */
@@ -114,6 +116,13 @@ export class TerminalController {
 
   private spiritTimer: ReturnType<typeof setInterval> | null = null;
   private spiritCells: { col: number; len: number }[] = [];
+
+  /** Change options on the fly (settings, wing tints). */
+  configure(change: Partial<ControllerOptions>): void {
+    Object.assign(this.opts, change);
+    if (change.animateSpirits === false) this.dispose();
+    if (change.animateSpirits) this.startSpirits();
+  }
 
   /** Start the spirit drift (call once; stop with dispose()). */
   startSpirits(intervalMs = 350): void {
@@ -277,7 +286,7 @@ export class TerminalController {
     if (this.opts.prompt !== undefined) return `${SGR.userHost}${this.opts.prompt}${SGR.reset}`;
     return (
       `${SGR.userHost}${this.userHost()}${SGR.reset}:` +
-      `${SGR.path}${this.displayCwd()}${SGR.reset}${this.sigil()} `
+      `${this.opts.accent ?? SGR.path}${this.displayCwd()}${SGR.reset}${this.sigil()} `
     );
   }
 

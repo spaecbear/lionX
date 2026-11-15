@@ -1,0 +1,8 @@
+Side quests of the Archive
+
+  The Tarred Chests     tar: pack whole rooms into one chest, and unpack them
+  The Rewriting Desk    sed: change words in a thousand books at once
+  The Two Copies        diff: find exactly where two versions of a story part ways
+  The Far Libraries     ssh: speak to Lexicons in archives far from here
+
+These doors are still sealed. Quill says the Archivist is working on them.

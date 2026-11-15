@@ -139,7 +139,7 @@ minutes.
 
 Add the remaining themes and per-wing accent tints. Add reduced-motion and screen-reader modes. Add
 the PWA manifest, icons, and a service worker for offline play. Add the post-game sandbox and side
-quests stub. Set up one minimal GitHub Actions workflow (manual trigger or push to main only) that runs tests and deploys to GitHub Pages. Keep Actions usage as low as possible. Run a
+quests stub. Set up one minimal GitHub Actions workflow that runs tests and deploys to GitHub Pages. It runs only when started by hand (workflow_dispatch), to keep Actions usage as low as possible. Run a
 Lighthouse audit and fix anything under 90.
 
 **Done when:** the game installs to a phone home screen, plays offline, and a full run from boot to

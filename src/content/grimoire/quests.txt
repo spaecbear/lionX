@@ -1,0 +1,9 @@
+NAME
+    quests - side quests beyond the main story
+
+SYNOPSIS
+    quests
+
+DESCRIPTION
+    Once the Archive is restored, quests lists the side quests waiting
+    in its far corners. Quests is a spell of the Lexicon itself.

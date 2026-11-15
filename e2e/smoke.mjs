@@ -122,6 +122,42 @@ async function run(label, contextOptions) {
     `${label}: resuming welcomes the player back`,
   );
 
+  // Themes switch the terminal's colors.
+  const look = () =>
+    page.evaluate(() => ({
+      bg: getComputedStyle(document.querySelector('.xterm-viewport')).backgroundColor,
+      fg: getComputedStyle(document.querySelector('.xterm-rows')).color,
+    }));
+  await cmd('settings theme high-contrast');
+  await page.waitForTimeout(200);
+  const hc = await look();
+  check(
+    hc.fg === 'rgb(255, 255, 255)' && hc.bg === 'rgb(0, 0, 0)',
+    `${label}: high-contrast theme: white on black`,
+  );
+  // Parchment is earned in play; grant it through a save to try the light theme.
+  await cmd('settings theme candlelit');
+  const candle = await look();
+  check(
+    candle.fg === 'rgb(255, 176, 0)' && candle.bg === 'rgb(13, 10, 6)',
+    `${label}: candlelit theme: amber on near-black`,
+  );
+
+  if (!contextOptions.hasTouch) {
+    // Offline: once the service worker is in control, the game loads with no network.
+    await page.evaluate(() => navigator.serviceWorker.ready);
+    await page.reload();
+    await page.waitForTimeout(500);
+    await context.setOffline(true);
+    await page.reload();
+    await page.waitForTimeout(800);
+    check((await screenText(page)).includes('lexicon>'), `${label}: the game loads offline`);
+    await cmd('play 1');
+    await page.waitForTimeout(400);
+    check((await screenText(page)).includes('Back again'), `${label}: and plays offline`);
+    await context.setOffline(false);
+  }
+
   check(
     errors.length === 0,
     `${label}: no console errors${errors.length ? ': ' + errors.join(' | ') : ''}`,

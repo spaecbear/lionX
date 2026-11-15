@@ -10,7 +10,9 @@ import titleHelp from '../content/title.txt?raw';
 import { Director } from './director';
 
 const TYPE_DELAY_MS = 18;
-import { candlelit, FONT_STACK } from './theme';
+import { ALWAYS_AVAILABLE, FONT_STACK, THEMES, WING_TINTS } from './theme';
+import { loadSettings, saveSettings } from './settings';
+import type { Settings } from '../engine/settings';
 import { KeyBar } from './mobile/KeyBar';
 import { Chips } from './mobile/Chips';
 import { applyCtrl } from './mobile/input';
@@ -50,6 +52,7 @@ export function Game() {
   const [touch] = useState(wantsTouchControls);
   const [layout, setLayout] = useState<Layout>(() => layoutFor(window.innerWidth));
   const [commands, setCommands] = useState<string[]>([]);
+  const [themeName, setThemeName] = useState('candlelit');
 
   const setCtrl = (on: boolean) => {
     ctrlArmed.current = on;
@@ -85,7 +88,7 @@ export function Game() {
     const el = host.current!;
     const charRatio = measureCharRatio();
     const term = new XTerm({
-      theme: candlelit,
+      theme: THEMES[loadSettings().theme] ?? THEMES.candlelit,
       fontFamily: FONT_STACK,
       fontSize: 16,
       lineHeight: 1.15,
@@ -112,15 +115,43 @@ export function Game() {
       }
     }
 
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let settings = loadSettings();
+    /** Motion and reader mode, from settings (and the device for motion: auto). */
+    const behavior = (st: Settings) => {
+      const still = st.reader || st.motion === 'off' || (st.motion === 'auto' && prefersReduced);
+      return {
+        typeDelay: still ? 0 : TYPE_DELAY_MS,
+        animateSpirits: !still,
+        // Screen readers get words, not pictures.
+        artFor: st.reader ? () => undefined : artFor,
+      };
+    };
+    const applyLook = (st: Settings) => {
+      term.options.theme = THEMES[st.theme] ?? THEMES.candlelit;
+      term.options.screenReaderMode = st.reader;
+      setThemeName(st.theme);
+    };
+    applyLook(settings);
     let shell: Shell | null = null;
     const director = new Director(term, {
       storage: browserStorage(),
       content: loadGameContent(),
-      artFor,
+      ...behavior(settings),
+      settings: {
+        get: () => settings,
+        set: (next) => {
+          settings = next;
+          saveSettings(next);
+          applyLook(next);
+          director.configure(behavior(next));
+        },
+        themes: Object.keys(THEMES),
+        alwaysAvailable: ALWAYS_AVAILABLE,
+      },
+      wingTints: WING_TINTS,
       titleHelp,
-      typeDelay: reducedMotion ? 0 : TYPE_DELAY_MS,
-      animateSpirits: !reducedMotion,
+
       onChips: setCommands,
       onShell: (sh) => {
         shell = sh;
@@ -222,7 +253,12 @@ export function Game() {
   };
 
   return (
-    <div className="game" data-layout={layout} data-touch={touch ? 'on' : 'off'}>
+    <div
+      className="game"
+      data-layout={layout}
+      data-touch={touch ? 'on' : 'off'}
+      data-theme={themeName}
+    >
       <div ref={host} className="terminal-host" aria-label="Archive terminal" />
       {touch && (
         <div className="touch-controls">
