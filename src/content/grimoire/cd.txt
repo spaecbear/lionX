@@ -20,7 +20,7 @@ DESCRIPTION
 EXAMPLES
     cd atrium             step into the atrium, if it is here
     cd /reading-room      go there from anywhere
-    cd ..                 step back out one level
+    cd ..                 step back out one room
     cd                    return to your cell
 
 EXIT STATUS

@@ -33,5 +33,5 @@ EXIT STATUS
 
 EXAMPLES
     grep lionX journal          lines that mention lionX
-    grep -rn Ostra /archive     every mention, with places, everywhere
+    grep -rn Oriel /archive     every mention, with places, everywhere
     grep -c '' book             how many lines the book has

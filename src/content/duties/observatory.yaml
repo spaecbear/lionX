@@ -36,9 +36,9 @@ templates:
           lines: 8
           seed: 77
           plant:
-            - { line: 'Tonight: a {word}, plain as day.', files: ['{n}'] }
+            - { line: 'Tonight: the {word}, plain as day.', files: ['{n}'] }
     cleanup: ['/archive/observatory/workroom/{room}']
-    brief: 'One of the twenty pages in /archive/observatory/workroom/{room}/pages mentions a {word}. Find that page and read it.'
+    brief: 'One of the twenty pages in /archive/observatory/workroom/{room}/pages mentions the {word}. Find that page and read it.'
     hints:
       - 'Search every page at once for the word.'
       - '`grep -r` or `grep -l` names the page; then read it.'

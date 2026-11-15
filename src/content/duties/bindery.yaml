@@ -93,7 +93,7 @@ templates:
         '/archive/bindery/work/{bench}/{stray}': "Not a story.\n"
         '/archive/bindery/work/{bench}/{keep}': "A story. Keep this.\n"
     cleanup: ['/archive/bindery/work/{bench}']
-    brief: 'Someone left a {stray} among the pages in /archive/bindery/work/{bench}. Remove it, and only it.'
+    brief: 'Something that does not belong is mixed in with the pages in /archive/bindery/work/{bench}: {stray}. Remove it, and only it.'
     hints:
       - 'Unmake the stray. Leave the story alone.'
       - '`rm` the stray by name.'

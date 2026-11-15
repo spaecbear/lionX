@@ -8,7 +8,7 @@ templates:
     setup:
       processes:
         - { name: '{pest}', args: '{pest} --nibble', cpu: 3, spirit: '.' }
-    brief: 'A {pest} is loose in the stacks. It is yours to deal with. Banish it.'
+    brief: 'Something called {pest} is loose in the stacks. It is yours to deal with. Banish it.'
     hints:
       - 'Find it by name and send it away.'
       - '`pkill -x {pest}`, or `kill` its PID from `ps`.'
@@ -24,7 +24,7 @@ templates:
     setup:
       processes:
         - { name: '{pest}', args: '{pest} --refuse', cpu: 5, ignoresTerm: true, spirit: '~' }
-    brief: 'A {pest} has settled in, and it ignores polite requests. Banish it anyway.'
+    brief: 'Something called {pest} has settled in, and it ignores polite requests. Banish it anyway.'
     hints:
       - 'Some spirits ignore the polite signal. One cannot be ignored.'
       - '`pkill -9 -x {pest}`, or `kill -9` its PID.'
