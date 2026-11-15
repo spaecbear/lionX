@@ -7,7 +7,7 @@ export const CLEAR_SEQUENCE = '\x1b[H\x1b[2J\x1b[3J';
 
 export const clear: Command = {
   name: 'clear',
-  unlockedInAct: 1,
+  unlockedInAct: 0,
   manPage,
   help: helpText('clear'),
   async run(args, io) {

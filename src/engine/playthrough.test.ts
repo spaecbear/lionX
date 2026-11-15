@@ -199,6 +199,12 @@ describe('achievements', () => {
     ])
       expect(earned).toContain(id);
     expect(new Set(earned).size).toBe(earned.length);
+    // The hidden ones that a normal playthrough reaches.
+    expect(earned).toEqual(expect.arrayContaining(['root-done', 'background-spirit']));
+    await session.shell.run('clear');
+    expect(session.afterCommand('clear', 0, '')).toContainEqual(
+      expect.objectContaining({ kind: 'achievement', title: 'Fresh Glass' }),
+    );
     let out = '';
     session.shell.terminal = { stdout: { write: (t) => (out += t) }, stderr: { write: () => {} } };
     await session.shell.run('achievements');
