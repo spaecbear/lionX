@@ -1,0 +1,24 @@
+{
+  "motd": "The Lexicon flickers to life. Candlelight pools on the glass.\nType echo hello to test your voice, or press Tab to see what the glass knows.\n",
+  "world": {
+    "user": { "name": "apprentice", "groups": ["apprentice"], "home": "/home/apprentice" },
+    "dirs": [
+      "/home/apprentice/notes",
+      "/atrium",
+      "/reading-room",
+      { "path": "/vault", "mode": "700", "owner": "lionx", "group": "lionx" }
+    ],
+    "files": {
+      "/home/apprentice/welcome.txt": "Welcome to the Archive, apprentice.\n",
+      "/home/apprentice/notes/first-lesson.txt": "Every spell has a true name.\n",
+      "/home/apprentice/.quill-was-here": "You found a secret passage. Quill is unimpressed.\n",
+      "/atrium/directory-of-wings.txt": "Apprentice Cells\nReading Room\nBindery\n",
+      "/vault/root-seal": {
+        "content": "lionX: permission revoked.\n",
+        "owner": "lionx",
+        "group": "lionx",
+        "mode": "600"
+      }
+    }
+  }
+}

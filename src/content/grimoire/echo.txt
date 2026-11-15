@@ -1,0 +1,18 @@
+NAME
+    echo - speak a line of text into the Archive
+
+SYNOPSIS
+    echo [-neE] [STRING]...
+
+DESCRIPTION
+    Echo repeats each STRING back, separated by single spaces, and ends
+    with a newline. It is the simplest spell, and one of the most useful:
+    paired with > it writes words onto the page.
+
+    -n     do not end with a newline
+    -e     understand backslash escapes such as \n (newline) and \t (tab)
+    -E     do not understand backslash escapes (the default)
+
+EXAMPLES
+    echo hello            prints: hello
+    echo -e "a\tb"        prints a and b separated by a tab

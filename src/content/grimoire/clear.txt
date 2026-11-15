@@ -1,0 +1,12 @@
+NAME
+    clear - wipe the Lexicon's glass clean
+
+SYNOPSIS
+    clear [-x]
+
+DESCRIPTION
+    Clear erases the screen and returns the cursor to the top, as if the
+    candle had just been lit. Your history and the world are untouched.
+    Ctrl+L does the same without speaking the spell.
+
+    -x     keep the scrollback; erase only what is visible

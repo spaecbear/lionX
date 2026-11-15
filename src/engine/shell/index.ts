@@ -4,3 +4,4 @@ export * from './parser';
 export * from './glob';
 export * from './expand';
 export * from './executor';
+export * from './complete';

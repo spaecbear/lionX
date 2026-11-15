@@ -59,7 +59,8 @@ export class Shell {
   readonly env: Map<string, string>;
   readonly shellName: string;
   lastStatus = 0;
-  private terminal: ShellOptions['terminal'];
+  /** Where command output goes when not redirected. The UI may swap these. */
+  terminal: ShellOptions['terminal'];
   private nextJob = 1;
   private nextPid = 1000;
 
