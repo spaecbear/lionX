@@ -3,6 +3,8 @@ import { History } from './history';
 import { KEY, splitKeys } from './keys';
 import { LineBuffer } from './lineBuffer';
 import { normalizeSmartPunctuation } from '../mobile/input';
+import type { Narration } from '../../engine/narrative';
+import { QUILL_SGR, renderQuill } from './narration';
 
 /** The part of xterm.js the controller needs, so tests can use a fake. */
 export interface TerminalLike {
@@ -18,6 +20,17 @@ export interface ControllerOptions {
   history?: string[];
   /** Called after each submitted line, e.g. to persist history. */
   onCommand?: (line: string, status: number) => void;
+  /** Story and lessons: what Quill says at the start and after each command. */
+  narrator?: Narrator;
+  /** Art text by name for the current width. */
+  artFor?: (name: string, cols: number) => string | undefined;
+  /** Milliseconds per character of Quill's typewriter. 0 prints instantly. */
+  typeDelay?: number;
+}
+
+export interface Narrator {
+  start(): Narration[];
+  afterCommand(line: string, status: number, stderr: string): Narration[];
 }
 
 const SGR = {
@@ -49,6 +62,13 @@ export class TerminalController {
   private hostname: string;
   /** Tail of recent command output, to know whether it ended on a fresh line. */
   private outputTail = '\n';
+  /** Error output of the running command, for Quill's coaching. */
+  private stderrText = '';
+  /** True while Quill is mid-sentence; any key finishes the sentence instantly. */
+  private speaking = false;
+  private skipSpeechFlag = false;
+  /** Once the player starts typing ahead, Space and Enter are part of the command. */
+  private typedDuringSpeech = false;
 
   constructor(
     private term: TerminalLike,
@@ -58,7 +78,13 @@ export class TerminalController {
     this.history = new History(opts.history);
     this.hostname = opts.hostname ?? 'archive';
     const out = { write: (s: string) => this.writeOutput(s) };
-    shell.terminal = { stdout: out, stderr: out };
+    const err = {
+      write: (s: string) => {
+        this.stderrText += s;
+        this.writeOutput(s);
+      },
+    };
+    shell.terminal = { stdout: out, stderr: err };
     shell.tty = {
       get rows() {
         return term.rows;
@@ -76,13 +102,69 @@ export class TerminalController {
     this.term.write(s.replace(/\r?\n/g, '\r\n'));
   }
 
-  start() {
+  /** Finish Quill's current lines at once (for taps on touch screens). */
+  skipSpeech(): void {
+    if (this.speaking) this.skipSpeechFlag = true;
+  }
+
+  /** Print the welcome, then Quill's opening, then the first prompt. */
+  start(): Promise<void> {
     if (this.opts.motd) this.writeOutput(wrapText(this.opts.motd, this.term.cols));
-    this.showPrompt();
+    const opening = this.opts.narrator?.start() ?? [];
+    if (opening.length === 0) {
+      this.showPrompt();
+      return Promise.resolve();
+    }
+    const done = this.present(opening).then(() => this.showPrompt());
+    this.drain = this.drain.then(() => done);
+    return done;
+  }
+
+  /** Show art and Quill's lines. Quill types; a keypress finishes the current batch at once. */
+  private async present(items: Narration[]): Promise<void> {
+    const delay = this.opts.typeDelay ?? 0;
+    this.speaking = true;
+    this.skipSpeechFlag = false;
+    this.typedDuringSpeech = false;
+    try {
+      for (const item of items) {
+        if (item.kind === 'art') {
+          const art = this.opts.artFor?.(item.name, this.term.cols);
+          if (art) {
+            const body = art.replace(/\n+$/, '').split('\n').join('\r\n');
+            this.term.write(QUILL_SGR.art + body + QUILL_SGR.reset + '\r\n\r\n');
+          }
+        } else if (item.kind === 'quill') {
+          const pieces = renderQuill(item.text, this.term.cols);
+          if (delay <= 0 || this.skipSpeechFlag) {
+            this.term.write(pieces.join(''));
+          } else {
+            for (let i = 0; i < pieces.length; i++) {
+              if (this.skipSpeechFlag) {
+                this.term.write(pieces.slice(i).join(''));
+                break;
+              }
+              this.term.write(pieces[i]);
+              await new Promise((r) => setTimeout(r, delay));
+            }
+          }
+        }
+      }
+    } finally {
+      this.speaking = false;
+    }
   }
 
   /** Feed raw terminal input (from xterm onData). Resolves when it has been processed. */
   handleData(data: string): Promise<void> {
+    if (this.speaking) {
+      // Any key finishes Quill's sentence at once. Pure "skip" keys stop there;
+      // anything else is kept, so typing ahead works.
+      this.skipSpeechFlag = true;
+      const pureSkip = data === ' ' || data === '\r' || data === '\x1b';
+      if (pureSkip && !this.typedDuringSpeech) return this.drain;
+      this.typedDuringSpeech = true;
+    }
     this.queue.push(...splitKeys(normalizeSmartPunctuation(data)));
     this.drain = this.drain.then(() => this.processQueue());
     this.wakeReader();
@@ -225,6 +307,7 @@ export class TerminalController {
     this.history.add(source);
 
     this.outputTail = '\n';
+    this.stderrText = '';
     const status = await this.shell.run(source);
     // Keep the prompt at column 0 so line redraws stay accurate (zsh does the same).
     const t = this.outputTail;
@@ -237,6 +320,8 @@ export class TerminalController {
       this.term.write('\r\n');
     }
     this.opts.onCommand?.(source, status);
+    const said = this.opts.narrator?.afterCommand(source, status, this.stderrText) ?? [];
+    if (said.length) await this.present(said);
     this.showPrompt();
   }
 

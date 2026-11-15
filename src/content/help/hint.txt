@@ -1,0 +1,2 @@
+Usage: hint
+Ask Quill for help: a nudge, then the spell's name, then the full syntax.

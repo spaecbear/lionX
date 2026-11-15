@@ -16,6 +16,8 @@ export interface ShellOptions {
   tty?: Tty;
   /** Whether the player has learned a command yet. Defaults to everything known. */
   isUnlocked?: (cmd: Command) => boolean;
+  /** Notified after every simple command runs (inside pipelines too), with its own status. */
+  onCommandRun?: (name: string, args: string[], status: number) => void;
 }
 
 /** In-world reply when a command exists but the player hasn't learned it. */
@@ -68,6 +70,7 @@ export class Shell {
   lastStatus = 0;
   tty?: Tty;
   isUnlocked: (cmd: Command) => boolean;
+  onCommandRun?: (name: string, args: string[], status: number) => void;
   /** Where command output goes when not redirected. The UI may swap these. */
   terminal: ShellOptions['terminal'];
   private nextJob = 1;
@@ -81,6 +84,7 @@ export class Shell {
     this.env = new Map(Object.entries(opts.env ?? {}));
     this.tty = opts.tty;
     this.isUnlocked = opts.isUnlocked ?? (() => true);
+    this.onCommandRun = opts.onCommandRun;
     if (!this.env.has('HOME')) this.env.set('HOME', this.vfs.home);
   }
 
@@ -139,6 +143,13 @@ export class Shell {
   private async runCommand(cmd: SimpleCommand, fds: Fds): Promise<number> {
     const ex = this.expandEnv();
     const argv = cmd.words.flatMap((w) => expandWord(w, ex));
+    const status = await this.runExpanded(cmd, argv, fds);
+    if (argv.length) this.onCommandRun?.(argv[0], argv.slice(1), status);
+    return status;
+  }
+
+  private async runExpanded(cmd: SimpleCommand, argv: string[], fds: Fds): Promise<number> {
+    const ex = this.expandEnv();
     const assigned = cmd.assignments.map((a) => [a.name, expandWordToString(a.value, ex)] as const);
 
     try {

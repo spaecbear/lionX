@@ -1,0 +1,13 @@
+NAME
+    hint - ask Quill for help with what you are doing
+
+SYNOPSIS
+    hint
+
+DESCRIPTION
+    Quill gives help in three steps: first a nudge, then the name of the
+    spell you need, then the whole spell written out. Each cast of hint
+    goes one step further.
+
+    Hint is a spell of the Lexicon itself. Real terminals don't have it,
+    but they do have man pages, and so do you.

@@ -100,6 +100,8 @@ export class Vfs {
   credentials: Credentials;
   home: string;
   umask: number;
+  /** Called with the absolute path whenever a file's contents are read (by any command). */
+  onRead?: (absPath: string) => void;
   private _cwd: string;
 
   constructor(opts: VfsOptions = {}) {
@@ -230,6 +232,18 @@ export class Vfs {
     if (node.type === 'dir') throw new VfsError('EISDIR', path);
     this.requirePerm(node, R, path);
     node.atime = this.now();
+    this.onRead?.(this.resolve(path));
+    return node.content;
+  }
+
+  /**
+   * Read without touching atime or notifying `onRead`. For the game's own
+   * checks, which must not count as the player reading something.
+   */
+  readFileQuietly(path: string): string {
+    const node = this.lookup(path);
+    if (node.type === 'dir') throw new VfsError('EISDIR', path);
+    this.requirePerm(node, R, path);
     return node.content;
   }
 

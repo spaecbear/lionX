@@ -4,8 +4,13 @@ import { FitAddon } from '@xterm/addon-fit';
 import '@xterm/xterm/css/xterm.css';
 import { createRegistry } from '../engine/commands';
 import { Shell } from '../engine/shell';
-import { buildWorld, type WorldSpec } from '../engine/vfs';
-import devWorld from '../content/dev/world.json';
+import { loadCoaching, loadWing } from '../engine/content';
+import { createHintCommand, LessonRunner } from '../engine/narrative';
+import { artFor, coachingSource, wingSources } from '../content';
+
+/** The wing to play. Phase 9 replaces this sample with the real opening wings. */
+const START_WING = 'lantern-hall';
+const TYPE_DELAY_MS = 18;
 import { TerminalController } from './terminal/controller';
 import { candlelit, FONT_STACK } from './theme';
 import { KeyBar } from './mobile/KeyBar';
@@ -109,17 +114,26 @@ export function Game() {
       }
     }
 
-    const vfs = buildWorld(devWorld.world as WorldSpec);
-    const registry = createRegistry();
+    const runner = new LessonRunner(loadWing(wingSources[START_WING], `${START_WING}.yaml`), {
+      coaching: loadCoaching(coachingSource),
+    });
+    const vfs = runner.vfs;
+    const registry = createRegistry().register(createHintCommand(() => runner));
     const shell = new Shell({
       vfs,
       registry,
       terminal: { stdout: { write() {} }, stderr: { write() {} } },
       env: { USER: vfs.credentials.user, PWD: vfs.cwd, TERM: 'xterm-256color' },
+      onCommandRun: (name, args, status) => runner.recordCommand(name, args, status),
     });
-    const controller = new TerminalController(term, shell, { motd: devWorld.motd });
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const controller = new TerminalController(term, shell, {
+      narrator: runner,
+      artFor,
+      typeDelay: reducedMotion ? 0 : TYPE_DELAY_MS,
+    });
     session.current = { term, fit, controller, shell };
-    setCommands(registry.names());
+    setCommands(['hint', ...registry.names().filter((n) => n !== 'hint')]);
 
     const resize = () => {
       const vv = window.visualViewport;
@@ -137,7 +151,7 @@ export function Game() {
       term.scrollToBottom();
     };
     resize();
-    controller.start();
+    void controller.start();
 
     const sub = term.onData((d) => send(d));
     term.focus();
@@ -151,6 +165,7 @@ export function Game() {
       const start = down;
       down = null;
       if (!start) return;
+      controller.skipSpeech(); // a tap finishes Quill's sentence
       const moved = Math.hypot(e.clientX - start.x, e.clientY - start.y);
       if (moved > TAP_MAX_MOVE || performance.now() - start.t > TAP_MAX_MS) return;
       if (term.hasSelection()) return;

@@ -1,0 +1,124 @@
+# Sample wing: two short lessons, defined only as data.
+# Steps fade from the exact command, to the goal, to just the problem.
+id: lantern-hall
+banner: lantern
+
+world:
+  user: { name: apprentice, groups: [apprentice], home: /home/apprentice }
+  dirs:
+    - /archive/lantern-hall
+    - { path: /archive/sealed-stacks, mode: '700', owner: lionx, group: lionx }
+  files:
+    /home/apprentice/cell-rules.txt: |
+      1. Keep your candle lit.
+      2. Ask the Lexicon before you ask Quill.
+      3. Never open a sealed stack.
+    /home/apprentice/.under-the-floorboard: |
+      A torn page. Most of it is blank, as if the ink was eaten.
+      Only a mark survives in the corner: a small lion's head.
+    /archive/lantern-hall/lantern-log.txt: |
+      Lanterns lit: 212
+      Lanterns lit, second night: 140
+      Lanterns lit, third night: 61
+      Something in the stacks is putting them out.
+
+intro:
+  - "Ah. You're awake. I'm Quill, bound to this Lexicon, and apparently now bound to you."
+  - 'The Archivist is gone and the stacks are going dark. Let us at least learn where we are.'
+
+lessons:
+  - id: where-am-i
+    spells: [pwd, ls, cat]
+    intro:
+      - 'Every spell starts with knowing where you stand.'
+    steps:
+      - id: pwd
+        guide: exact
+        guidance:
+          exact: 'Type `pwd` and press Enter. It names the room you stand in.'
+        hints:
+          - 'Ask the Lexicon where you are.'
+          - 'The spell is `pwd`.'
+          - 'Type exactly: pwd'
+        goal: { ran: pwd }
+        success:
+          - 'Your cell. Every path in the Archive starts at `/`, the Foundation Stone, and leads down from there.'
+
+      - id: ls
+        guide: goal
+        guidance:
+          exact: 'Type `ls` to list what your cell holds.'
+          goal: 'Now find out what your cell holds.'
+        hints:
+          - 'Looking around is a spell too.'
+          - 'The spell is `ls`.'
+          - 'Type exactly: ls'
+        goal: { ran: ls }
+        success:
+          - 'A rule sheet and, well, a rather small room. Or so it seems.'
+
+      - id: hidden
+        guide: problem
+        guidance:
+          exact: 'Type `ls -a` to show hidden things, then `cat .under-the-floorboard` to read what you find.'
+          goal: 'Some things only show themselves when you ask for all of them. Find the hidden page and read it.'
+          problem: "I'd swear something is tucked away in this cell. Find it, and read it."
+        hints:
+          - 'Hidden names begin with a dot. `ls` hides them unless you ask for all.'
+          - 'Use `ls -a` to see everything, then `cat` to read.'
+          - 'Type: ls -a   then: cat .under-the-floorboard'
+        goal: { read: /home/apprentice/.under-the-floorboard }
+        coaching:
+          - line: '^\s*ls\s*$'
+            say: 'Plain `ls` keeps secrets. Try asking for all of them.'
+        success:
+          - 'A lion. I have seen that mark before, and I do not like it.'
+    outro:
+      - 'Good. You can see where you are, and what is around you.'
+
+  - id: leaving-the-cell
+    spells: [cd]
+    intro:
+      - 'The lantern hall is just down the stair. Let us see how bad it is.'
+    steps:
+      - id: to-hall
+        guide: exact
+        guidance:
+          exact: 'Type `cd /archive/lantern-hall` to walk there.'
+        hints:
+          - 'Walking somewhere is a spell called change directory.'
+          - 'The spell is `cd`, followed by where to go.'
+          - 'Type exactly: cd /archive/lantern-hall'
+        goal: { cwdIs: /archive/lantern-hall }
+        success:
+          - 'Notice your prompt changed. It always shows where you stand.'
+
+      - id: read-log
+        guide: goal
+        guidance:
+          exact: 'Type `cat lantern-log.txt` to read the logbook.'
+          goal: 'A logbook hangs by the door. Read it.'
+        hints:
+          - 'First see what is in this hall.'
+          - 'Use `ls` to find the log, then `cat` to read it.'
+          - 'Type: cat lantern-log.txt'
+        goal: { read: /archive/lantern-hall/lantern-log.txt }
+        success:
+          - 'Fewer every night. Something is putting them out.'
+
+      - id: home
+        guide: problem
+        guidance:
+          exact: 'Type `cd` with nothing after it to go home, or `cd ~`.'
+          goal: 'Head back to your cell.'
+          problem: 'The last lanterns are guttering. Get back to your cell before they go out.'
+        hints:
+          - 'Your cell is your home. There is a short way to say home.'
+          - '`cd` alone takes you home. So does `cd ~`.'
+          - 'Type: cd'
+        goal: { cwdIs: /home/apprentice }
+        success:
+          - 'Safe. For tonight.'
+
+outro:
+  - 'You learned to look, to read, and to walk. Tomorrow we go deeper.'

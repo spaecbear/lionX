@@ -1,0 +1,28 @@
+# Quill's replies to common mistakes, used in every wing after the wing's own rules.
+# Each rule matches the typed line (`line`) and/or the error output (`stderr`), as regexes.
+# The first matching rule speaks. `failed: true` means only when the command failed.
+rules:
+  - line: '^\s*dir\b'
+    say: '`dir` is a spell from another land. Here we say `ls`.'
+  - line: '^\s*cd\.\.'
+    say: 'Close. Spells need a space before their target: `cd ..`'
+  - line: '^\s*(ls|cd|cat|pwd)[a-z]'
+    failed: true
+    say: 'Spells and their targets need a space between them, like `ls -a` or `cd notes`.'
+  - stderr: "You don't know that spell yet"
+    say: 'That spell is beyond you for now. It will come.'
+  - stderr: 'command not found'
+    failed: true
+    say: 'The Lexicon does not know that word. Check the spelling, or cast `hint` if you are stuck.'
+  - line: '^\s*cat\b'
+    stderr: 'Is a directory'
+    say: 'That is a room, not a book. `ls` looks inside a room; `cd` walks into it.'
+  - line: '^\s*cd\b'
+    stderr: 'Not a directory'
+    say: 'You cannot walk into a book. `cat` reads it instead.'
+  - stderr: 'No such file or directory'
+    failed: true
+    say: 'Nothing by that name here. `ls` shows what is around you, and Tab can finish names for you.'
+  - stderr: 'Permission denied'
+    failed: true
+    say: 'A ward blocks the way. Not every door opens for an apprentice. Yet.'
