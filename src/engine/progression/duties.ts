@@ -88,6 +88,12 @@ export function instantiate(t: DutyTemplate, params: Params): Duty {
 export function generateDuty(templates: DutyTemplate[], o: GenerateOptions): Duty | null {
   const eligible = templates.filter((t) => t.spells.every((s) => o.known.includes(s)));
   if (eligible.length === 0) return null;
+  // Never the same kind of duty twice in a row, when there is any other choice.
+  const last = o.recent.at(-1)?.split(':')[0];
+  if (eligible.length > 1) {
+    const fresh = eligible.filter((t) => t.id !== last);
+    eligible.splice(0, eligible.length, ...fresh);
+  }
   const focused = eligible.filter((t) => t.spells.some((s) => o.focus.includes(s)));
   let fallback: Duty | null = null;
   for (let i = 0; i < MAX_TRIES; i++) {

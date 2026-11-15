@@ -273,7 +273,7 @@ export class LessonRunner {
       return out;
     }
     if (/^\s*(hint|status|duty)\b/.test(line)) return out;
-    const advice = this.coach(cur.step, line, status, stderr);
+    const advice = this.coach(cur.step, line, status, stderr) ?? this.nearMiss(cur.step);
     if (advice) out.push({ kind: 'quill', text: advice });
     return out;
   }
@@ -285,7 +285,31 @@ export class LessonRunner {
     const i = Math.min(this.hintsUsed, 2);
     this.hintsUsed = Math.min(this.hintsUsed + 1, 3);
     this.hintLog.set(cur.step.id, (this.hintLog.get(cur.step.id) ?? 0) + 1);
-    return [{ kind: 'quill', text: cur.step.hints[i] }];
+    // Restate the objective first, so a hint is never a riddle without its question.
+    const objective = cur.step.guidance[cur.level];
+    const hint = cur.step.hints[i];
+    return [
+      ...(objective && objective !== hint ? [{ kind: 'quill' as const, text: objective }] : []),
+      { kind: 'quill', text: hint },
+    ];
+  }
+
+  /** The player stands in a room named like the goal's, but in the wrong place. */
+  private nearMiss(step: Step): string | null {
+    const say = this.lines.wrongPlace;
+    if (!say) return null;
+    const targets: string[] = [];
+    const walk = (p: unknown) => {
+      if (!p || typeof p !== 'object') return;
+      const o = p as Record<string, unknown>;
+      if (typeof o.cwdIs === 'string') targets.push(this.vfs.resolve(o.cwdIs));
+      for (const k of ['all', 'any']) if (Array.isArray(o[k])) (o[k] as unknown[]).forEach(walk);
+    };
+    walk(step.goal);
+    const here = this.vfs.cwd;
+    const base = (p: string) => p.slice(p.lastIndexOf('/') + 1);
+    const there = targets.find((t) => t !== here && base(t) === base(here));
+    return there ? say.replace('{here}', here).replace('{there}', there) : null;
   }
 
   /** The `duty` spell: ask for restoration work during free play. */

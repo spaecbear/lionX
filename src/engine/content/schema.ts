@@ -117,4 +117,6 @@ export interface QuillLines {
   resume: string;
   /** Said the first time a piece of art is added to ~/gallery. */
   galleryNew?: string;
+  /** Said when the player stands in a room with the right name in the wrong place. {here}, {there}. */
+  wrongPlace?: string;
 }

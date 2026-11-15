@@ -577,6 +577,7 @@ export function loadQuillLines(yamlText: string, source = 'quill.yaml'): QuillLi
     gateOpen: one('gateOpen'),
     resume: one('resume'),
     galleryNew: o.galleryNew === undefined ? undefined : one('galleryNew'),
+    wrongPlace: o.wrongPlace === undefined ? undefined : one('wrongPlace'),
   };
 }
 

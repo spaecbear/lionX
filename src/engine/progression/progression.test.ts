@@ -100,6 +100,22 @@ describe('duty generator (done criterion)', () => {
     },
   );
 
+  it('never gives the same kind of duty twice in a row', () => {
+    const rng = new Rng(5);
+    const recent: string[] = [];
+    for (let i = 0; i < 60; i++) {
+      const d = generateDuty(dutyFiles['apprentice-cells'], {
+        known: ALL_SPELLS,
+        focus: [],
+        difficulty: 1,
+        rng,
+        recent,
+      })!;
+      if (recent.length) expect(d.signature.split(':')[0]).not.toBe(recent.at(-1)!.split(':')[0]);
+      recent.push(d.signature);
+    }
+  });
+
   it('the same seed gives the same duties', () => {
     const run = () => {
       const rng = new Rng(99);

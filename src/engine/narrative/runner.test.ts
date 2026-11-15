@@ -142,11 +142,24 @@ describe('sample wing: lessons', () => {
 
   it('hints escalate: nudge, spell, full syntax, then repeat the last', async () => {
     const { type, runner } = play(sample());
-    expect(await type('hint')).toEqual(['Ask the Lexicon where you are.']);
-    expect(await type('hint')).toEqual(['The spell is `pwd`.']);
-    expect(await type('hint')).toEqual(['Type exactly: pwd']);
-    expect(await type('hint')).toEqual(['Type exactly: pwd']);
+    const goal = runner.repeat()[0] as { text: string };
+    expect(await type('hint')).toEqual([goal.text, 'Ask the Lexicon where you are.']);
+    expect(await type('hint')).toEqual([goal.text, 'The spell is `pwd`.']);
+    expect(await type('hint')).toEqual([goal.text, 'Type exactly: pwd']);
+    expect(await type('hint')).toEqual([goal.text, 'Type exactly: pwd']);
     expect(runner.hintLog.get('pwd')).toBe(4);
+  });
+
+  it('notices a room with the right name in the wrong place', async () => {
+    const wing = sample();
+    wing.lessons[0].steps[0].goal = { cwdIs: '/home/apprentice/south-hall/copy-room' };
+    wing.lessons[0].spells.push('cd');
+    const { type, runner } = play(wing);
+    runner.vfs.mkdir('/home/apprentice/north-hall/copy-room', { parents: true });
+    runner.vfs.mkdir('/home/apprentice/south-hall/copy-room', { parents: true });
+    expect(await type('cd ~/north-hall/copy-room')).toEqual([
+      'Right name, wrong place. You are in /home/apprentice/north-hall/copy-room. The one I mean is /home/apprentice/south-hall/copy-room.',
+    ]);
   });
 
   it('fades guidance, and steps back one level after a struggle', async () => {
