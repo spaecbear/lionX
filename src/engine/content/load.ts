@@ -462,6 +462,7 @@ export function loadQuillLines(yamlText: string, source = 'quill.yaml'): QuillLi
     idle: one('idle'),
     gateSealed: one('gateSealed'),
     gateOpen: one('gateOpen'),
+    resume: one('resume'),
   };
 }
 

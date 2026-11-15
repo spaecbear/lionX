@@ -2,24 +2,14 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Terminal as XTerm } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
 import '@xterm/xterm/css/xterm.css';
-import { createRegistry } from '../engine/commands';
 import { Shell } from '../engine/shell';
-import { loadCoaching, loadDuties, loadQuillLines, loadWing } from '../engine/content';
-import {
-  createDutyCommand,
-  createHintCommand,
-  createStatusCommand,
-  LessonRunner,
-} from '../engine/narrative';
-import { artFor, coachingSource, dutySources, quillSource, wingSources } from '../content';
+import { browserStorage } from '../engine/save';
+import { artFor } from '../content';
+import { loadGameContent } from '../content/game';
+import titleHelp from '../content/title.txt?raw';
+import { Director } from './director';
 
-/** Spells of the Lexicon itself, always available, shown last among the chips. */
-const LEXICON_SPELLS = ['hint', 'status', 'duty'];
-
-/** The wing to play. Phase 9 replaces this sample with the real opening wings. */
-const START_WING = 'lantern-hall';
 const TYPE_DELAY_MS = 18;
-import { TerminalController } from './terminal/controller';
 import { candlelit, FONT_STACK } from './theme';
 import { KeyBar } from './mobile/KeyBar';
 import { Chips } from './mobile/Chips';
@@ -48,8 +38,7 @@ function measureCharRatio(): number {
 interface Session {
   term: XTerm;
   fit: FitAddon;
-  controller: TerminalController;
-  shell: Shell;
+  director: Director;
 }
 
 /** The whole game: the terminal, plus touch controls styled as part of it. */
@@ -76,7 +65,7 @@ export function Game() {
       const ctrl = applyCtrl(data);
       if (ctrl !== null) data = ctrl;
     }
-    void s.controller.handleData(data);
+    void s.director.handleData(data);
   }, []);
 
   /** Insert text at the cursor with a separating space if needed. */
@@ -84,7 +73,8 @@ export function Game() {
     (text: string) => {
       const s = session.current;
       if (!s) return;
-      const before = s.controller.line.text.slice(0, s.controller.line.cursor);
+      const line = s.director.controller.line;
+      const before = line.text.slice(0, line.cursor);
       send(withSeparator(text, before));
       s.term.focus();
     },
@@ -122,38 +112,22 @@ export function Game() {
       }
     }
 
-    const runner = new LessonRunner(loadWing(wingSources[START_WING], `${START_WING}.yaml`), {
-      coaching: loadCoaching(coachingSource),
-      dutyFiles: Object.fromEntries(
-        Object.entries(dutySources).map(([id, src]) => [id, loadDuties(src, `${id}.yaml`)]),
-      ),
-      lines: loadQuillLines(quillSource),
-    });
-    const vfs = runner.vfs;
-    const registry = createRegistry().register(
-      createHintCommand(() => runner),
-      createStatusCommand(() => runner),
-      createDutyCommand(() => runner),
-    );
-    const shell = new Shell({
-      vfs,
-      registry,
-      terminal: { stdout: { write() {} }, stderr: { write() {} } },
-      env: { USER: vfs.credentials.user, PWD: vfs.cwd, TERM: 'xterm-256color' },
-      onCommandRun: (name, args, status) => runner.recordCommand(name, args, status),
-      isUnlocked: (cmd) => cmd.unlockedInAct === 0 || runner.knows(cmd.name),
-    });
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const controller = new TerminalController(term, shell, {
-      narrator: runner,
-      // Chips grow as lessons teach new spells.
-      onCommand: () => setCommands([...runner.known, ...LEXICON_SPELLS]),
+    let shell: Shell | null = null;
+    const director = new Director(term, {
+      storage: browserStorage(),
+      content: loadGameContent(),
       artFor,
+      titleHelp,
       typeDelay: reducedMotion ? 0 : TYPE_DELAY_MS,
+      onChips: setCommands,
+      onShell: (sh) => {
+        shell = sh;
+        sh.env.set('COLUMNS', String(term.cols));
+        sh.env.set('LINES', String(term.rows));
+      },
     });
-    session.current = { term, fit, controller, shell };
-    // Known spells are set when the opening narration is produced.
-    queueMicrotask(() => setCommands([...runner.known, ...LEXICON_SPELLS]));
+    session.current = { term, fit, director };
 
     const resize = () => {
       const vv = window.visualViewport;
@@ -166,12 +140,12 @@ export function Game() {
       const size = fontSizeFor(width, charRatio);
       if (term.options.fontSize !== size) term.options.fontSize = size;
       fit.fit();
-      shell.env.set('COLUMNS', String(term.cols));
-      shell.env.set('LINES', String(term.rows));
+      shell?.env.set('COLUMNS', String(term.cols));
+      shell?.env.set('LINES', String(term.rows));
       term.scrollToBottom();
     };
     resize();
-    void controller.start();
+    director.showTitle();
 
     const sub = term.onData((d) => send(d));
     term.focus();
@@ -185,7 +159,7 @@ export function Game() {
       const start = down;
       down = null;
       if (!start) return;
-      controller.skipSpeech(); // a tap finishes Quill's sentence
+      director.controller.skipSpeech(); // a tap finishes Quill's sentence
       const moved = Math.hypot(e.clientX - start.x, e.clientY - start.y);
       if (moved > TAP_MAX_MOVE || performance.now() - start.t > TAP_MAX_MS) return;
       if (term.hasSelection()) return;
@@ -196,7 +170,7 @@ export function Game() {
       const buf = term.buffer.active;
       const line = buf.getLine(buf.viewportY + row)?.translateToString(true) ?? '';
       const hit = wordAt(line, col);
-      const text = hit && tapInsertion(hit.word, shell.vfs);
+      const text = hit && shell && tapInsertion(hit.word, shell.vfs);
       if (text) insert(text);
     };
     el.addEventListener('pointerdown', onDown, true); // capture: xterm stops bubbling

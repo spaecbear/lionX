@@ -15,7 +15,7 @@ import {
   type TaskResult,
 } from '../progression';
 import { evaluate, type CommandEvent } from '../validator';
-import { applyPatch, buildWorld, type Vfs } from '../vfs';
+import { applyPatch, buildWorld, Vfs, type VfsSnapshot } from '../vfs';
 
 /** Something the UI should present, in order. */
 export type Narration =
@@ -39,6 +39,20 @@ export type Narration =
 
 export type Phase = 'lessons' | 'duties' | 'capstone' | 'free';
 
+/** Where the runner is, as plain JSON, so a save can put the player back exactly. */
+export interface RunnerSnapshot {
+  wingId: string;
+  phase: Phase;
+  lessonIndex: number;
+  stepIndex: number;
+  hintsUsed: number;
+  struggled: boolean;
+  level: GuideLevel;
+  duty: Duty | null;
+  commands: CommandEvent[];
+  reads: string[];
+}
+
 export interface RunnerOptions {
   /** Shared coaching for common mistakes, checked after the wing's own rules. */
   coaching?: CoachingRule[];
@@ -48,6 +62,8 @@ export interface RunnerOptions {
   lines?: QuillLines;
   /** Progress carried in from earlier wings or a save. */
   progress?: ProgressState;
+  /** Resume from a save instead of starting the wing fresh. */
+  restore?: { vfs: VfsSnapshot; runner: RunnerSnapshot };
   now?: () => number;
 }
 
@@ -70,6 +86,7 @@ const FALLBACK_LINES: QuillLines = {
   idle: 'Nothing needs mending here right now. Wander as you like.',
   gateSealed: 'The way forward is still sealed.',
   gateOpen: 'Something stirs at the far end of the hall.',
+  resume: 'Welcome back.',
 };
 
 /**
@@ -104,13 +121,50 @@ export class LessonRunner {
     readonly wing: Wing,
     private opts: RunnerOptions = {},
   ) {
-    this.vfs = buildWorld(wing.world, { now: opts.now });
+    if (opts.restore && opts.restore.runner.wingId !== wing.id) {
+      throw new Error(`Save is for wing "${opts.restore.runner.wingId}", not "${wing.id}"`);
+    }
+    this.vfs = opts.restore
+      ? Vfs.load(opts.restore.vfs, { now: opts.now })
+      : buildWorld(wing.world, { now: opts.now });
     this.vfs.onRead = (p) => this.reads.add(p);
     this.progress = opts.progress ?? newProgress();
     this.rng = new Rng(this.progress.rngState);
     this.lines = opts.lines ?? FALLBACK_LINES;
     // Every template the game has, so duties can mix in older spells; eligibility is by known spells.
     this.templates = Object.values(opts.dutyFiles ?? {}).flat();
+    if (opts.restore) {
+      const r = opts.restore.runner;
+      this.phase = r.phase;
+      this.lessonIndex = r.lessonIndex;
+      this.stepIndex = r.stepIndex;
+      this.hintsUsed = r.hintsUsed;
+      this.struggled = r.struggled;
+      this.level = r.level;
+      this.duty = r.duty;
+      this.commands = [...r.commands];
+      this.reads = new Set(r.reads);
+    }
+  }
+
+  snapshot(): RunnerSnapshot {
+    return structuredClone({
+      wingId: this.wing.id,
+      phase: this.phase,
+      lessonIndex: this.lessonIndex,
+      stepIndex: this.stepIndex,
+      hintsUsed: this.hintsUsed,
+      struggled: this.struggled,
+      level: this.level,
+      duty: this.duty,
+      commands: this.commands,
+      reads: [...this.reads],
+    });
+  }
+
+  /** After loading a save: a word from Quill, then the current instruction again. */
+  resume(): Narration[] {
+    return [{ kind: 'quill', text: this.lines.resume }, ...this.repeat()];
   }
 
   /** The wing's capstone is solved (or, for a wing without one, its lessons are done). */

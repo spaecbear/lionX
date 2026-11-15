@@ -96,4 +96,5 @@ export interface QuillLines {
   idle: string;
   gateSealed: string;
   gateOpen: string;
+  resume: string;
 }

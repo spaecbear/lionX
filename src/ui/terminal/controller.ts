@@ -24,6 +24,8 @@ export interface ControllerOptions {
   narrator?: Narrator;
   /** Art text by name for the current width. */
   artFor?: (name: string, cols: number) => string | undefined;
+  /** A fixed prompt instead of user@host:path$ (the title screen uses one). */
+  prompt?: string;
   /** Milliseconds per character of Quill's typewriter. 0 prints instantly. */
   typeDelay?: number;
 }
@@ -191,6 +193,7 @@ export class TerminalController {
   /** Plain-text prompt, e.g. `apprentice@archive:~$ ` or `> ` for continuation lines. */
   promptText(): string {
     if (this.pending) return '> ';
+    if (this.opts.prompt !== undefined) return this.opts.prompt;
     return `${this.userHost()}:${this.displayCwd()}${this.sigil()} `;
   }
 
@@ -213,6 +216,7 @@ export class TerminalController {
 
   private coloredPrompt(): string {
     if (this.pending) return '> ';
+    if (this.opts.prompt !== undefined) return `${SGR.userHost}${this.opts.prompt}${SGR.reset}`;
     return (
       `${SGR.userHost}${this.userHost()}${SGR.reset}:` +
       `${SGR.path}${this.displayCwd()}${SGR.reset}${this.sigil()} `
@@ -397,6 +401,8 @@ export function wrapText(text: string, width: number): string {
   return text
     .split('\n')
     .map((line) => {
+      // Short lines are left exactly as written (art, aligned tables).
+      if (line.length <= width) return line;
       const out: string[] = [];
       let cur = '';
       for (const word of line.split(' ')) {
