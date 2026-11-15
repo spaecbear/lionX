@@ -1,0 +1,3 @@
+Usage: help [NAME]
+List every spell you know, what it does, and the flags it takes.
+With NAME, show how to use that one spell.

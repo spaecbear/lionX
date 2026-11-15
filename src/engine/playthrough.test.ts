@@ -125,3 +125,20 @@ describe('reward art', () => {
     expect(first.some((n) => n.kind === 'quill' && n.text.includes('~/gallery'))).toBe(true);
   });
 });
+
+describe('help', () => {
+  it('lists the spells you know, with what they do and their flags', async () => {
+    const s: GameSession = createSession({ content: loadGameContent(), seed: 1 });
+    s.opening();
+    let out = '';
+    s.shell.terminal = { stdout: { write: (t) => (out += t) }, stderr: { write: () => {} } };
+    expect(await s.shell.run('help')).toBe(0);
+    expect(out).toContain('pwd');
+    expect(out).toContain('names the room you stand in');
+    expect(out).toContain('-a  shows all');
+    expect(out).not.toContain('grep');
+    out = '';
+    expect(await s.shell.run('help solution')).toBe(0);
+    expect(out).toContain('Usage: solution');
+  });
+});

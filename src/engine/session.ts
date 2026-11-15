@@ -5,6 +5,7 @@ import {
   createQuestsCommand,
   createHintCommand,
   createSolutionCommand,
+  createHelpCommand,
   type Glossary,
   createStatusCommand,
   LessonRunner,
@@ -139,6 +140,7 @@ export function createSession(o: SessionOptions): GameSession {
     registry: createRegistry().register(
       createHintCommand(() => runner),
       createSolutionCommand(() => runner),
+      createHelpCommand(() => runner, content.glossary),
       createStatusCommand(() => runner),
       createDutyCommand(() => runner),
       createQuestsCommand(() => runner, content.sideQuests ?? ''),
