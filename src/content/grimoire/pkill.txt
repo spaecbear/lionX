@@ -1,0 +1,17 @@
+NAME
+    pkill - signal spirits by name
+
+SYNOPSIS
+    pkill [-SIGNAL] [-x] [-u USER] PATTERN
+
+DESCRIPTION
+    Pkill sends a signal (TERM unless you say otherwise) to every process
+    whose name matches PATTERN. Be sure the pattern names only what you
+    mean: pkill does not ask.
+
+    -x       match the whole name exactly
+    -u USER  only processes owned by USER
+
+EXAMPLES
+    pkill -x candle-imp
+    sudo pkill -STOP lionX

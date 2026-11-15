@@ -1,0 +1,16 @@
+NAME
+    jobs - list the spirits you started from this terminal
+
+SYNOPSIS
+    jobs [-l] [-p]
+
+DESCRIPTION
+    A spell ending in & runs in the background as a job. Jobs lists them
+    with their number and state (Running or Stopped). The + marks the
+    current job, which fg and bg use by default.
+
+    -l    include each job's PID
+    -p    print only PIDs
+
+SEE ALSO
+    fg, bg, kill

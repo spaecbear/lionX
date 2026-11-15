@@ -1,0 +1,9 @@
+NAME
+    bg - let a stopped job run in the background
+
+SYNOPSIS
+    bg [%JOB]
+
+DESCRIPTION
+    Bg resumes a stopped job but keeps it in the background, so you can
+    keep working while it runs.

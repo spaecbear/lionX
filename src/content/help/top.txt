@@ -1,0 +1,5 @@
+Usage:
+  top -hv | -bn count
+
+  -b  batch mode: print, do not redraw
+  -n  number of iterations in batch mode

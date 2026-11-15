@@ -22,6 +22,8 @@ export interface DirectorOptions {
   artFor: (name: string, cols: number) => string | undefined;
   titleHelp: string;
   typeDelay?: number;
+  /** Spirits drift across the screen (off for reduced motion). */
+  animateSpirits?: boolean;
   now?: () => number;
   /** The chips the touch layer should show right now. */
   onChips?: (names: string[]) => void;
@@ -91,6 +93,7 @@ export class Director {
       terminal: { stdout: { write() {} }, stderr: { write() {} } },
       shellName: 'lexicon',
     });
+    this.controller?.dispose();
     const art = this.opts.artFor('title', this.term.cols) ?? '';
     const listing = this.listSlots();
     this.controller = new TerminalController(this.term, this.shell, {
@@ -123,7 +126,9 @@ export class Director {
         ...session.runner.known.filter((n) => session.shell.registry.has(n)),
         ...LEXICON_SPELLS,
       ]);
+    this.controller?.dispose();
     const controller: TerminalController = new TerminalController(this.term, session.shell, {
+      animateSpirits: this.opts.animateSpirits,
       history: session.history,
       artFor: this.opts.artFor,
       typeDelay: this.opts.typeDelay,
@@ -138,6 +143,7 @@ export class Director {
       },
     });
     this.controller = controller;
+    controller.startSpirits();
     this.opts.onShell?.(session.shell);
     this.ready = controller.start().then(() => {
       // Save right away so a brand-new slot shows up on the title screen.

@@ -1,0 +1,6 @@
+Usage:
+ pgrep [options] <pattern>
+
+ -l, --list-name           list PID and process name
+ -x, --exact               match exactly with the command name
+ -u, --euid <ID,...>       match by effective IDs

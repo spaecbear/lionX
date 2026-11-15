@@ -1,0 +1,20 @@
+NAME
+    ps - see the spirits at work
+
+SYNOPSIS
+    ps [-e] [-f]
+    ps aux
+
+DESCRIPTION
+    Every running program is a process, a spirit at work, with a number
+    (its PID) and an owner. Ps lists them.
+
+    With no options, ps shows only your own spirits on this terminal.
+    -e, -A    every process
+    -f        full format: owner, PID, parent PID, start time, command
+    aux       the BSD style: every process with owner, %CPU, %MEM, state
+              (R running, S sleeping, T stopped), and full command
+
+EXAMPLES
+    ps aux                every spirit in the Archive
+    ps -ef | grep lionX   find one by name

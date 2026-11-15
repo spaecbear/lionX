@@ -1,0 +1,13 @@
+NAME
+    top - watch the spirits, live
+
+SYNOPSIS
+    top [-b] [-n COUNT]
+
+DESCRIPTION
+    Top shows the busiest processes first, by share of CPU, and redraws
+    every second. The spirit hogging the Archive is always near the top.
+    Press q to leave.
+
+    -b         print once (or COUNT times with -n) instead of redrawing
+    -n COUNT   how many times to print in -b mode

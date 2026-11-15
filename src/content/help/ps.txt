@@ -1,0 +1,8 @@
+Usage:
+ ps [options]
+
+ -A, -e               all processes
+ -f                   full-format listing
+ a                    all with tty, including other users
+ u                    user-oriented format
+ x                    processes without controlling ttys

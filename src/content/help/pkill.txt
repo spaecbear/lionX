@@ -1,0 +1,6 @@
+Usage:
+ pkill [options] <pattern>
+
+ -<sig>                    signal to send (either number or name)
+ -x, --exact               match exactly with the command name
+ -u, --euid <ID,...>       match by effective IDs

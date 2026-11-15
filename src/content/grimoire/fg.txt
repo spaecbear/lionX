@@ -1,0 +1,10 @@
+NAME
+    fg - bring a job to the front
+
+SYNOPSIS
+    fg [%JOB]
+
+DESCRIPTION
+    Fg resumes a job (if it was stopped) and runs it in the foreground,
+    so you wait for it. Ctrl+C ends it; Ctrl+Z sends it back to being a
+    stopped job.

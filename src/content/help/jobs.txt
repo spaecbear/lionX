@@ -1,0 +1,6 @@
+jobs: jobs [-lp] [jobspec ...]
+    Display status of jobs.
+
+    Options:
+      -l	lists process IDs in addition to the normal information
+      -p	lists process IDs only

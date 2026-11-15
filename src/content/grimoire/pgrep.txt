@@ -1,0 +1,15 @@
+NAME
+    pgrep - find spirits by name
+
+SYNOPSIS
+    pgrep [-l] [-x] [-u USER] PATTERN
+
+DESCRIPTION
+    Pgrep prints the PID of every process whose name matches PATTERN.
+
+    -l       print names too
+    -x       match the whole name exactly
+    -u USER  only processes owned by USER
+
+EXAMPLES
+    pgrep -l imp

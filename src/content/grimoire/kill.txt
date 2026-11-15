@@ -1,0 +1,23 @@
+NAME
+    kill - send a signal to a spirit
+
+SYNOPSIS
+    kill [-SIGNAL] PID|%JOB...
+    kill -l
+
+DESCRIPTION
+    Kill sends a signal to each process. By default it sends TERM, a
+    polite request to stop. Most spirits obey. Some do not.
+
+    -9, -KILL   cannot be ignored: the spirit ends at once
+    -STOP       freeze it in place (it can be resumed)
+    -CONT       let a frozen spirit continue
+    -l          list the signals
+
+    You may only signal your own spirits, unless you borrow root's
+    authority with sudo. %1 means job 1 from `jobs`.
+
+EXAMPLES
+    kill 4242
+    kill -9 4243
+    kill %1

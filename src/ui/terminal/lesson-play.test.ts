@@ -137,3 +137,29 @@ describe('playing the sample wing in the terminal', () => {
     expect(g.text()).toContain('Type pwd and press Enter.');
   });
 });
+
+describe('spirits drifting across the screen', () => {
+  it('draws running spirits on the top row and restores the cursor; frozen ones vanish', async () => {
+    const { ProcessTable } = await import('../../engine/processes');
+    const g = await game();
+    await g.started;
+    const table = new ProcessTable(() => 0);
+    const shell = (g.ctl as unknown as { shell: Shell }).shell;
+    shell.processes = table;
+    const imp = table.spawn({ name: 'imp', user: 'apprentice', spirit: '=^.^=' });
+    await g.flush();
+    const before = g.term.buffer.active.cursorY;
+    g.ctl.drawSpirits(1000);
+    await g.flush();
+    expect(
+      g.term.buffer.active.getLine(g.term.buffer.active.viewportY)!.translateToString(),
+    ).toContain('=^.^=');
+    expect(g.term.buffer.active.cursorY).toBe(before);
+    table.signal(imp.pid, 'STOP', 'root');
+    g.ctl.drawSpirits(2000);
+    await g.flush();
+    expect(
+      g.term.buffer.active.getLine(g.term.buffer.active.viewportY)!.translateToString(),
+    ).not.toContain('=^.^=');
+  });
+});

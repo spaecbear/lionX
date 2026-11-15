@@ -8,6 +8,7 @@ import type { Wing } from './content';
 import { LessonRunner } from './narrative';
 import { newProgress } from './progression';
 import { Shell } from './shell';
+import { ProcessTable } from './processes';
 import { applyPatch, buildWorld, type Vfs } from './vfs';
 
 export const content = loadGameContent();
@@ -59,8 +60,16 @@ export function atCapstone(wingId: string) {
   progress.known = wingChain()
     .slice(0, wingChain().findIndex((w) => w.id === wingId) + 1)
     .flatMap((w) => w.lessons.flatMap((l) => l.spells));
+  // Spirits the wing (and earlier wings) start, as when the player walked in.
+  const processes = new ProcessTable(() => Date.now());
+  for (const w of wingChain()) {
+    for (const p of w.setup?.processes ?? [])
+      processes.spawn({ ...p, user: p.user ?? 'apprentice' });
+    if (w.id === wingId) break;
+  }
   const runner = new LessonRunner(wing, {
     ...content,
+    processes,
     progress,
     restore: {
       vfs: vfs.serialize(),
@@ -85,6 +94,7 @@ export function atCapstone(wingId: string) {
     onCommandRun: (n, a, s) => runner.recordCommand(n, a, s),
     isUnlocked: (c) => c.unlockedInAct === 0 || runner.knows(c.name),
     tty: playerTty(),
+    processes,
   });
   const type = async (line: string) => {
     const status = await shell.run(line);

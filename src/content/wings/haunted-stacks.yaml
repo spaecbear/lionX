@@ -1,0 +1,278 @@
+# Wing 7: the Haunted Stacks. Spells: ps, top, kill, pgrep, pkill, sleep, jobs, fg, bg.
+# lionX beat: ps shows lionX itself for the first time. It guards its children:
+# kill one and lionX replaces it, so the parent must be stopped first.
+id: haunted-stacks
+banner: haunted-stacks
+entrance: /archive/haunted-stacks
+next: undercroft
+duties: [haunted-stacks, vault, aqueducts]
+gate: 60
+
+setup:
+  dirs:
+    - { path: /archive/haunted-stacks/workroom, owner: apprentice, group: apprentice }
+  files:
+    /archive/haunted-stacks/warning: "The stacks are full of spirits. Most mean no harm. Learn which are which.\n"
+  processes:
+    - {
+        pid: 666,
+        name: lionX,
+        args: 'lionX --guard /',
+        user: lionx,
+        cpu: 4,
+        mem: 6.6,
+        ignoresTerm: true,
+        respawnsChildren: true,
+        immortal: true,
+        spirit: '=^.^=',
+      }
+    - {
+        pid: 4242,
+        name: candle-imp,
+        args: 'candle-imp --flicker',
+        user: apprentice,
+        cpu: 1,
+        spirit: '*',
+      }
+    - {
+        pid: 4243,
+        name: mutterer,
+        args: 'mutterer --forever',
+        user: apprentice,
+        cpu: 3,
+        ignoresTerm: true,
+        spirit: '~o~',
+      }
+    - {
+        pid: 4300,
+        name: lamplighter,
+        args: 'lamplighter --tend-lamps',
+        user: archivist,
+        cpu: 2,
+        spirit: '(*)',
+      }
+    - {
+        pid: 4301,
+        name: page-turner,
+        args: 'page-turner --gently',
+        user: archivist,
+        cpu: 1,
+        spirit: '[~]',
+      }
+    - {
+        pid: 4666,
+        name: gnawer,
+        args: 'gnawer --eat-pages',
+        user: lionx,
+        parent: 666,
+        cpu: 87,
+        mem: 12.4,
+        spirit: '>:{',
+      }
+
+intro:
+  - "The Haunted Stacks. Every program the Archive runs is a spirit at work: a process. Most are friendly. Some are lionX's."
+  - 'Do you feel that? Something in here is eating pages faster than the binders can bind them.'
+
+lessons:
+  - id: seeing
+    spells: [ps, top]
+    intro:
+      - 'First, learn to see them.'
+    steps:
+      - id: ps
+        guide: exact
+        guidance:
+          exact: 'Type `ps`. It lists your own spirits on this terminal, each with a number: its PID.'
+        hints:
+          - 'Ask the Lexicon which spirits are yours.'
+          - 'The spell is `ps`.'
+          - 'Type exactly: ps'
+        goal: { ran: ps }
+        success:
+          - 'Just your shell, bash, and ps itself. The rest of the Archive is busier.'
+      - id: ps-aux
+        guide: goal
+        guidance:
+          exact: 'Type `ps aux` to see every spirit in the Archive, who owns it, and how much it eats.'
+          goal: 'See every spirit in the Archive, with owners and how much CPU each takes.'
+        hints:
+          - "ps can show everyone's processes, with more detail."
+          - '`ps aux` (no dash) shows all users, user-oriented.'
+          - 'Type exactly: ps aux'
+        goal: { ran: { command: ps, args: [aux] } }
+        success:
+          - 'There. PID 666. lionX itself, owned by lionx, running "--guard /". And a gnawer that belongs to it.'
+      - id: top
+        guide: goal
+        guidance:
+          exact: 'Type `top` to watch them live, busiest first. Press q to leave.'
+          goal: 'Watch the spirits live, busiest first, to see who is eating the stacks. Press q to leave.'
+        hints:
+          - 'There is a spell that shows processes live, sorted by CPU.'
+          - '`top`, then q to quit.'
+          - 'Type exactly: top'
+        goal: { ran: top }
+        success:
+          - 'The gnawer, at the top, eating nearly everything. Not yet. First you learn to banish smaller things.'
+
+  - id: banishing
+    spells: [kill]
+    intro:
+      - '`kill` sends a signal to a spirit by its PID. Despite the name, the default signal is a polite request to stop.'
+    steps:
+      - id: imp
+        guide: exact
+        guidance:
+          exact: 'The candle-imp is PID 4242, and it is yours. Type `kill 4242`.'
+        hints:
+          - "Send a signal to the imp's PID."
+          - '`kill` and the PID from ps.'
+          - 'Type exactly: kill 4242'
+        goal: { not: { processRunning: candle-imp } }
+        success:
+          - 'Gone. It went quietly.'
+      - id: mutterer
+        guide: goal
+        guidance:
+          exact: 'The mutterer is PID 4243. Try `kill 4243`, then, when it ignores you, `kill -9 4243`.'
+          goal: 'The mutterer (PID 4243) ignores polite requests. Banish it anyway.'
+        hints:
+          - 'Some spirits ignore the polite signal. One signal cannot be ignored.'
+          - '`kill -9` sends KILL, which no spirit can refuse.'
+          - 'Type exactly: kill -9 4243'
+        goal: { not: { processRunning: mutterer } }
+        coaching:
+          - line: '^\s*kill\s+4243\s*$'
+            say: 'It heard you. It does not care. Try a signal it cannot ignore.'
+        success:
+          - '`kill -9` is a last resort: the spirit gets no chance to tidy up. Use it when asking has failed.'
+
+  - id: jobs
+    spells: [sleep, jobs, bg, fg]
+    intro:
+      - 'You can raise spirits too. End a spell with `&` and it runs in the background as a job, while you keep working.'
+      - '`sleep` waits, and does nothing else. The perfect practice spirit.'
+    steps:
+      - id: background
+        guide: exact
+        guidance:
+          exact: 'Type `sleep 600 &`. The Lexicon prints the job number and its PID, and gives you your prompt back.'
+        hints:
+          - 'Start a long sleep, in the background.'
+          - '`sleep 600` with `&` at the end.'
+          - 'Type exactly: sleep 600 &'
+        goal: { processRunning: sleep }
+        success:
+          - 'Ten minutes of nothing, happening without you.'
+      - id: list-jobs
+        guide: goal
+        guidance:
+          exact: 'Type `jobs` to list your jobs.'
+          goal: 'Check on the jobs you have running.'
+        hints:
+          - 'List the jobs started from this terminal.'
+          - 'The spell is `jobs`.'
+          - 'Type exactly: jobs'
+        goal: { ran: jobs }
+        success:
+          - '[1]+ Running. The + marks the current job.'
+      - id: stop-and-resume
+        guide: goal
+        guidance:
+          exact: 'Type `kill -STOP %1` to freeze job 1, then `bg %1` to let it run again in the background.'
+          goal: 'Freeze job 1 with the STOP signal, then resume it in the background.'
+        hints:
+          - 'STOP freezes a spirit; another spell lets a stopped job run again in the background.'
+          - '`kill -STOP %1`, then `bg %1`.'
+          - 'Type: kill -STOP %1   then: bg %1'
+        goal: { all: [{ ran: bg }, { processRunning: sleep }] }
+        success:
+          - '`fg` would bring it to the front instead, and you would wait for it. Ctrl+Z freezes whatever is in front of you.'
+      - id: end-job
+        guide: problem
+        guidance:
+          exact: 'Type `kill %1`.'
+          goal: 'End job 1.'
+          problem: 'Enough sleeping. End your job.'
+        hints:
+          - 'kill takes job numbers too, with a %.'
+          - '`kill %1`.'
+          - 'Type exactly: kill %1'
+        goal: { not: { processRunning: sleep } }
+        success:
+          - 'Terminated. You are getting good at this.'
+
+  - id: by-name
+    spells: [pgrep, pkill]
+    steps:
+      - id: pgrep
+        guide: exact
+        guidance:
+          exact: 'Type `pgrep -l er` to list every spirit whose name contains "er", with its PID.'
+        hints:
+          - 'Find spirits by name instead of reading the whole list.'
+          - '`pgrep -l` and part of a name.'
+          - 'Type exactly: pgrep -l er'
+        goal: { ran: pgrep }
+        success:
+          - '`pkill` is the same idea with a signal attached. It does not ask; be sure the pattern names only what you mean.'
+
+practice:
+  intro:
+    - "Spirits keep appearing: lionX's pests among the friendly ones. Tend the stacks while you practice. Your password is still oriel."
+  gateOpens:
+    - 'You know a pest from a friend now. Time to deal with the gnawer.'
+
+capstone:
+  intro:
+    - 'The gnawer belongs to lionX, and lionX guards it: kill the gnawer and lionX simply raises another. The parent must be made to wait first.'
+    - "Banish the gnawer. Do not touch the lamplighter or the page-turner; they are the Archivist's, and they are all that keeps these stacks lit."
+  steps:
+    - id: banish-gnawer
+      guide: problem
+      guidance:
+        exact: 'Type `sudo pkill -STOP lionX` to freeze lionX, then `sudo pkill -9 gnawer`.'
+        goal: 'Freeze lionX (PID 666) with the STOP signal so it cannot replace its children, then banish the gnawer. Both belong to lionx, so you will need sudo.'
+        problem: "Banish the gnawer for good, and leave the Archivist's spirits alone."
+      hints:
+        - 'Killing the gnawer while lionX is awake only makes another. Freeze lionX first.'
+        - '`sudo kill -STOP 666` (or `sudo pkill -STOP lionX`), then `sudo kill -9` the gnawer.'
+        - 'Type: sudo pkill -STOP lionX   then enter your password: oriel   then: sudo pkill -9 gnawer'
+      goal:
+        all:
+          - { not: { processRunning: gnawer } }
+          - { processRunning: lamplighter }
+          - { processRunning: page-turner }
+      coaching:
+        - line: 'lamplighter|page-turner|4300|4301'
+          say: "Those are the Archivist's! Leave them be."
+      success:
+        - 'Gone, and it stayed gone.'
+        - 'lionX is frozen, not ended. I can feel it waiting. It will wake.'
+  outro:
+    - "With the gnawer gone, the stair to the Undercroft is clear. The Lexicon's own foundations are down there. `ls /archive`."
+  unlocks:
+    dirs: [/archive/undercroft]
+    files:
+      /archive/undercroft/sign: "THE UNDERCROFT. The Lexicon's foundations. Watch your step.\n"
+
+rewards:
+  - id: spirit-jar
+    afterDuties: 2
+    say: 'A little glass jar appeared in your cell, with a friendly glow inside. `cat ~/spirit-jar`'
+    decoration:
+      file: spirit-jar
+      content: "   ___\n  |(*)|   A small spirit, sleeping. It hums.\n  |___|\n"
+  - id: lore-guardian
+    afterDuties: 4
+    say: 'You found a page the gnawer missed: `cat ~/lore/the-guardian`'
+    lore:
+      file: lore/the-guardian
+      text: |
+        The guardian was summoned with authority to protect the root.
+        It was never told what to protect the root FROM.
+        It decided for itself.
+
+outro:
+  - 'The Undercroft waits: `cd /archive/undercroft`. Mind the foundations.'

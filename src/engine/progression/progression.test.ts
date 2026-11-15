@@ -4,6 +4,7 @@ import { loadDuties } from '../content';
 import { Shell } from '../shell';
 import { evaluate } from '../validator';
 import { applyPatch } from '../vfs';
+import { ProcessTable } from '../processes';
 import { dutySources } from '../../content';
 import { generateDuty, instantiate, type Duty, type DutyTemplate } from './duties';
 import { applyTask, gateOpen, GAIN, isSwift, masteryPhrase, nextDifficulty } from './mastery';
@@ -26,9 +27,12 @@ const worldFor = (dutyFile: string) => worldForWing(dutyFile);
 /** Run a duty's solution in its world and report whether its goal is met. */
 async function solve(duty: Duty, dutyFile: string) {
   const vfs = worldFor(dutyFile);
+  const processes = new ProcessTable(() => Date.now());
   if (duty.setup) {
     const user = { name: 'apprentice', groups: ['apprentice'], home: '/home/apprentice' };
     applyPatch(vfs, duty.setup, user, { ownedByPlayer: true });
+    for (const p of duty.setup.processes ?? [])
+      processes.spawn({ ...p, user: p.user ?? 'apprentice' });
   }
   const reads = new Set<string>();
   vfs.onRead = (p) => reads.add(p);
@@ -39,10 +43,11 @@ async function solve(duty: Duty, dutyFile: string) {
     terminal: { stdout: { write() {} }, stderr: { write() {} } },
     onCommandRun: (command, args, status) => commands.push({ command, args, status }),
     tty: playerTty(),
+    processes,
   });
   for (const line of duty.solution) await shell.run(line);
   return {
-    met: evaluate(duty.goal, { vfs, commands, reads, processes: [] }),
+    met: evaluate(duty.goal, { vfs, commands, reads, processes: processes.names() }),
     failures: commands.filter((c) => c.status !== 0),
     usedSpells: [...new Set(commands.map((c) => c.command))],
   };

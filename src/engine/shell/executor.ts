@@ -2,6 +2,7 @@ import { VfsError, type Vfs } from '../vfs';
 import type { Command, CommandRegistry, IO, OutStream, ShellContext, Tty } from '../commands/types';
 import type { AndOr, Pipeline, Redirect, SimpleCommand, Word } from './ast';
 import { expandWord, expandWordToString, type ExpandEnv } from './expand';
+import { JobTable, ProcessTable } from '../processes';
 import { ShellSyntaxError } from './lexer';
 import { parse } from './parser';
 
@@ -16,6 +17,8 @@ export interface ShellOptions {
   tty?: Tty;
   /** Whether the player has learned a command yet. Defaults to everything known. */
   isUnlocked?: (cmd: Command) => boolean;
+  /** The world's processes (enables real background jobs). */
+  processes?: ProcessTable;
   /** Notified after every simple command runs (inside pipelines too), with its own status. */
   onCommandRun?: (name: string, args: string[], status: number) => void;
 }
@@ -75,6 +78,9 @@ export class Shell {
   terminal: ShellOptions['terminal'];
   private nextJob = 1;
   private nextPid = 1000;
+  processes?: ProcessTable;
+  jobs?: JobTable;
+  shellPid?: number;
 
   constructor(opts: ShellOptions) {
     this.vfs = opts.vfs;
@@ -85,7 +91,63 @@ export class Shell {
     this.tty = opts.tty;
     this.isUnlocked = opts.isUnlocked ?? (() => true);
     this.onCommandRun = opts.onCommandRun;
+    if (opts.processes) this.attachProcesses(opts.processes);
     if (!this.env.has('HOME')) this.env.set('HOME', this.vfs.home);
+  }
+
+  /**
+   * Give the shell a process table: it gets an init and a bash process, and
+   * `&` starts real background jobs for commands that support it.
+   */
+  attachProcesses(table: ProcessTable): void {
+    this.processes = table;
+    this.jobs = new JobTable(table);
+    const user = this.vfs.credentials.user;
+    if (!table.get(1)) table.spawn({ pid: 1, name: 'init', args: '/sbin/init', user: 'root' });
+    const bash = table.list().find((p) => p.name === 'bash' && p.user === user);
+    this.shellPid = (bash ?? table.spawn({ name: 'bash', args: '-bash', user, tty: 'pts/0' })).pid;
+  }
+
+  /** The context commands receive (variables may be overridden for one command). */
+  context(env = this.env): ShellContext {
+    return {
+      vfs: this.vfs,
+      env,
+      registry: this.registry,
+      shellName: this.shellName,
+      processes: this.processes,
+      jobs: this.jobs,
+      shellPid: this.shellPid,
+    };
+  }
+
+  /** Start `cmd &` as a real background job if the command can run as a process. */
+  private async tryBackground(node: AndOr): Promise<boolean> {
+    if (!this.processes || !this.jobs || node.rest.length || node.first.commands.length !== 1)
+      return false;
+    const cmd = node.first.commands[0];
+    if (cmd.redirects.length || cmd.assignments.length) return false;
+    const argv = cmd.words.flatMap((w) => expandWord(w, this.expandEnv()));
+    const command = argv.length ? this.registry.get(argv[0]) : undefined;
+    if (!command?.background || !this.isUnlocked(command)) return false;
+    const spec = command.background(argv.slice(1), this.context());
+    if (typeof spec === 'string') {
+      this.terminal.stderr.write(spec);
+      this.onCommandRun?.(argv[0], argv.slice(1), 1);
+      this.lastStatus = 0;
+      return true;
+    }
+    const p = this.processes.spawn({
+      ...spec,
+      user: this.vfs.credentials.user,
+      parent: this.shellPid,
+      tty: 'pts/0',
+    });
+    const job = this.jobs.add(p.pid, argv.join(' '));
+    this.terminal.stderr.write(`[${job.id}] ${p.pid}\n`);
+    this.onCommandRun?.(argv[0], argv.slice(1), 0);
+    this.lastStatus = 0;
+    return true;
   }
 
   /** Run one line of input. Returns the exit status (also stored in `$?`). */
@@ -99,7 +161,9 @@ export class Shell {
       return (this.lastStatus = 2);
     }
     for (const entry of script.entries) {
-      if (entry.background) {
+      if (entry.background && (await this.tryBackground(entry.node))) {
+        continue;
+      } else if (entry.background) {
         const job = this.nextJob++;
         this.terminal.stderr.write(`[${job}] ${this.nextPid++}\n`);
         await this.runAndOr(entry.node);
@@ -108,6 +172,9 @@ export class Shell {
         await this.runAndOr(entry.node);
       }
     }
+    // Bash reports background jobs that finished, before the next prompt.
+    const report = this.jobs?.report();
+    if (report) this.terminal.stdout.write(report);
     return this.lastStatus;
   }
 
@@ -190,12 +257,7 @@ export class Shell {
     }
 
     const env = assigned.length ? new Map([...this.env, ...assigned]) : this.env;
-    const ctx: ShellContext = {
-      vfs: this.vfs,
-      env,
-      registry: this.registry,
-      shellName: this.shellName,
-    };
+    const ctx: ShellContext = this.context(env);
     const io: IO = {
       stdin: fds.stdin ?? '',
       stdinIsTerminal: fds.stdin === null,

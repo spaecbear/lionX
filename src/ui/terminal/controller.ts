@@ -26,6 +26,8 @@ export interface ControllerOptions {
   artFor?: (name: string, cols: number) => string | undefined;
   /** A fixed prompt instead of user@host:path$ (the title screen uses one). */
   prompt?: string;
+  /** Draw running spirits drifting across the top row while the prompt is idle. */
+  animateSpirits?: boolean;
   /** Milliseconds per character of Quill's typewriter. 0 prints instantly. */
   typeDelay?: number;
 }
@@ -95,6 +97,7 @@ export class TerminalController {
         return term.cols;
       },
       readKey: () => this.readKey(),
+      pollKey: (ms: number) => this.pollKey(ms),
     };
   }
 
@@ -107,6 +110,43 @@ export class TerminalController {
   /** Finish Quill's current lines at once (for taps on touch screens). */
   skipSpeech(): void {
     if (this.speaking) this.skipSpeechFlag = true;
+  }
+
+  private spiritTimer: ReturnType<typeof setInterval> | null = null;
+  private spiritCells: { col: number; len: number }[] = [];
+
+  /** Start the spirit drift (call once; stop with dispose()). */
+  startSpirits(intervalMs = 350): void {
+    if (!this.opts.animateSpirits || this.spiritTimer) return;
+    this.spiritTimer = setInterval(() => this.drawSpirits(Date.now()), intervalMs);
+  }
+
+  dispose(): void {
+    if (this.spiritTimer) clearInterval(this.spiritTimer);
+    this.spiritTimer = null;
+  }
+
+  /**
+   * Draw each running spirit's glyph on the top row, moving with time. Only
+   * while idle at a prompt; the cursor is saved and restored around it.
+   */
+  drawSpirits(now: number): void {
+    if (this.busy || this.speaking || this.pending) return;
+    const spirits = (this.shell.processes?.list() ?? []).filter((p) => p.spirit && p.state !== 'T');
+    if (spirits.length === 0 && this.spiritCells.length === 0) return;
+    const cols = this.term.cols;
+    let out = '\x1b7';
+    for (const c of this.spiritCells) out += `\x1b[1;${c.col + 1}H${' '.repeat(c.len)}`;
+    this.spiritCells = [];
+    spirits.forEach((p, i) => {
+      const glyph = p.spirit!;
+      const span = Math.max(1, cols - glyph.length);
+      const speed = 120 + ((p.pid * 37) % 200);
+      const col = Math.floor(now / speed + i * (span / spirits.length)) % span;
+      out += `\x1b[1;${col + 1}H\x1b[2;33m${glyph}\x1b[0m`;
+      this.spiritCells.push({ col, len: glyph.length });
+    });
+    this.term.write(out + '\x1b8');
   }
 
   /** Print the welcome, then Quill's opening, then the first prompt. */
@@ -181,6 +221,24 @@ export class TerminalController {
     const waiters = this.idleWaiters.splice(0);
     waiters.forEach((w) => w());
     return new Promise((r) => (this.keyReader = r));
+  }
+
+  /** Like readKey, but gives up after `ms` (programs that also watch the clock, like top). */
+  private pollKey(ms: number): Promise<string | null> {
+    const key = this.queue.shift();
+    if (key !== undefined) return Promise.resolve(key);
+    this.idleWaiters.splice(0).forEach((w) => w());
+    return new Promise((resolve) => {
+      const reader = (k: string) => {
+        clearTimeout(timer);
+        resolve(k);
+      };
+      const timer = setTimeout(() => {
+        if (this.keyReader === reader) this.keyReader = null;
+        resolve(null);
+      }, ms);
+      this.keyReader = reader;
+    });
   }
 
   private wakeReader() {

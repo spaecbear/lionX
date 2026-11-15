@@ -16,6 +16,8 @@ import {
 } from '../progression';
 import { evaluate, type CommandEvent } from '../validator';
 import { applyPatch, buildWorld, Vfs, type VfsSnapshot } from '../vfs';
+import type { ProcessTable } from '../processes';
+import type { WorldPatch } from '../content';
 
 /** Something the UI should present, in order. */
 export type Narration =
@@ -62,6 +64,8 @@ export interface RunnerOptions {
   lines?: QuillLines;
   /** Progress carried in from earlier wings or a save. */
   progress?: ProgressState;
+  /** The world's processes; patches may start spirits in it. */
+  processes?: ProcessTable;
   /** Continue in an existing world (entering a later wing). */
   vfs?: Vfs;
   /** Resume from a save instead of starting the wing fresh. */
@@ -129,7 +133,7 @@ export class LessonRunner {
     if (opts.restore) this.vfs = Vfs.load(opts.restore.vfs, { now: opts.now });
     else if (opts.vfs) {
       this.vfs = opts.vfs;
-      if (wing.setup) applyPatch(this.vfs, wing.setup, this.user);
+      if (wing.setup) this.patch(wing.setup);
     } else if (wing.world) this.vfs = buildWorld(wing.world, { now: opts.now });
     else
       throw new Error(`Wing "${wing.id}" has no world of its own; enter it from an earlier wing`);
@@ -151,6 +155,19 @@ export class LessonRunner {
       this.commands = [...r.commands];
       this.reads = new Set(r.reads);
     }
+  }
+
+  /** Pids of spirits the current duty started, removed when it ends. */
+  private dutyPids: number[] = [];
+
+  /** Apply a world patch: files and dirs, then any processes it starts. Returns new pids. */
+  private patch(p: WorldPatch, opts: { ownedByPlayer?: boolean } = {}): number[] {
+    applyPatch(this.vfs, p, this.user, opts);
+    const table = this.opts.processes;
+    if (!table || !p.processes) return [];
+    return p.processes.map(
+      (spec) => table.spawn({ ...spec, user: spec.user ?? this.user.name }).pid,
+    );
   }
 
   /** The player's account, for placing files in their home. */
@@ -324,7 +341,7 @@ export class LessonRunner {
       vfs: this.vfs,
       commands: this.commands,
       reads: this.reads,
-      processes: [],
+      processes: this.opts.processes?.names() ?? [],
     });
   }
 
@@ -352,7 +369,7 @@ export class LessonRunner {
 
   private beginLesson(): Narration[] {
     const lesson = this.wing.lessons[this.lessonIndex];
-    if (lesson.setup) applyPatch(this.vfs, lesson.setup, this.user);
+    if (lesson.setup) this.patch(lesson.setup);
     return [...this.learn(lesson.spells), ...quill(lesson.intro), ...this.beginStep()];
   }
 
@@ -444,7 +461,7 @@ export class LessonRunner {
     this.duty = duty;
     this.progress.recentDuties = [...this.progress.recentDuties, duty.signature].slice(-30);
     // Duty material is the player's to work with: they own what the duty creates.
-    if (duty.setup) applyPatch(this.vfs, duty.setup, this.user, { ownedByPlayer: true });
+    if (duty.setup) this.dutyPids = this.patch(duty.setup, { ownedByPlayer: true });
     this.stepIndex = 0;
     return this.beginStep();
   }
@@ -471,10 +488,18 @@ export class LessonRunner {
   }
 
   private cleanup(duty: Duty) {
+    for (const pid of this.dutyPids) this.opts.processes?.remove(pid);
+    this.dutyPids = [];
     const saved = this.vfs.credentials;
     this.vfs.credentials = { user: 'root', groups: ['root'] };
     try {
       for (const p of duty.cleanup) {
+        // "process:NAME" removes spirits the player raised for this duty.
+        if (p.startsWith('process:')) {
+          for (const proc of this.opts.processes?.byName(p.slice(8)) ?? [])
+            this.opts.processes!.remove(proc.pid);
+          continue;
+        }
         // Never pull the floor out from under the player.
         const abs = this.vfs.resolve(p);
         if (this.vfs.cwd === abs || this.vfs.cwd.startsWith(abs + '/')) continue;
@@ -535,7 +560,7 @@ export class LessonRunner {
       this.stepIndex++;
       return [...out, ...this.beginStep()];
     }
-    if (cap.unlocks) applyPatch(this.vfs, cap.unlocks, this.user);
+    if (cap.unlocks) this.patch(cap.unlocks);
     return [...out, ...quill(cap.outro), ...this.finishWing()];
   }
 

@@ -1,0 +1,13 @@
+NAME
+    sleep - wait
+
+SYNOPSIS
+    sleep NUMBER[SUFFIX]...
+
+DESCRIPTION
+    Sleep does nothing for NUMBER seconds (or m minutes, h hours). It is
+    the gentlest way to practice jobs: `sleep 600 &` starts a spirit that
+    does nothing, quietly, in the background.
+
+    While a spirit runs in front of you, Ctrl+C ends it and Ctrl+Z
+    freezes it into a job.

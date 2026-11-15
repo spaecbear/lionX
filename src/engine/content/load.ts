@@ -178,7 +178,33 @@ function checkCoaching(c: Checker, v: unknown, path: string): CoachingRule[] | u
 function checkPatch(c: Checker, v: unknown, path: string): WorldPatch | undefined {
   if (v === undefined) return undefined;
   const o = c.obj(v, path);
-  c.noExtra(o, ['dirs', 'files', 'corpus'], path);
+  c.noExtra(o, ['dirs', 'files', 'corpus', 'processes'], path);
+  if (o.processes !== undefined) {
+    c.arr(o.processes, `${path}.processes`).forEach((x, i) => {
+      const p = `${path}.processes[${i}]`;
+      const m = c.obj(x, p);
+      c.noExtra(
+        m,
+        [
+          'name',
+          'args',
+          'user',
+          'pid',
+          'parent',
+          'cpu',
+          'mem',
+          'ignoresTerm',
+          'respawnsChildren',
+          'immortal',
+          'spirit',
+          'durationMs',
+          'tty',
+        ],
+        p,
+      );
+      c.str(m.name, `${p}.name`);
+    });
+  }
   if (o.corpus !== undefined) {
     c.arr(o.corpus, `${path}.corpus`).forEach((x, i) => {
       const p = `${path}.corpus[${i}]`;

@@ -1,9 +1,10 @@
 import type { RunnerSnapshot } from '../narrative';
 import type { ProgressState } from '../progression';
 import type { VfsSnapshot } from '../vfs';
+import type { Job, TableSnapshot } from '../processes';
 
 /** Bump when the save shape changes, and add a migration from the previous version. */
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
 export const SLOT_COUNT = 3;
 const KEY_PREFIX = 'archive-of-echoes:slot:';
 
@@ -18,6 +19,9 @@ export interface SaveData {
   env: Record<string, string>;
   /** Command history for the up arrow. */
   history: string[];
+  /** Running processes (spirits, lionX, the player's jobs). Added in version 2. */
+  processes: TableSnapshot | null;
+  jobs: Job[];
 }
 
 /** The subset of the Web Storage API saves need. Inject `localStorage`, or a Map in tests. */
@@ -36,7 +40,10 @@ type Migration = (old: Record<string, unknown>) => Record<string, unknown>;
  * version N and returns one of version N + 1. Version 1 is the first released
  * format, so the table starts empty; add entries here as the format evolves.
  */
-export const MIGRATIONS: Record<number, Migration> = {};
+export const MIGRATIONS: Record<number, Migration> = {
+  // Version 2 added the process table and job list. Older saves had no processes running.
+  1: (old) => ({ ...old, processes: null, jobs: [] }),
+};
 
 /** Upgrade a parsed save to the current version, oldest migration first. */
 export function migrate(

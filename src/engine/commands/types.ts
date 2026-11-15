@@ -1,4 +1,5 @@
 import type { Vfs } from '../vfs';
+import type { JobTable, ProcessTable, ProcSpec } from '../processes';
 
 /** Where a command writes. Writes may throw a VfsError if a redirect target becomes unwritable. */
 export interface OutStream {
@@ -26,6 +27,8 @@ export interface Tty {
   readKey(): Promise<string>;
   /** Read a line without echoing it (passwords). Optional; programs fall back to readKey. */
   readSecret?(): Promise<string | null>;
+  /** Wait up to `ms` for a key; null if none came (for programs that also watch the clock). */
+  pollKey?(ms: number): Promise<string | null>;
 }
 
 export interface ShellContext {
@@ -35,6 +38,11 @@ export interface ShellContext {
   registry: CommandRegistry;
   /** Name used in shell-level error messages, e.g. "bash". */
   shellName: string;
+  /** The world's processes, once the Haunted Stacks have woken (else undefined). */
+  processes?: ProcessTable;
+  jobs?: JobTable;
+  /** The pid of the shell itself (for ps and for parenting jobs). */
+  shellPid?: number;
 }
 
 export interface Command {
@@ -44,6 +52,11 @@ export interface Command {
   manPage: string;
   /** Short usage text printed by `--help`. */
   help?: string;
+  /**
+   * For long-running commands (like sleep): the process to start when run
+   * with `&`, or an error message. Commands without this run to completion.
+   */
+  background?(args: string[], ctx: ShellContext): ProcSpec | string;
   run(args: string[], io: IO, ctx: ShellContext): Promise<number>;
 }
 

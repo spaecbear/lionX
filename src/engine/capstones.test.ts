@@ -88,6 +88,17 @@ const solutions: Record<string, string[][]> = {
       'head -n 1 /archive/vault/inner/archivists-seal',
     ],
   ],
+  'haunted-stacks': [
+    ['sudo pkill -STOP lionX', 'sudo pkill -9 gnawer'],
+    [
+      // By PID, with kill; first try (and fail) without freezing lionX.
+      'ps aux',
+      'sudo kill -9 4666',
+      'pgrep -l gnawer',
+      'sudo kill -STOP 666',
+      'sudo pkill -KILL -x gnawer',
+    ],
+  ],
 };
 
 describe('capstones can be solved more than one way', () => {

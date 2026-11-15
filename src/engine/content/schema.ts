@@ -1,4 +1,5 @@
 import type { Predicate } from '../validator';
+import type { ProcSpec } from '../processes';
 import type { WorldSpec } from '../vfs';
 
 /** How much Quill spells out a step: the exact command, the goal, or only the problem. */
@@ -11,6 +12,8 @@ export interface WorldPatch {
   files?: WorldSpec['files'];
   /** Generated files: many pages from a short description (see vfs/corpus.ts). */
   corpus?: WorldSpec['corpus'];
+  /** Processes (spirits) to start. `user` defaults to the player. */
+  processes?: (Omit<ProcSpec, 'user'> & { user?: string })[];
 }
 
 /** A specific reply to a common mistake. Regexes match the typed line and/or the error output. */

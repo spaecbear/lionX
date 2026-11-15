@@ -120,6 +120,7 @@ export function Game() {
       artFor,
       titleHelp,
       typeDelay: reducedMotion ? 0 : TYPE_DELAY_MS,
+      animateSpirits: !reducedMotion,
       onChips: setCommands,
       onShell: (sh) => {
         shell = sh;

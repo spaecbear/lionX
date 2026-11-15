@@ -13,6 +13,11 @@ const helps = import.meta.glob<string>('../../content/help/*.txt', {
   eager: true,
 });
 
+/** The Grimoire page for a command, from src/content/grimoire. */
+export function manPageFor(name: string): string {
+  return doc(grimoire, 'grimoire', name);
+}
+
 /** The `--help` text for a command, from src/content/help. */
 export function helpText(name: string): string {
   return doc(helps, 'help', name);

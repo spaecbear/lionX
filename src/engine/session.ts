@@ -11,6 +11,7 @@ import {
 import { newProgress, type DutyTemplate } from './progression';
 import { SAVE_VERSION, type SaveData } from './save';
 import { Shell } from './shell';
+import { ProcessTable } from './processes';
 import type { OutStream } from './commands/types';
 
 /** Everything loaded from src/content that a play session needs. */
@@ -58,7 +59,11 @@ export function createSession(o: SessionOptions): GameSession {
   const wing = content.wings[wingId];
   if (!wing) throw new Error(`Unknown wing "${wingId}"`);
   const now = o.now ?? Date.now;
+  const processes = save?.processes
+    ? ProcessTable.load(save.processes, now)
+    : new ProcessTable(now);
   let runner = new LessonRunner(wing, {
+    processes,
     coaching: content.coaching,
     dutyFiles: content.dutyFiles,
     lines: content.lines,
@@ -96,6 +101,7 @@ export function createSession(o: SessionOptions): GameSession {
       TERM: 'xterm-256color',
     },
     onCommandRun: (name, args, status) => runner.recordCommand(name, args, status),
+    processes,
     isUnlocked: (cmd) => cmd.unlockedInAct === 0 || runner.knows(cmd.name),
   });
 
@@ -108,6 +114,7 @@ export function createSession(o: SessionOptions): GameSession {
     const cwd = runner.vfs.cwd;
     if (cwd !== entrance && !cwd.startsWith(entrance + '/')) return [];
     runner = new LessonRunner(next, {
+      processes,
       coaching: content.coaching,
       dutyFiles: content.dutyFiles,
       lines: content.lines,
@@ -117,6 +124,8 @@ export function createSession(o: SessionOptions): GameSession {
     });
     return runner.start();
   };
+
+  if (save?.jobs) shell.jobs?.restore(save.jobs);
 
   return {
     get runner() {
@@ -138,6 +147,8 @@ export function createSession(o: SessionOptions): GameSession {
       progress: structuredClone(runner.progress),
       env: Object.fromEntries(shell.env),
       history: history.slice(-200),
+      processes: processes.snapshot(),
+      jobs: shell.jobs?.snapshot() ?? [],
     }),
   };
 }

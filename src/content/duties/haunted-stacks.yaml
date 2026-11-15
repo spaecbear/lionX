@@ -1,0 +1,120 @@
+# Duties for the Haunted Stacks: spirits to banish, spare, and raise.
+templates:
+  - id: banish-pest
+    spells: [pkill]
+    params:
+      pest: { pick: [ink-mite, dust-sprite, page-louse, wick-gnat, shelf-weevil] }
+    setup:
+      processes:
+        - { name: '{pest}', args: '{pest} --nibble', cpu: 3, spirit: '.' }
+    brief: 'A {pest} is loose in the stacks. It is yours to deal with. Banish it.'
+    hints:
+      - 'Find it by name and send it away.'
+      - '`pkill -x {pest}`, or `kill` its PID from `ps`.'
+      - 'Type: pkill -x {pest}'
+    goal: { not: { processRunning: '{pest}' } }
+    solution: ['pkill -x {pest}']
+
+  - id: stubborn-pest
+    spells: [pkill]
+    params:
+      pest: { pick: [grumbler, nagging-echo, sulker, drone-wasp] }
+    setup:
+      processes:
+        - { name: '{pest}', args: '{pest} --refuse', cpu: 5, ignoresTerm: true, spirit: '~' }
+    brief: 'A {pest} has settled in, and it ignores polite requests. Banish it anyway.'
+    hints:
+      - 'Some spirits ignore the polite signal. One cannot be ignored.'
+      - '`pkill -9 -x {pest}`, or `kill -9` its PID.'
+      - 'Type: pkill -9 -x {pest}'
+    goal: { not: { processRunning: '{pest}' } }
+    solution: ['pkill -9 -x {pest}']
+
+  - id: lionx-pest
+    spells: [sudo, pkill]
+    params:
+      pest: { pick: [snoop, tally-clerk, ward-spider, hush-moth] }
+    setup:
+      processes:
+        - { name: '{pest}', args: '{pest} --watch', user: lionx, cpu: 6, spirit: '>' }
+    brief: 'lionX sent a {pest} to watch you. It belongs to lionx, so you will need authority to banish it.'
+    hints:
+      - "You may only signal your own spirits. Borrow root's authority."
+      - '`sudo pkill -x {pest}`. Your password is oriel.'
+      - 'Type: sudo pkill -x {pest}   then enter your password: oriel'
+    goal: { not: { processRunning: '{pest}' } }
+    solution: ['sudo pkill -x {pest}']
+
+  - id: spare-the-friend
+    spells: [top, pkill]
+    params:
+      hog: { pick: [glutton, page-eater, lamp-drinker, ink-hog] }
+      friend: { pick: [bookmender, dust-sweeper, lamp-keeper, ink-mixer] }
+    setup:
+      processes:
+        - { name: '{hog}', args: '{hog}', cpu: 91, spirit: '>:{' }
+        - { name: '{friend}', args: '{friend} --gently', cpu: 2, spirit: '(*)' }
+    brief: "Something is eating the stacks' strength. Find the spirit hogging the CPU and banish it, but leave the {friend} alone."
+    hints:
+      - 'The busiest spirit is at the top of a live listing.'
+      - '`top` (or `top -b -n 1`) shows the hog; then `pkill -x` it by name.'
+      - 'Type: top -b -n 1   then: pkill -x {hog}'
+    goal:
+      all:
+        - { not: { processRunning: '{hog}' } }
+        - { processRunning: '{friend}' }
+    solution: ['top -b -n 1', 'pkill -x {hog}']
+
+  - id: raise-a-sleeper
+    spells: [sleep]
+    params:
+      n: { int: [300, 900] }
+    cleanup: ['process:sleep']
+    brief: 'The night watch needs a sleeper. Start a sleep of {n} seconds running in the background.'
+    hints:
+      - 'A spell ending in & runs in the background.'
+      - '`sleep {n} &`.'
+      - 'Type: sleep {n} &'
+    goal: { processRunning: sleep }
+    solution: ['sleep {n} &']
+
+  - id: tidy-jobs
+    spells: [sleep, jobs, kill]
+    params:
+      n: { int: [100, 500] }
+    brief: 'Practice: start a sleep of {n} seconds in the background, check it with jobs, then end it.'
+    hints:
+      - 'Start it with &, list it, then send it away by job number.'
+      - '`sleep {n} &`, `jobs`, then `kill %%` (the current job) or its number.'
+      - 'Type: sleep {n} &   then: jobs   then: kill %%'
+    goal: { all: [{ ran: jobs }, { ran: kill }, { not: { processRunning: sleep } }] }
+    cleanup: ['process:sleep']
+    solution: ['sleep {n} &', 'jobs', 'kill %%']
+
+  - id: census
+    spells: [ps]
+    params:
+      who: { pick: [the-night-porter, the-binders, the-lamplighters] }
+    brief: '{who} want a census of every spirit in the Archive, with owners. Show it.'
+    hints:
+      - "ps can show every user's processes in detail."
+      - '`ps aux`.'
+      - 'Type: ps aux'
+    goal: { ran: { command: ps, args: [aux] } }
+    solution: ['ps aux']
+
+  - id: name-the-pid
+    spells: [pgrep, '>']
+    params:
+      spirit: { pick: [cellar-ghost, attic-wisp, stair-shade] }
+    setup:
+      processes:
+        - { name: '{spirit}', args: '{spirit}', cpu: 1, spirit: 'o' }
+    cleanup: ['/home/apprentice/{spirit}.pid']
+    brief: 'The records need the PID of the {spirit}. Write just the number into ~/{spirit}.pid.'
+    hints:
+      - 'Find the PID by name and send it into a book.'
+      - '`pgrep -x {spirit}` prints just the PID; `>` it into the book.'
+      - 'Type: pgrep -x {spirit} > ~/{spirit}.pid'
+    goal: { contains: { path: '/home/apprentice/{spirit}.pid', pattern: '^\d+$' } }
+    solution: ['pgrep -x {spirit} > ~/{spirit}.pid']
