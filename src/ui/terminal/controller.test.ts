@@ -2,7 +2,7 @@ import { Terminal } from '@xterm/headless';
 import { createRegistry } from '../../engine/commands';
 import { Shell } from '../../engine/shell';
 import { buildWorld } from '../../engine/vfs';
-import { formatColumns, TerminalController } from './controller';
+import { formatColumns, TerminalController, wrapText } from './controller';
 
 /** A real xterm.js emulator (headless) so tests can read what is on screen. */
 async function setup(cols = 80, opts: { history?: string[] } = {}) {
@@ -286,4 +286,23 @@ describe('TerminalController regressions', () => {
     await type('\r');
     expect(screen().slice(-3)).toEqual(['a', 'b', P]);
   });
+});
+
+describe('TerminalController mobile input', () => {
+  it('normalizes smart quotes from phone keyboards before running', async () => {
+    const { type, screen } = await setup();
+    await type('echo “hi there”\r');
+    expect(screen().slice(-2)).toEqual(['hi there', P]);
+  });
+});
+
+describe('wrapText', () => {
+  it.each<[string, number, string]>([
+    ['the glass knows', 9, 'the glass\nknows'],
+    ['a b\nc', 10, 'a b\nc'],
+    ['abcdefghij', 4, 'abcd\nefgh\nij'],
+    ['x abcdefgh', 4, 'x\nabcd\nefgh'],
+    ['', 5, ''],
+    ['keep', 0, 'keep'],
+  ])('%j at %i', (text, w, want) => expect(wrapText(text, w)).toBe(want));
 });

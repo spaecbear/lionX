@@ -2,6 +2,7 @@ import { complete, parse, ShellSyntaxError, type Shell } from '../../engine/shel
 import { History } from './history';
 import { KEY, splitKeys } from './keys';
 import { LineBuffer } from './lineBuffer';
+import { normalizeSmartPunctuation } from '../mobile/input';
 
 /** The part of xterm.js the controller needs, so tests can use a fake. */
 export interface TerminalLike {
@@ -64,13 +65,13 @@ export class TerminalController {
   }
 
   start() {
-    if (this.opts.motd) this.writeOutput(this.opts.motd);
+    if (this.opts.motd) this.writeOutput(wrapText(this.opts.motd, this.term.cols));
     this.showPrompt();
   }
 
   /** Feed raw terminal input (from xterm onData). Resolves when it has been processed. */
   handleData(data: string): Promise<void> {
-    this.queue.push(...splitKeys(data));
+    this.queue.push(...splitKeys(normalizeSmartPunctuation(data)));
     this.drain = this.drain.then(() => this.processQueue());
     return this.drain;
   }
@@ -268,4 +269,33 @@ export function formatColumns(names: string[], width: number): string {
     lines.push(line.trimEnd());
   }
   return lines.join('\r\n');
+}
+
+/** Word-wrap prose to `width` columns so narrow screens don't split words. Long words are split. */
+export function wrapText(text: string, width: number): string {
+  if (width < 1) return text;
+  return text
+    .split('\n')
+    .map((line) => {
+      const out: string[] = [];
+      let cur = '';
+      for (const word of line.split(' ')) {
+        let w = word;
+        while (w.length > width) {
+          if (cur) out.push(cur);
+          out.push(w.slice(0, width));
+          w = w.slice(width);
+          cur = '';
+        }
+        if (!cur) cur = w;
+        else if (cur.length + 1 + w.length <= width) cur += ' ' + w;
+        else {
+          out.push(cur);
+          cur = w;
+        }
+      }
+      out.push(cur);
+      return out.join('\n');
+    })
+    .join('\n');
 }

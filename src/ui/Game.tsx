@@ -1,0 +1,202 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Terminal as XTerm } from '@xterm/xterm';
+import { FitAddon } from '@xterm/addon-fit';
+import '@xterm/xterm/css/xterm.css';
+import { createRegistry } from '../engine/commands';
+import { Shell } from '../engine/shell';
+import { buildWorld, type WorldSpec } from '../engine/vfs';
+import devWorld from '../content/dev/world.json';
+import { TerminalController } from './terminal/controller';
+import { candlelit, FONT_STACK } from './theme';
+import { KeyBar } from './mobile/KeyBar';
+import { Chips } from './mobile/Chips';
+import { applyCtrl } from './mobile/input';
+import type { BarKey } from './mobile/keys';
+import { fontSizeFor, layoutFor, type Layout } from './mobile/layout';
+import { tapInsertion, withSeparator, wordAt } from './mobile/tap';
+
+const TAP_MAX_MOVE = 8; // px
+const TAP_MAX_MS = 400;
+
+/** Touch controls show on coarse pointers, or anywhere with ?touch=1 for testing. */
+function wantsTouchControls(): boolean {
+  if (new URLSearchParams(location.search).has('touch')) return true;
+  return window.matchMedia('(pointer: coarse)').matches;
+}
+
+/** Advance width of the terminal font as a fraction of its size. */
+function measureCharRatio(): number {
+  const ctx = document.createElement('canvas').getContext('2d');
+  if (!ctx) return 0.6;
+  ctx.font = `100px ${FONT_STACK}`;
+  return ctx.measureText('M').width / 100 || 0.6;
+}
+
+interface Session {
+  term: XTerm;
+  fit: FitAddon;
+  controller: TerminalController;
+  shell: Shell;
+}
+
+/** The whole game: the terminal, plus touch controls styled as part of it. */
+export function Game() {
+  const host = useRef<HTMLDivElement>(null);
+  const session = useRef<Session | null>(null);
+  const ctrlArmed = useRef(false);
+  const [ctrlShown, setCtrlShown] = useState(false);
+  const [touch] = useState(wantsTouchControls);
+  const [layout, setLayout] = useState<Layout>(() => layoutFor(window.innerWidth));
+  const [commands, setCommands] = useState<string[]>([]);
+
+  const setCtrl = (on: boolean) => {
+    ctrlArmed.current = on;
+    setCtrlShown(on);
+  };
+
+  /** Send input to the shell, applying a pending on-screen Ctrl. */
+  const send = useCallback((data: string) => {
+    const s = session.current;
+    if (!s) return;
+    if (ctrlArmed.current) {
+      setCtrl(false);
+      const ctrl = applyCtrl(data);
+      if (ctrl !== null) data = ctrl;
+    }
+    void s.controller.handleData(data);
+  }, []);
+
+  /** Insert text at the cursor with a separating space if needed. */
+  const insert = useCallback(
+    (text: string) => {
+      const s = session.current;
+      if (!s) return;
+      const before = s.controller.line.text.slice(0, s.controller.line.cursor);
+      send(withSeparator(text, before));
+      s.term.focus();
+    },
+    [send],
+  );
+
+  useEffect(() => {
+    const el = host.current!;
+    const charRatio = measureCharRatio();
+    const term = new XTerm({
+      theme: candlelit,
+      fontFamily: FONT_STACK,
+      fontSize: 16,
+      lineHeight: 1.15,
+      cursorBlink: true,
+      cursorStyle: 'block',
+      scrollback: 2000,
+    });
+    const fit = new FitAddon();
+    term.loadAddon(fit);
+    term.open(el);
+
+    // Phone keyboards must not "fix" commands.
+    const ta = el.querySelector('textarea');
+    if (ta) {
+      for (const [k, v] of Object.entries({
+        autocorrect: 'off',
+        autocapitalize: 'off',
+        autocomplete: 'off',
+        spellcheck: 'false',
+        enterkeyhint: 'enter',
+        'aria-label': 'Lexicon input',
+      })) {
+        ta.setAttribute(k, v);
+      }
+    }
+
+    const vfs = buildWorld(devWorld.world as WorldSpec);
+    const registry = createRegistry();
+    const shell = new Shell({
+      vfs,
+      registry,
+      terminal: { stdout: { write() {} }, stderr: { write() {} } },
+      env: { USER: vfs.credentials.user, PWD: vfs.cwd },
+    });
+    const controller = new TerminalController(term, shell, { motd: devWorld.motd });
+    session.current = { term, fit, controller, shell };
+    setCommands(registry.names());
+
+    const resize = () => {
+      const vv = window.visualViewport;
+      const height = vv?.height ?? window.innerHeight;
+      // Size the game to the visible viewport, so the on-screen keyboard never covers the prompt.
+      document.documentElement.style.setProperty('--app-height', `${height}px`);
+      document.documentElement.style.setProperty('--app-top', `${vv?.offsetTop ?? 0}px`);
+      const width = el.clientWidth - 20; // minus horizontal padding
+      setLayout(layoutFor(window.innerWidth));
+      const size = fontSizeFor(width, charRatio);
+      if (term.options.fontSize !== size) term.options.fontSize = size;
+      fit.fit();
+      term.scrollToBottom();
+    };
+    resize();
+    controller.start();
+
+    const sub = term.onData((d) => send(d));
+    term.focus();
+
+    // Tap a filename or directory in the output to insert it at the cursor.
+    let down: { x: number; y: number; t: number } | null = null;
+    const onDown = (e: PointerEvent) => {
+      down = { x: e.clientX, y: e.clientY, t: performance.now() };
+    };
+    const onUp = (e: PointerEvent) => {
+      const start = down;
+      down = null;
+      if (!start) return;
+      const moved = Math.hypot(e.clientX - start.x, e.clientY - start.y);
+      if (moved > TAP_MAX_MOVE || performance.now() - start.t > TAP_MAX_MS) return;
+      if (term.hasSelection()) return;
+      const screen = el.querySelector('.xterm-screen')?.getBoundingClientRect();
+      if (!screen) return;
+      const col = Math.floor(((e.clientX - screen.left) / screen.width) * term.cols);
+      const row = Math.floor(((e.clientY - screen.top) / screen.height) * term.rows);
+      const buf = term.buffer.active;
+      const line = buf.getLine(buf.viewportY + row)?.translateToString(true) ?? '';
+      const hit = wordAt(line, col);
+      const text = hit && tapInsertion(hit.word, shell.vfs);
+      if (text) insert(text);
+    };
+    el.addEventListener('pointerdown', onDown, true); // capture: xterm stops bubbling
+    el.addEventListener('pointerup', onUp, true);
+
+    const ro = new ResizeObserver(resize);
+    ro.observe(el);
+    window.visualViewport?.addEventListener('resize', resize);
+    window.visualViewport?.addEventListener('scroll', resize);
+
+    return () => {
+      ro.disconnect();
+      window.visualViewport?.removeEventListener('resize', resize);
+      window.visualViewport?.removeEventListener('scroll', resize);
+      el.removeEventListener('pointerdown', onDown, true);
+      el.removeEventListener('pointerup', onUp, true);
+      sub.dispose();
+      term.dispose();
+      session.current = null;
+    };
+  }, [send, insert]);
+
+  const onBarKey = (k: BarKey) => {
+    if (k.send === 'ctrl') setCtrl(!ctrlArmed.current);
+    else send(k.send);
+    session.current?.term.focus();
+  };
+
+  return (
+    <div className="game" data-layout={layout} data-touch={touch ? 'on' : 'off'}>
+      <div ref={host} className="terminal-host" aria-label="Archive terminal" />
+      {touch && (
+        <div className="touch-controls">
+          <Chips commands={commands} onChip={(name) => insert(name + ' ')} />
+          <KeyBar ctrlArmed={ctrlShown} onKey={onBarKey} />
+        </div>
+      )}
+    </div>
+  );
+}

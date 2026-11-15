@@ -1,6 +1,6 @@
-import { Terminal } from './Terminal';
+import { Game } from './Game';
 import './app.css';
 
 export function App() {
-  return <Terminal />;
+  return <Game />;
 }

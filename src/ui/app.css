@@ -1,20 +1,130 @@
+:root {
+  --bg: #0d0a06;
+  --amber: #ffb000;
+  --amber-dim: #6b5530;
+  --amber-glow: #ffcc4d;
+  --key-bg: #1a140b;
+  --key-bg-active: #3a2a10;
+}
+
 html,
 body,
 #root {
   margin: 0;
   height: 100%;
-  background: #0d0a06;
+  background: var(--bg);
   overflow: hidden;
+  overscroll-behavior: none;
+}
+
+/* Sized to the *visual* viewport so the on-screen keyboard never hides the prompt. */
+.game {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: var(--app-top, 0px);
+  height: var(--app-height, 100dvh);
+  display: flex;
+  flex-direction: column;
 }
 
 .terminal-host {
+  flex: 1;
+  min-height: 0;
   box-sizing: border-box;
-  height: 100dvh;
-  width: 100vw;
   padding: 8px 10px;
 }
 
-/* xterm adds its own scrollbar area; keep it warm-toned. */
+.game[data-layout='narrow'] .terminal-host {
+  padding: 6px 10px 4px;
+}
+
 .terminal-host .xterm-viewport {
-  scrollbar-color: #5c3d0a #0d0a06;
+  scrollbar-color: var(--amber-dim) var(--bg);
+}
+
+/* Touch controls look like part of the terminal: same glass, dim amber lines. */
+.touch-controls {
+  flex: none;
+  border-top: 1px solid var(--amber-dim);
+  padding-bottom: env(safe-area-inset-bottom);
+  font-family: 'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.chips,
+.keybar {
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.chips::-webkit-scrollbar,
+.keybar::-webkit-scrollbar {
+  display: none;
+}
+
+.chips {
+  gap: 6px;
+  padding: 6px 8px 2px;
+}
+
+.chip {
+  flex: none;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--amber-dim);
+  border-radius: 16px;
+  background: transparent;
+  color: var(--amber);
+  font: inherit;
+  font-size: 14px;
+}
+
+.keybar {
+  scroll-snap-type: x mandatory;
+}
+
+.keybar-page {
+  flex: none;
+  width: 100%;
+  display: flex;
+  gap: 4px;
+  padding: 6px 6px 8px;
+  box-sizing: border-box;
+  scroll-snap-align: start;
+}
+
+.key {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 44px; /* comfortable touch target */
+  padding: 0;
+  border: 1px solid var(--amber-dim);
+  border-radius: 6px;
+  background: var(--key-bg);
+  color: var(--amber);
+  font: inherit;
+  font-size: 17px;
+  touch-action: manipulation;
+}
+
+.key-wide {
+  flex-grow: 1.6;
+  font-size: 13px;
+}
+
+.key:active,
+.chip:active {
+  background: var(--key-bg-active);
+}
+
+.key-armed {
+  background: var(--amber);
+  color: var(--bg);
+  border-color: var(--amber-glow);
+}
+
+.game[data-layout='wide'] .key {
+  min-height: 40px;
 }
