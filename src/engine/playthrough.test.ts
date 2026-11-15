@@ -360,6 +360,6 @@ describe('story mode and secrets', () => {
 
   it('leaves the secret note under the desk', () => {
     const s: GameSession = createSession({ content: loadGameContent(), seed: 1 });
-    expect(s.runner.vfs.readFile('/home/apprentice/.story-mode')).toContain('story on');
+    expect(s.runner.vfs.readFile('/home/apprentice/.psst-type-story-on')).toContain('story on');
   });
 });

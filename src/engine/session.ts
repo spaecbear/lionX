@@ -40,7 +40,7 @@ export interface GameContent {
   secrets?: Secret[];
   achievements?: Achievement[];
   library?: Library;
-  /** The note in ~/.story-mode that tells of the secret story spell. */
+  /** The note in ~/.psst-type-story-on that tells of the secret story spell. */
   storyNote?: string;
 }
 
@@ -249,8 +249,11 @@ export function createSession(o: SessionOptions): GameSession {
   runner.shellState = shellState;
   installSpells(runner.vfs, shell.registry);
   // The secret story spell is written under the desk, for whoever looks with ls -a.
-  const note = `${runner.vfs.home}/.story-mode`;
+  const note = `${runner.vfs.home}/.psst-type-story-on`;
   if (content.storyNote && !runner.vfs.exists(note)) runner.vfs.writeFile(note, content.storyNote);
+  // Saves from before the note was renamed.
+  const oldNote = `${runner.vfs.home}/.story-mode`;
+  if (runner.vfs.exists(oldNote)) runner.vfs.remove(oldNote);
   // Immortal spirits (lionX) return only while their owner's crontab still calls them back.
   processes.respawnGuard = (spec) => (readCrontab(runner.vfs, spec.user) ?? '').includes(spec.name);
   if (!shell.env.has('PATH')) shell.env.set('PATH', DEFAULT_PATH);
