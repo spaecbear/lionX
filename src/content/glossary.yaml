@@ -50,7 +50,7 @@ commands:
       -l: 'counts lines only'
   sort: { says: 'puts lines in order' }
   uniq:
-    says: 'squeezes repeated neighbouring lines into one'
+    says: 'squeezes repeated neighboring lines into one'
     flags:
       -c: 'counts how many times each line repeated'
   echo: { says: 'says the words that follow' }

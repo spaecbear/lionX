@@ -10,12 +10,12 @@ export const QUILL_SGR = {
   art: '\x1b[33m',
   /** Reward art glows a little brighter than banners. */
   reward: '\x1b[1;93m',
-  /** The narrator: grey italics, like stage directions. */
+  /** The narrator: gray italics, like stage directions. */
   narrator: '\x1b[3;37m',
   reset: '\x1b[0m',
 };
 
-/** Who is talking: Quill (labelled), or the narrator (no label, set in from the edge). */
+/** Who is talking: Quill (labeled), or the narrator (no label, set in from the edge). */
 export type Voice = 'quill' | 'narrator';
 const NARRATOR_INDENT = '  ';
 

@@ -107,7 +107,7 @@ export const highContrast: ITheme = {
   brightWhite: '#ffffff',
 };
 
-/** Ember: a secret colour, found hidden in the Archive. */
+/** Ember: a secret color, found hidden in the Archive. */
 export const ember: ITheme = {
   background: '#120604',
   foreground: '#ff7a45',
@@ -133,7 +133,7 @@ export const ember: ITheme = {
   brightWhite: '#fff0e8',
 };
 
-/** Rose: a secret colour, found hidden in the Archive. */
+/** Rose: a secret color, found hidden in the Archive. */
 export const rose: ITheme = {
   background: '#140a0e',
   foreground: '#ff9ec4',
@@ -159,7 +159,7 @@ export const rose: ITheme = {
   brightWhite: '#fff4f8',
 };
 
-/** Ink: a secret colour, found hidden in the Archive. */
+/** Ink: a secret color, found hidden in the Archive. */
 export const ink: ITheme = {
   background: '#0c0814',
   foreground: '#c8a8ff',
@@ -185,7 +185,7 @@ export const ink: ITheme = {
   brightWhite: '#f8f4ff',
 };
 
-/** Moonlight: a secret colour, found hidden in the Archive. */
+/** Moonlight: a secret color, found hidden in the Archive. */
 export const moonlight: ITheme = {
   background: '#070a12',
   foreground: '#c8d4ec',
@@ -211,7 +211,7 @@ export const moonlight: ITheme = {
   brightWhite: '#ffffff',
 };
 
-/** Frost: a secret colour, found hidden in the Archive. */
+/** Frost: a secret color, found hidden in the Archive. */
 export const frost: ITheme = {
   background: '#06101a',
   foreground: '#a8e8ff',
@@ -237,7 +237,7 @@ export const frost: ITheme = {
   brightWhite: '#ffffff',
 };
 
-/** Moss: a secret colour, found hidden in the Archive. */
+/** Moss: a secret color, found hidden in the Archive. */
 export const moss: ITheme = {
   background: '#070d08',
   foreground: '#9ad88a',

@@ -57,7 +57,7 @@ describe('loadWing', () => {
     ['bad yaml', () => {}, /invalid YAML/],
     ['missing lessons', (d) => delete (d as Partial<Doc>).lessons, /lessons: expected a list/],
     ['empty lessons', (d) => (d.lessons = []), /at least one lesson/],
-    ['unknown field', (d) => (d.colour = 'red'), /\(root\)\.colour: unknown field/],
+    ['unknown field', (d) => (d.color = 'red'), /\(root\)\.color: unknown field/],
     ['two hints', (d) => (step(d).hints = ['a', 'b']), /steps\[0\]\.hints: expected exactly 3/],
     ['unknown goal', (d) => (step(d).goal = { glows: '/x' }), /unknown goal "glows"/],
     ['two goal kinds', (d) => (step(d).goal = { exists: '/a', isDir: '/b' }), /exactly one kind/],
