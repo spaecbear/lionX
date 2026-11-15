@@ -68,6 +68,31 @@ export interface Achievement {
   when: AchievementWhen;
 }
 
+/** One page of the Book of Eco, filed in ~/library when read. */
+export interface LibraryPage {
+  id: string;
+  title: string;
+  /** Placed once this wing begins. */
+  wing: string;
+  /** And only after this wing is mended. */
+  after?: string;
+  file: string;
+  text: string;
+  /** Narrator, when it is placed somewhere visible. */
+  appears?: string;
+  /** The hint on its placeholder while missing. */
+  where: string;
+}
+
+export interface Library {
+  title: string;
+  firstFiled: string;
+  filed: string;
+  complete: string;
+  missing: string;
+  pages: LibraryPage[];
+}
+
 /** A hidden note that unlocks one cosmetic (a theme or a song) when read. */
 export interface Secret {
   id: string;

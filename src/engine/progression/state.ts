@@ -23,6 +23,8 @@ export interface ProgressState {
   songs?: string[];
   /** Achievements earned. */
   achievements?: string[];
+  /** Pages of the Book of Eco found. */
+  library?: string[];
   /** Spells and symbols ever used successfully (for achievements). */
   used?: string[];
   /** Duties finished swiftly. */

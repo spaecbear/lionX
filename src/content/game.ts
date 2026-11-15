@@ -4,8 +4,10 @@ import {
   loadQuillLines,
   loadSecrets,
   loadAchievements,
+  loadLibrary,
   loadWing,
 } from '../engine/content';
+import librarySource from './library.yaml?raw';
 import achievementsSource from './achievements.yaml?raw';
 import secretsSource from './secrets.yaml?raw';
 import { loadGlossary } from '../engine/narrative';
@@ -33,5 +35,6 @@ export function loadGameContent(): GameContent {
     glossary: loadGlossary(glossarySource),
     secrets: loadSecrets(secretsSource),
     achievements: loadAchievements(achievementsSource),
+    library: loadLibrary(librarySource),
   };
 }

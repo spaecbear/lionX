@@ -1,5 +1,5 @@
 import { createRegistry } from './commands';
-import type { Achievement, CoachingRule, QuillLines, Secret, Wing } from './content';
+import type { Achievement, Library, CoachingRule, QuillLines, Secret, Wing } from './content';
 import {
   createDutyCommand,
   createQuestsCommand,
@@ -39,6 +39,7 @@ export interface GameContent {
   /** Hidden notes that unlock themes and songs. */
   secrets?: Secret[];
   achievements?: Achievement[];
+  library?: Library;
 }
 
 export interface SessionOptions {
@@ -134,6 +135,7 @@ export function createSession(o: SessionOptions): GameSession {
     glossary: content.glossary,
     secrets: content.secrets,
     achievements: content.achievements,
+    library: content.library,
     progress: save
       ? structuredClone(save.progress)
       : newProgress(o.seed ?? Math.floor(now() % 2 ** 32)),
@@ -182,6 +184,7 @@ export function createSession(o: SessionOptions): GameSession {
       glossary: content.glossary,
       secrets: content.secrets,
       achievements: content.achievements,
+      library: content.library,
       progress: runner.progress,
       vfs: runner.vfs,
       now,

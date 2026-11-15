@@ -15,6 +15,7 @@ import {
   type WorldPatch,
   Secret,
   Achievement,
+  Library,
 } from './schema';
 
 export class ContentError extends Error {}
@@ -639,4 +640,23 @@ export function loadAchievements(yamlText: string, source = 'achievements.yaml')
     seen.add(a.id as string);
     return a as unknown as Achievement;
   });
+}
+
+/** Parse the Book of Eco (src/content/library.yaml). */
+export function loadLibrary(yamlText: string, source = 'library.yaml'): Library {
+  const raw = parseYaml(yamlText) as Record<string, unknown>;
+  for (const k of ['title', 'firstFiled', 'filed', 'complete', 'missing'])
+    if (typeof raw?.[k] !== 'string') throw new Error(`${source}: ${k} must be text`);
+  if (!Array.isArray(raw.pages) || raw.pages.length === 0)
+    throw new Error(`${source}: needs pages`);
+  const seen = new Set<string>();
+  raw.pages.forEach((p: Record<string, unknown>, i: number) => {
+    const where = `${source}: pages[${i}]`;
+    for (const k of ['id', 'title', 'wing', 'file', 'text', 'where'])
+      if (typeof p[k] !== 'string') throw new Error(`${where}: ${k} must be text`);
+    if (!(p.file as string).startsWith('/')) throw new Error(`${where}: file must be absolute`);
+    if (seen.has(p.id as string)) throw new Error(`${where}: duplicate id ${p.id}`);
+    seen.add(p.id as string);
+  });
+  return raw as unknown as Library;
 }

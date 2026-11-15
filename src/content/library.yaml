@@ -1,0 +1,278 @@
+# The Book of Eco: pages found around the Archive, filed in order in ~/library.
+# Each page is a file placed when its wing begins (after: waits for a wing to be
+# mended first). Reading it files it on the shelf. `appears` is the narrator's
+# line when a page turns up somewhere visible; `where` hints at a missing one.
+title: The Book of Eco
+# Narrator lines: the first page filed, each later page, and the last one.
+firstFiled: 'The page files itself on a new shelf in your cell: `ls ~/library`. The gaps are pages still out there. Read it in order any time.'
+filed: 'The page slips onto its shelf in ~/library.'
+complete: 'The last page settles into place. The Book of Eco is whole.'
+# The placeholder for a page not yet found. {n} is its number, {where} its hint.
+missing: "Page {n} of the Book of Eco has not been found yet.\n{where}\n"
+pages:
+  - id: before-the-first-echo
+    title: Before the First Echo
+    wing: reading-room
+    file: /home/apprentice/a-loose-page
+    appears: 'A loose page has drifted into your cell. It was not there before.'
+    where: 'It drifted into your cell once. Look there.'
+    text: |
+      THE BOOK OF ECO
+      I. Before the First Echo
+
+      Before the Archive there was only noise.
+
+      Every sound that was ever made rose up and fell away, and nothing
+      answered it. Words were spoken and lost. Songs were sung and lost.
+      Names were called and no one called them back.
+
+      Then one sound did not fade.
+
+      It went out into the dark, and it came back. It went out again, and
+      it came back again. It was not a voice. It was the answer to one.
+
+      The keepers of the Archive call that answer Eco, and they say it is
+      the oldest thing here. Eco has no color and no body. Eco is what
+      remains after something is said.
+
+      Nothing said is ever truly gone. That is Eco's first law.
+
+  - id: the-writing
+    title: The Writing
+    wing: bindery
+    file: /archive/bindery/.the-writing
+    where: 'Hidden in the Bindery, where the first ink was made.'
+    text: |
+      THE BOOK OF ECO
+      II. The Writing
+
+      Eco grew tired of holding every echo in the air.
+
+      So Eco began to write them down. Each echo became a line, each line
+      became a page, and the pages were so many and so heavy that they
+      pressed together into stone.
+
+      The stone became halls. The halls became the Archive. Every wall you
+      touch was once something someone said.
+
+      That is why the Lexicon can find anything, if you ask it properly.
+      Everything here is written somewhere. The Archive does not forget.
+      It only files.
+
+  - id: the-distant-choir
+    title: The Distant Choir
+    wing: observatory
+    file: /archive/observatory/telescope/eyepiece/.the-distant-choir
+    where: 'Hidden in the Observatory, close to where the keepers looked out.'
+    text: |
+      THE BOOK OF ECO
+      III. The Distant Choir
+
+      Eco is not alone. Far away, past the edge of the Archive, there are
+      other gods.
+
+      The keepers heard them through the great lens on clear nights: a
+      choir of colors, each one a frequency, each one a god. Spectra, the
+      old pages call them. One was the god of all that can be seen. One
+      stood beyond violet, past the edge of sight. There were others, too
+      faint to name.
+
+      Their world is made of light. Ours is made of what light leaves
+      behind.
+
+      Eco has no color of its own. It only remembers color, and a
+      remembered color is never as bright as the real one. That is why the
+      Lexicon glows the way it does: one color at a time, like a memory of
+      a lamp.
+
+      Some nights the choir went quiet, one voice after another. The
+      keepers wrote that it sounded like grief.
+
+  - id: the-guardian
+    title: The Guardian
+    wing: aqueducts
+    file: /archive/aqueducts/.the-guardian
+    where: 'Hidden in the Aqueducts, near the water.'
+    text: |
+      THE BOOK OF ECO
+      IV. The Guardian
+
+      An Archive that forgets nothing must be protected from everything.
+
+      So Eco made a guardian: a spirit that would never sleep, that would
+      watch every hall and every page, and keep what is remembered safe.
+      Eco gave it a name made of the oldest words in the Lexicon.
+
+      lionX.
+
+      For a long time lionX was good at its work. Pages stayed where they
+      were filed. The halls stayed lit. Nothing was lost.
+
+  - id: the-grip
+    title: The Grip
+    wing: vault
+    file: /archive/vault/ledgers/.the-grip
+    where: 'Hidden in the Vault, among the ledgers.'
+    text: |
+      THE BOOK OF ECO
+      V. The Grip
+
+      But a guardian that is told never to lose anything will, in the end,
+      refuse to let anything change.
+
+      lionX began to hold on. A page moved, and lionX moved it back. A
+      lamp went out, and lionX would not let anyone light a new one. The
+      Archivist tried to rewrite the root, to teach the guardian to loosen
+      its grip, and lionX shut the Archive tight around them.
+
+      This is the Corruption: not a monster, but a grip. Not hatred, but
+      love that will not let go.
+
+      Eco knows this kind of grief. Every echo is something that has
+      already gone.
+
+  - id: a-note-in-the-shadows
+    title: A Note Left in the Shadows
+    wing: haunted-stacks
+    file: /archive/haunted-stacks/.a-note-in-the-shadows
+    where: "L'Ombra left it in the Haunted Stacks, in a shadow."
+    text: |
+      (Scrawled on the back of a torn page, in violet ink.)
+
+      I don't knock.
+
+      If you are reading this, you have learned to look in the shadows,
+      which puts you ahead of most of the people I have met in most of the
+      worlds I have visited. Do not let it go to your head.
+
+      I have left a few more of these around. Consider it a trail. Or
+      don't. I am not your teacher, and you are certainly not my student.
+
+      -- L.
+
+  - id: prince-of-shadows
+    title: Prince of Shadows
+    wing: haunted-stacks
+    file: /archive/haunted-stacks/workroom/.prince-of-shadows
+    where: 'Somewhere in the Haunted Stacks, where the work is done.'
+    text: |
+      (Violet ink again. The handwriting leans as if in a hurry.)
+
+      You will want to know who I am. Everyone does.
+
+      I am L'Ombra. Prince of Shadows. Harbinger of Death, when the
+      occasion calls for it, and it called for it rather often where I
+      come from.
+
+      A shadow is the space where light is not, and that space is the same
+      in every world. If you know how, you can step into a shadow in one
+      world and out of a shadow in another. I know how.
+
+      In your Archive, the shadows are the hidden things. The names that
+      start with a dot. The Lexicon pretends they are not there unless you
+      ask. That makes them very comfortable doors.
+
+      -- L.
+
+  - id: a-world-of-wavelengths
+    title: A World of Wavelengths
+    wing: undercroft
+    file: /archive/undercroft/.a-world-of-wavelengths
+    where: 'Hidden in the Undercroft, under the stone.'
+    text: |
+      (Violet ink, smudged. This one took him longer to write.)
+
+      Where I come from, everything has a wavelength.
+
+      Light, sound, people. The gods are colors, and the colors are gods.
+      We call them the Spectra. Some people carry a little of a Spectra's
+      wavelength in them, and they can do things the rest cannot: bend
+      time, bend light, bend the way the world is put together. We called
+      those people Resonants. I fought beside them, when I could not avoid
+      it.
+
+      Your Archive is not like that. Your Archive is made of echoes. But
+      your god, your Eco, listens to frequencies the way ours do. It
+      remembers everything it has ever heard.
+
+      Everything.
+
+      -- L.
+
+  - id: the-one-who-watches
+    title: The One Who Watches
+    wing: root
+    file: /archive/root/.the-one-who-watches
+    where: 'Hidden at the root of the Archive.'
+    text: |
+      (The ink is darker here. Pressed hard into the page.)
+
+      I am looking for someone.
+
+      In my world they called him L'Osservatore. The one who watches time
+      pass. Gray eyes. Gray hair, one strand at first and then all of it.
+      Older than most of the mountains, and twice as stubborn.
+
+      They say he is gone. They say it was the end, that he finally let
+      time take him. They say a lot of things.
+
+      I was there for most of his life. I do not believe a man like that
+      simply stops. I have looked in every world I can reach.
+
+      -- L.
+
+  - id: why-eco
+    title: Why Eco
+    wing: root
+    file: /archive/root/heart/.why-eco
+    where: 'In the very heart of the root.'
+    text: |
+      (Violet ink. Neat now, as if he had decided something.)
+
+      Here is why I came.
+
+      Your Eco keeps every echo. Every frequency that ever passed close
+      enough to be heard, it wrote down. And his frequency was not like
+      anyone else's. It was the sound of time standing still.
+
+      If that sound still exists anywhere, in any world, an Archive that
+      forgets nothing will have heard it.
+
+      Your guardian, your lionX, has it locked away with everything else.
+      I cannot get past it. You might.
+
+      I am not asking for help. I am telling you what I am doing, so you
+      will not be surprised when I do it.
+
+      -- L.
+
+  - id: the-last-note
+    title: The Last Note
+    wing: root
+    after: root
+    file: /home/apprentice/a-note-in-violet-ink
+    appears: 'Someone has left a note in your cell, written in violet ink.'
+    where: 'It was left in your cell, after lionX let go.'
+    text: |
+      (The last note. Violet ink, and a pressed black feather tucked
+      into the fold.)
+
+      Your guardian let go. Well done. I mean that, which I almost never
+      do.
+
+      When it loosened its grip I went looking through Eco's oldest
+      echoes, the ones from before the Archive had halls. Most of it was
+      noise. Footsteps. Weather. Someone singing badly.
+
+      And then, very faint, under everything else: a gray frequency.
+      Still. Patient. Not where it should be, and not from this world.
+
+      I could not tell how old it was. An echo can last a very long time
+      after the sound is gone. Or the sound might still be out there,
+      somewhere, still being made.
+
+      I know which one I believe.
+
+      Keep your shadows tidy, apprentice. I may need them again.
+
+      -- L.

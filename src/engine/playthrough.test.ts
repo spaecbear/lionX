@@ -219,3 +219,38 @@ describe('achievements', () => {
     expect(s.afterCommand('pwd', 0, '').some((n) => n.kind === 'achievement')).toBe(false);
   });
 });
+
+describe('the Book of Eco', () => {
+  it('every page turns up in a full playthrough and files itself on ~/library in order', async () => {
+    const { session } = await playToBindery(1);
+    const lib = loadGameContent().library!;
+    const vfs = session.runner.vfs;
+    expect(lib.pages.filter((p) => !vfs.exists(p.file)).map((p) => p.file)).toEqual([]);
+    const said: string[] = [];
+    for (const p of lib.pages) {
+      await session.shell.run(`cat ${p.file}`);
+      for (const n of session.afterCommand(`cat ${p.file}`, 0, ''))
+        if (n.kind === 'narrator') said.push(n.text);
+    }
+    expect(session.runner.progress.library).toHaveLength(lib.pages.length);
+    expect(vfs.readdir('/home/apprentice/library')).toEqual(
+      lib.pages.map((p, i) => `${String(i + 1).padStart(2, '0')}-${p.id}`),
+    );
+    expect(said.at(-1)).toBe(lib.complete);
+  });
+
+  it('shows gaps as missing pages with a hint', async () => {
+    const s: GameSession = createSession({ content: loadGameContent(), seed: 1 });
+    s.opening();
+    const lib = loadGameContent().library!;
+    const vfs = s.runner.vfs;
+    // Drop page 1 into the cell as the Reading Room would, then read it.
+    vfs.writeFile(lib.pages[0].file, lib.pages[0].text);
+    await s.shell.run('pwd');
+    s.afterCommand('pwd', 0, '');
+    vfs.readFile(lib.pages[0].file);
+    const said = s.afterCommand('true', 0, '');
+    expect(said).toContainEqual({ kind: 'narrator', text: lib.firstFiled });
+    expect(vfs.readFile('/home/apprentice/library/02-missing')).toContain(lib.pages[1].where);
+  });
+});

@@ -12,12 +12,22 @@ export const QUILL_SGR = {
   reward: '\x1b[1;93m',
   /** The narrator: gray italics, like stage directions. */
   narrator: '\x1b[3;37m',
+  /** L'Ombra: a shadow's violet. */
+  lombraLabel: '\x1b[1;95m',
+  lombra: '\x1b[95m',
   reset: '\x1b[0m',
 };
 
 /** Who is talking: Quill (labeled), or the narrator (no label, set in from the edge). */
-export type Voice = 'quill' | 'narrator';
+export type Voice = 'quill' | 'narrator' | 'lombra';
 const NARRATOR_INDENT = '  ';
+
+/** How each voice is labelled and colored. */
+const VOICES: Record<Voice, { label: string; labelSgr: string | null; text: string }> = {
+  quill: { label: 'Quill: ', labelSgr: QUILL_SGR.label, text: QUILL_SGR.text },
+  narrator: { label: NARRATOR_INDENT, labelSgr: null, text: QUILL_SGR.narrator },
+  lombra: { label: "L'Ombra: ", labelSgr: QUILL_SGR.lombraLabel, text: QUILL_SGR.lombra },
+};
 
 export const QUILL_LABEL = 'Quill: ';
 
@@ -82,12 +92,13 @@ export function wrapQuill(text: string, cols: number, label = QUILL_LABEL): Styl
 
 /** Render rows to escape-coded strings, one per character, for the typewriter. */
 export function renderQuill(text: string, cols: number, voice: Voice = 'quill'): string[] {
-  const label = voice === 'quill' ? QUILL_LABEL : NARRATOR_INDENT;
-  const textSgr = voice === 'quill' ? QUILL_SGR.text : QUILL_SGR.narrator;
+  const v = VOICES[voice];
+  const label = v.label;
+  const textSgr = v.text;
   const rows = wrapQuill(text, cols, label);
   const indent = cols >= 30 ? ' '.repeat(label.length) : '';
   const pieces: string[] = [
-    voice === 'quill' ? QUILL_SGR.label + QUILL_LABEL.trimEnd() + QUILL_SGR.reset + ' ' : label,
+    v.labelSgr ? v.labelSgr + label.trimEnd() + QUILL_SGR.reset + ' ' : label,
   ];
   rows.forEach((row, r) => {
     if (r > 0) pieces.push('\r\n' + indent);

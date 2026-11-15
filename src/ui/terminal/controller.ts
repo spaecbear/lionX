@@ -234,7 +234,7 @@ export class TerminalController {
           const pieces = renderQuill(
             item.text,
             this.term.cols,
-            item.kind === 'narrator' ? 'narrator' : 'quill',
+            item.kind === 'narrator' ? 'narrator' : (item.who ?? 'quill'),
           );
           if (delay <= 0 || this.skipSpeechFlag) {
             this.term.write(pieces.join(''));

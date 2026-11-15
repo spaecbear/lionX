@@ -6,6 +6,7 @@ import type {
   Reward,
   Secret,
   Achievement,
+  Library,
   Step,
   Wing,
 } from '../content';
@@ -34,7 +35,7 @@ import type { WorldPatch } from '../content';
 /** Something the UI should present, in order. */
 export type Narration =
   /** A line spoken by Quill (typewriter effect in the UI). */
-  | { kind: 'quill'; text: string }
+  | { kind: 'quill'; text: string; who?: 'lombra' }
   /** The narrator: what happens around the player, not anyone's speech. */
   | { kind: 'narrator'; text: string }
   /** An achievement, just earned. */
@@ -82,6 +83,8 @@ export interface RunnerOptions {
   glossary?: Glossary;
   /** Hidden notes that unlock cosmetics, placed as their wing begins. */
   secrets?: Secret[];
+  /** The Book of Eco: pages filed in ~/library. */
+  library?: Library;
   /** Achievements, checked after every command. */
   achievements?: Achievement[];
   /** Every loaded duty template, by file id. The wing names which files it draws from. */
@@ -280,6 +283,7 @@ export class LessonRunner {
     out.push(...quill(this.wing.intro));
     out.push(...this.beginLesson());
     this.placeSecrets();
+    out.push(...this.placePages());
     return out;
   }
 
@@ -331,9 +335,10 @@ export class LessonRunner {
   }
 
   private respond(line: string, status: number, stderr: string): Narration[] {
-    const out = [...this.pending.splice(0), ...this.announceSecrets()];
+    const out = [...this.pending.splice(0), ...this.announceSecrets(), ...this.announcePages()];
     // Rooms appear as lessons go on; hide any secret whose room now exists.
     this.placeSecrets();
+    out.push(...this.placePages());
     this.fillGrimoire();
     if (line.trim() === '') return out;
     const cur = this.current;
@@ -344,7 +349,7 @@ export class LessonRunner {
     }
     if (/^\s*(hint|solution|status|duty)\b/.test(line)) return out;
     const advice = this.coach(cur.step, line, status, stderr) ?? this.nearMiss(cur.step);
-    if (advice) out.push({ kind: 'quill', text: advice });
+    if (advice) out.push(speech(advice));
     return out;
   }
 
@@ -665,15 +670,79 @@ export class LessonRunner {
   private placeSecrets(): void {
     const found = this.progress.secrets ?? [];
     for (const s of this.opts.secrets ?? []) {
-      if (s.wing !== this.wing.id || found.includes(s.id)) continue;
+      if (!this.reached(s.wing) || found.includes(s.id)) continue;
       const dir = s.file.slice(0, s.file.lastIndexOf('/')) || '/';
       if (!asRootExists(this.vfs, dir) || asRootExists(this.vfs, s.file)) continue;
       this.patch({ files: { [s.file]: s.text } });
     }
   }
 
+  /** This wing is being played, or was finished before (so older saves get its findables too). */
+  private reached(wing: string): boolean {
+    return wing === this.wing.id || this.progress.wingsDone.includes(wing);
+  }
+
+  /** Place pages of the Book of Eco whose wing (and `after`) has come. */
+  private placePages(): Narration[] {
+    const lib = this.opts.library;
+    if (!lib) return [];
+    const found = this.progress.library ?? [];
+    const out: Narration[] = [];
+    for (const p of lib.pages) {
+      if (!this.reached(p.wing) || found.includes(p.id)) continue;
+      if (p.after && !this.progress.wingsDone.includes(p.after)) continue;
+      const dir = p.file.slice(0, p.file.lastIndexOf('/')) || '/';
+      if (!asRootExists(this.vfs, dir) || asRootExists(this.vfs, p.file)) continue;
+      this.patch(
+        { files: { [p.file]: p.text } },
+        { ownedByPlayer: p.file.startsWith(this.user.home) },
+      );
+      if (p.appears) out.push({ kind: 'narrator', text: p.appears });
+    }
+    return out;
+  }
+
+  private pagesJustFound: string[] = [];
+
+  /** File found pages on the shelf, in order, with placeholders for the gaps. */
+  private announcePages(): Narration[] {
+    const lib = this.opts.library;
+    const ids = this.pagesJustFound.splice(0);
+    if (!lib || ids.length === 0) return [];
+    const found = (this.progress.library ??= []);
+    const first = found.length === 0;
+    for (const id of ids) if (!found.includes(id)) found.push(id);
+    const dir = `${this.user.home}/library`;
+    const files: Record<string, string> = {};
+    const gone: string[] = [];
+    lib.pages.forEach((p, i) => {
+      const n = String(i + 1).padStart(2, '0');
+      if (found.includes(p.id)) {
+        files[`${dir}/${n}-${p.id}`] = p.text;
+        gone.push(`${dir}/${n}-missing`);
+      } else {
+        files[`${dir}/${n}-missing`] = lib.missing
+          .replace('{n}', String(i + 1))
+          .replace('{where}', p.where);
+      }
+    });
+    this.patch({ files }, { ownedByPlayer: true });
+    asRoot(this.vfs, () => {
+      for (const g of gone) if (this.vfs.exists(g)) this.vfs.remove(g);
+    });
+    const done = found.length >= lib.pages.length;
+    return [{ kind: 'narrator', text: done ? lib.complete : first ? lib.firstFiled : lib.filed }];
+  }
+
   /** A secret was read: unlock its theme or song, and let the narrator say so. */
   private noticeSecret(path: string): void {
+    const page = this.opts.library?.pages.find((p) => p.file === path);
+    if (
+      page &&
+      !(this.progress.library ?? []).includes(page.id) &&
+      !this.pagesJustFound.includes(page.id)
+    )
+      this.pagesJustFound.push(page.id);
     const s = this.opts.secrets?.find((x) => x.file === path);
     const found = (this.progress.secrets ??= []);
     if (!s || found.includes(s.id)) return;
@@ -782,6 +851,16 @@ function dutyStep(d: Duty): Step {
   };
 }
 
+function asRoot<T>(vfs: Vfs, f: () => T): T {
+  const saved = vfs.credentials;
+  vfs.credentials = { user: 'root', groups: ['root'] };
+  try {
+    return f();
+  } finally {
+    vfs.credentials = saved;
+  }
+}
+
 function asRootExists(vfs: Vfs, p: string): boolean {
   const saved = vfs.credentials;
   vfs.credentials = { user: 'root', groups: ['root'] };
@@ -792,6 +871,17 @@ function asRootExists(vfs: Vfs, p: string): boolean {
   }
 }
 
+/**
+ * Turn content lines into speech. Quill speaks by default; a line starting
+ * "@lombra " is L'Ombra's, and "@narrator " is the narrator's.
+ */
+export function speech(text: string): Narration {
+  const m = /^@(lombra|narrator) (.*)$/s.exec(text);
+  if (!m) return { kind: 'quill', text };
+  if (m[1] === 'narrator') return { kind: 'narrator', text: m[2] };
+  return { kind: 'quill', text: m[2], who: 'lombra' };
+}
+
 function quill(lines: string[] | undefined): Narration[] {
-  return (lines ?? []).map((text) => ({ kind: 'quill', text }));
+  return (lines ?? []).map(speech);
 }
