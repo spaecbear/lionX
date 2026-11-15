@@ -49,6 +49,10 @@ export interface ProcSpec {
   tty?: string;
   /** Remove any process of the same name first (used when content wakes a fresh one). */
   replace?: boolean;
+  /** Niceness, -20 (greedy) to 19 (generous). Default 0. */
+  nice?: number;
+  /** A shadow: whatever ends it, it is back at once, with the same PID. */
+  shadow?: boolean;
 }
 
 export interface Proc {
@@ -70,6 +74,11 @@ export interface Proc {
   immortal: boolean;
   spirit: string | null;
   tty: string;
+  /** Niceness, -20 to 19. */
+  nice: number;
+  /** CPU share at niceness 0; a nicer process takes less. */
+  baseCpu: number;
+  shadow: boolean;
 }
 
 export interface TableSnapshot {
@@ -130,7 +139,11 @@ export class ProcessTable {
       immortal: !!spec.immortal,
       spirit: spec.spirit ?? null,
       tty: spec.tty ?? '?',
+      nice: 0,
+      baseCpu: spec.cpu ?? 0,
+      shadow: !!spec.shadow,
     };
+    applyNice(p, spec.nice ?? 0);
     this.procs.set(pid, p);
     return p;
   }
@@ -199,7 +212,28 @@ export class ProcessTable {
     }
   }
 
+  /**
+   * renice, as `user`: anyone may make their own process nicer; only root may
+   * make one greedier, or touch another user's.
+   */
+  setPriority(
+    pid: number,
+    nice: number,
+    user: string,
+  ): { result: 'ok' | 'ESRCH' | 'EPERM' | 'EACCES'; old?: number } {
+    this.tick();
+    const p = this.procs.get(pid);
+    if (!p) return { result: 'ESRCH' };
+    const n = Math.max(-20, Math.min(19, Math.trunc(nice)));
+    if (user !== 'root' && user !== p.user) return { result: 'EPERM', old: p.nice };
+    if (user !== 'root' && n < p.nice) return { result: 'EACCES', old: p.nice };
+    const old = p.nice;
+    applyNice(p, n);
+    return { result: 'ok', old };
+  }
+
   private end(p: Proc, how: 'done' | 'killed') {
+    if (p.shadow && how === 'killed') return; // gone before the signal lands, and back
     this.procs.delete(p.pid);
     this.onExit?.(p, how);
     const spec: ProcSpec = {
@@ -214,6 +248,7 @@ export class ProcessTable {
       immortal: p.immortal,
       spirit: p.spirit ?? undefined,
       tty: p.tty,
+      nice: p.nice,
     };
     if (how === 'killed' && p.immortal) {
       this.pending.push({ spec, at: this.now() + RESPAWN_DELAY_MS });
@@ -248,9 +283,24 @@ export class ProcessTable {
 
   static load(s: TableSnapshot, now: () => number): ProcessTable {
     const t = new ProcessTable(now);
-    for (const p of s.procs) t.procs.set(p.pid, { ...p });
+    // Saves from before niceness existed: everyone starts at 0.
+    for (const p of s.procs)
+      t.procs.set(p.pid, {
+        ...p,
+        nice: p.nice ?? 0,
+        baseCpu: p.baseCpu ?? p.cpu,
+        shadow: p.shadow ?? false,
+      });
     t.nextPid = s.nextPid;
     t.pending = [...s.pending];
     return t;
   }
+}
+
+/** Set niceness, and with it the CPU share: each step of niceness gives a twentieth back. */
+function applyNice(p: Proc, nice: number) {
+  p.nice = nice;
+  const share = nice > 0 ? (20 - nice) / 20 : 1;
+  p.cpu = Math.round(p.baseCpu * share * 10) / 10;
+  if (p.state !== 'T') p.state = p.cpu > 20 ? 'R' : 'S';
 }

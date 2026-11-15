@@ -180,7 +180,7 @@ function topScreen(table: ProcessTable, now: number, rows: number): string {
   out += `%Cpu(s): ${cpu.toFixed(1)} us,  0.0 sy,  0.0 ni, ${(100 - cpu).toFixed(1)} id\n\n`;
   out += '    PID USER      PR  NI    VIRT    RES S  %CPU  %MEM     TIME+ COMMAND\n';
   for (const p of procs.slice(0, Math.max(1, rows - 6))) {
-    out += `${String(p.pid).padStart(7)} ${p.user.slice(0, 8).padEnd(8)}  20   0 ${String(Math.round(p.mem * 8000 + 4000)).padStart(7)} ${String(Math.round(p.mem * 3000 + 1000)).padStart(6)} ${p.state} ${p.cpu.toFixed(1).padStart(5)} ${p.mem.toFixed(1).padStart(5)} ${cpuTime(p, now, true).padStart(9)} ${p.name}\n`;
+    out += `${String(p.pid).padStart(7)} ${p.user.slice(0, 8).padEnd(8)} ${String(20 + p.nice).padStart(3)} ${String(p.nice).padStart(3)} ${String(Math.round(p.mem * 8000 + 4000)).padStart(7)} ${String(Math.round(p.mem * 3000 + 1000)).padStart(6)} ${p.state} ${p.cpu.toFixed(1).padStart(5)} ${p.mem.toFixed(1).padStart(5)} ${cpuTime(p, now, true).padStart(9)} ${p.name}\n`;
   }
   return out;
 }
@@ -468,5 +468,65 @@ export const pkill = {
       else ok = true;
     }
     return ok ? 0 : 1;
+  },
+};
+
+// ----------------------------------------------------------------- renice
+
+/**
+ * util-linux renice: `renice [-n] PRIORITY [-p] PID...`. Sets niceness, the
+ * higher the kinder: a nicer spirit takes less of the Archive's strength.
+ */
+export const renice = {
+  name: 'renice',
+  unlockedInAct: 7,
+  manPage: manPageFor('renice'),
+  help: helpText('renice'),
+  async run(argv: string[], io: IO, ctx: ShellContext): Promise<number> {
+    if (argv[0] === '--help') {
+      io.stdout.write(renice.help);
+      return 0;
+    }
+    const table = needTable('renice', io, ctx);
+    if (!table) return 1;
+    const args = [...argv];
+    if (args[0] === '-n') args.shift();
+    const raw = args.shift();
+    if (raw === undefined || args.length === 0) {
+      io.stderr.write("renice: not enough arguments\nTry 'renice --help' for more information.\n");
+      return 1;
+    }
+    if (!/^[+-]?\d+$/.test(raw)) {
+      io.stderr.write(
+        `renice: invalid priority '${raw}'\nTry 'renice --help' for more information.\n`,
+      );
+      return 1;
+    }
+    let status = 0;
+    for (const a of args) {
+      if (a === '-p') continue;
+      if (!/^\d+$/.test(a)) {
+        io.stderr.write(`renice: invalid process ID argument: '${a}'\n`);
+        status = 1;
+        continue;
+      }
+      const pid = Number(a);
+      const r = table.setPriority(pid, Number(raw), ctx.vfs.credentials.user);
+      if (r.result === 'ESRCH') {
+        io.stderr.write(
+          `renice: failed to get priority for ${pid} (process ID): No such process\n`,
+        );
+        status = 1;
+      } else if (r.result !== 'ok') {
+        io.stderr.write(
+          `renice: failed to set priority for ${pid} (process ID): ${r.result === 'EPERM' ? 'Operation not permitted' : 'Permission denied'}\n`,
+        );
+        status = 1;
+      } else {
+        const now = table.get(pid)!.nice;
+        io.stdout.write(`${pid} (process ID) old priority ${r.old}, new priority ${now}\n`);
+      }
+    }
+    return status;
   },
 };

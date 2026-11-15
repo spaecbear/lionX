@@ -264,3 +264,48 @@ describe('save migration 1 -> 2', () => {
     expect(up.jobs).toEqual([]);
   });
 });
+
+describe('renice and niceness', () => {
+  it('makes your own spirit nicer, which gives back its CPU, and top shows NI', async () => {
+    const g = world();
+    g.table.spawn({ name: 'crow', user: 'apprentice', pid: 4400, cpu: 80 });
+    const r = await g.run('renice 10 4400');
+    expect(r).toEqual({
+      out: '4400 (process ID) old priority 0, new priority 10\n',
+      err: '',
+      status: 0,
+    });
+    expect(g.table.get(4400)!.cpu).toBe(40);
+    expect((await g.run('renice -n 19 -p 4400')).out).toBe(
+      '4400 (process ID) old priority 10, new priority 19\n',
+    );
+    expect((await g.run('top -b -n 1')).out).toMatch(/4400 apprenti +39 +19 .* crow/);
+  });
+
+  it('refuses greed and other people’s spirits without root, like util-linux', async () => {
+    const g = world();
+    g.table.spawn({ name: 'crow', user: 'apprentice', pid: 4400, cpu: 80, nice: 5 });
+    g.table.spawn({ name: 'lamplighter', user: 'archivist', pid: 4300, cpu: 2 });
+    expect((await g.run('renice 0 4400')).err).toBe(
+      'renice: failed to set priority for 4400 (process ID): Permission denied\n',
+    );
+    expect((await g.run('renice 10 4300')).err).toBe(
+      'renice: failed to set priority for 4300 (process ID): Operation not permitted\n',
+    );
+    expect((await g.run('renice 10 9999')).err).toBe(
+      'renice: failed to get priority for 9999 (process ID): No such process\n',
+    );
+    const none = await g.run('renice');
+    expect(none.status).toBe(1);
+    expect(none.err).toBe(
+      "renice: not enough arguments\nTry 'renice --help' for more information.\n",
+    );
+  });
+
+  it('a shadow cannot be ended, even by root', () => {
+    const g = world();
+    g.table.spawn({ name: 'lombra', user: 'lombra', pid: 1313, shadow: true });
+    expect(g.table.signal(1313, 'KILL', 'root')).toBe('ok');
+    expect(g.table.get(1313)?.name).toBe('lombra');
+  });
+});

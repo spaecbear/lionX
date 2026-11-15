@@ -84,6 +84,11 @@ commands:
       -9: 'KILL: the signal no spirit can refuse'
       -STOP: 'STOP: freezes the spirit where it stands'
       -x: 'the whole name must match exactly'
+  renice:
+    says: "makes a spirit nicer, so it takes less of the Archive's strength"
+    flags:
+      -n: { says: 'the new niceness, -20 greedy to 19 generous', takes: true }
+      -p: 'the numbers that follow are PIDs'
   sleep: { says: 'waits for a number of seconds' }
   jobs: { says: 'lists the jobs started from this terminal' }
   bg: { says: 'lets a stopped job run on in the background' }

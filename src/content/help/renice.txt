@@ -1,0 +1,10 @@
+
+Usage:
+ renice [-n|--priority] <priority> [-p|--pid] <pid>...
+
+Alter the priority of running processes.
+
+Options:
+ -n, --priority <num>   specify the nice value
+ -p, --pid              interpret arguments as process ID (default)
+ -h, --help             display this help

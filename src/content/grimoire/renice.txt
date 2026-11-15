@@ -1,0 +1,19 @@
+NAME
+    renice - ask a spirit to take less
+
+SYNOPSIS
+    renice [-n] PRIORITY [-p] PID...
+
+DESCRIPTION
+    Every spirit has a niceness, from -20 (greedy) to 19 (generous).
+    The nicer a spirit is, the less of the Archive's strength it takes,
+    and the more it leaves for everyone else. top shows it in the NI
+    column.
+
+    You may make your own spirits nicer. Only root may make a spirit
+    greedier, or change someone else's.
+
+EXAMPLES
+    renice 10 4321
+    renice -n 19 -p 4321
+    sudo renice -n -5 -p 4321
