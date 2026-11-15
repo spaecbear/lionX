@@ -184,7 +184,7 @@ capstone:
     - 'It is the Archivist. Oriel Vane, thinner and older, holding a lantern that has never gone out.'
     - '"You learned all of it," they say. "Every spell. I could not have ended it alone."'
     - 'The Archivist kneels at the Foundation Stone and calls lionX back. Not as a guardian of the root this time: as a gardener, at the lowest priority, with no authority over anything at all. It purrs.'
-    - '"Even guardians need a supervisor," says Quill. "So do archivists. And familiars, I suppose."'
+    - 'Even guardians need a supervisor. So do archivists. And familiars, I suppose.'
     - "The Archive is yours to wander now. Every room, every spell. Cast `duty` if you want work, `status` to see how far you have come. And thank you, apprentice. No. Archivist's apprentice. That is a real title now."
   unlocks:
     files:

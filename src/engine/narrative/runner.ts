@@ -23,6 +23,8 @@ import type { WorldPatch } from '../content';
 export type Narration =
   /** A line spoken by Quill (typewriter effect in the UI). */
   | { kind: 'quill'; text: string }
+  /** The narrator: what happens around the player, not anyone's speech. */
+  | { kind: 'narrator'; text: string }
   /** An ASCII art piece by name; the UI picks the narrow or wide variant. */
   | { kind: 'art'; name: string; reward?: boolean }
   /** Quiet marker for progress (no text). */
@@ -562,7 +564,7 @@ export class LessonRunner {
         continue;
       this.progress.rewardsGiven.push(r.id);
       this.grant(r);
-      out.push({ kind: 'quill', text: r.say }, { kind: 'event', event: 'reward', id: r.id });
+      out.push({ kind: 'narrator', text: r.say }, { kind: 'event', event: 'reward', id: r.id });
     }
     return out;
   }

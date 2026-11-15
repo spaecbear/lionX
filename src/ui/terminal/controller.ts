@@ -208,8 +208,12 @@ export class TerminalController {
               );
             }
           }
-        } else if (item.kind === 'quill') {
-          const pieces = renderQuill(item.text, this.term.cols);
+        } else if (item.kind === 'quill' || item.kind === 'narrator') {
+          const pieces = renderQuill(
+            item.text,
+            this.term.cols,
+            item.kind === 'narrator' ? 'narrator' : 'quill',
+          );
           if (delay <= 0 || this.skipSpeechFlag) {
             this.term.write(pieces.join(''));
           } else {

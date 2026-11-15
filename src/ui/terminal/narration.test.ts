@@ -44,3 +44,19 @@ describe('Quill formatting', () => {
     expect(plainQuill('Hi `ls`', 80)).toBe('Quill: Hi ls\r\n');
   });
 });
+
+describe('the narrator', () => {
+  it('has no label, sits in from the edge, and wraps under itself', () => {
+    const text = plainQuill(
+      'A second candle appeared on your desk. Quill pretends not to have done it.',
+      40,
+      'narrator',
+    );
+    expect(text.startsWith('  A second')).toBe(true);
+    expect(text).not.toContain('Quill:');
+    for (const row of text.split('\r\n').filter(Boolean)) {
+      expect(row.startsWith('  ')).toBe(true);
+      expect(row.length).toBeLessThanOrEqual(40);
+    }
+  });
+});

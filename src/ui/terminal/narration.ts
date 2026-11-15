@@ -10,8 +10,14 @@ export const QUILL_SGR = {
   art: '\x1b[33m',
   /** Reward art glows a little brighter than banners. */
   reward: '\x1b[1;93m',
+  /** The narrator: grey italics, like stage directions. */
+  narrator: '\x1b[3;37m',
   reset: '\x1b[0m',
 };
+
+/** Who is talking: Quill (labelled), or the narrator (no label, set in from the edge). */
+export type Voice = 'quill' | 'narrator';
+const NARRATOR_INDENT = '  ';
 
 export const QUILL_LABEL = 'Quill: ';
 
@@ -40,12 +46,12 @@ export function styleSpans(text: string): StyledChar[] {
  * label; later rows are indented to line up under the text. Very narrow
  * screens (under 30 columns) skip the hanging indent.
  */
-export function wrapQuill(text: string, cols: number): StyledChar[][] {
+export function wrapQuill(text: string, cols: number, label = QUILL_LABEL): StyledChar[][] {
   const chars = styleSpans(text);
-  const indent = cols >= 30 ? QUILL_LABEL.length : 0;
+  const indent = cols >= 30 ? label.length : 0;
   const rows: StyledChar[][] = [];
   let row: StyledChar[] = [];
-  let width = cols - QUILL_LABEL.length;
+  let width = cols - label.length;
   let i = 0;
   while (i < chars.length) {
     // Next word (up to and excluding a space).
@@ -75,17 +81,21 @@ export function wrapQuill(text: string, cols: number): StyledChar[][] {
 }
 
 /** Render rows to escape-coded strings, one per character, for the typewriter. */
-export function renderQuill(text: string, cols: number): string[] {
-  const rows = wrapQuill(text, cols);
-  const indent = cols >= 30 ? ' '.repeat(QUILL_LABEL.length) : '';
-  const pieces: string[] = [QUILL_SGR.label + QUILL_LABEL.trimEnd() + QUILL_SGR.reset + ' '];
+export function renderQuill(text: string, cols: number, voice: Voice = 'quill'): string[] {
+  const label = voice === 'quill' ? QUILL_LABEL : NARRATOR_INDENT;
+  const textSgr = voice === 'quill' ? QUILL_SGR.text : QUILL_SGR.narrator;
+  const rows = wrapQuill(text, cols, label);
+  const indent = cols >= 30 ? ' '.repeat(label.length) : '';
+  const pieces: string[] = [
+    voice === 'quill' ? QUILL_SGR.label + QUILL_LABEL.trimEnd() + QUILL_SGR.reset + ' ' : label,
+  ];
   rows.forEach((row, r) => {
     if (r > 0) pieces.push('\r\n' + indent);
     let style: Style | null = null;
     for (const c of row) {
       let piece = '';
       if (c.style !== style) {
-        piece += QUILL_SGR.reset + (c.style === 'code' ? QUILL_SGR.code : QUILL_SGR.text);
+        piece += QUILL_SGR.reset + (c.style === 'code' ? QUILL_SGR.code : textSgr);
         style = c.style;
       }
       pieces.push(piece + c.ch);
@@ -96,9 +106,9 @@ export function renderQuill(text: string, cols: number): string[] {
 }
 
 /** Plain text of a rendered Quill line (for screen readers and tests). */
-export function plainQuill(text: string, cols: number): string {
+export function plainQuill(text: string, cols: number, voice: Voice = 'quill'): string {
   return (
-    renderQuill(text, cols)
+    renderQuill(text, cols, voice)
       .join('')
       // eslint-disable-next-line no-control-regex -- stripping SGR codes
       .replace(/\x1b\[[0-9;]*m/g, '')
