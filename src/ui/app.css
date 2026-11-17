@@ -130,7 +130,7 @@ body,
 }
 
 /* Touch controls follow the theme. */
-.game[data-theme='green-phosphor'] {
+.game[data-theme='cyber'] {
   --bg: #050c05;
   --amber: #33ff66;
   --amber-dim: #2a5c34;
@@ -209,6 +209,14 @@ body,
   --amber-glow: #e8e8ec;
   --key-bg: #18181a;
   --key-bg-active: #3a3a40;
+}
+.game[data-theme='electric-blue'] {
+  --bg: #03060f;
+  --amber: #3cc8ff;
+  --amber-dim: #2a4a70;
+  --amber-glow: #9be8ff;
+  --key-bg: #07101f;
+  --key-bg-active: #0b3a66;
 }
 .game {
   background: var(--bg);

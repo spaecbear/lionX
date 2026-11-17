@@ -182,8 +182,8 @@ rewards:
       content: "    )\n   (\n  .-.\n  | |\n  | |\n _|_|_\n"
   - id: green-phosphor
     afterDuties: 5
-    say: 'The Lexicon has learned a new glow from you: green phosphor. You will be able to choose it later.'
-    theme: green-phosphor
+    say: 'The Lexicon has learned a new glow from you: electric blue. You will be able to choose it later.'
+    theme: electric-blue
 
 outro:
   - 'You learned to look, to read, and to walk. Tomorrow we go deeper.'

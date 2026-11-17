@@ -10,7 +10,7 @@ function setup(available: string[]) {
       get: () => current,
       set: (n) => (current = n),
       themes: () =>
-        ['candlelit', 'green-phosphor', 'parchment', 'high-contrast'].map((name) => ({
+        ['candlelit', 'electric-blue', 'parchment', 'high-contrast'].map((name) => ({
           name,
           available: available.includes(name),
         })),
@@ -39,7 +39,7 @@ describe('settings', () => {
     expect(r.out).toContain('theme:   candlelit');
     expect(r.out).toContain('* candlelit');
     expect(r.out).toContain('???');
-    expect(r.out).not.toContain('green-phosphor');
+    expect(r.out).not.toContain('electric-blue');
     expect(r.out).toContain('motion:  auto');
     expect(r.out).toContain('reader:  off');
   });

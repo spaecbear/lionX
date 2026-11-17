@@ -297,7 +297,7 @@ describe('sample wing: duties, mastery, and the capstone', () => {
     await g.type('cat ~/lore/the-first-lantern.txt');
     expect(g.output().out).toContain('The first lantern of the Archive');
     expect(g.runner.vfs.isFile('/home/apprentice/candle.txt')).toBe(true);
-    expect(g.runner.progress.themes).toEqual(['green-phosphor']);
+    expect(g.runner.progress.themes).toEqual(['electric-blue']);
     expect(g.runner.progress.lore).toEqual(['first-lantern']);
   });
 

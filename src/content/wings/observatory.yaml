@@ -200,8 +200,8 @@ rewards:
         It purred when it passed overhead.
   - id: green-phosphor
     afterDuties: 6
-    say: 'The Lexicon learned to glow green from the starlight. You can choose it later.'
-    theme: green-phosphor
+    say: 'The Lexicon caught the starlight and learned to glow electric blue. `settings theme electric-blue`.'
+    theme: electric-blue
 
 outro:
   - 'The Aqueducts wait below: `cd /archive/aqueducts`. You will need pipes for those. The other kind.'

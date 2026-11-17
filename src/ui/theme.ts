@@ -29,8 +29,8 @@ export const candlelit: ITheme = {
 export const FONT_STACK =
   '"JetBrains Mono", "Cascadia Mono", "SF Mono", Menlo, Consolas, "DejaVu Sans Mono", "Liberation Mono", monospace';
 
-/** Green phosphor: an old monochrome monitor. Earned in play. */
-export const greenPhosphor: ITheme = {
+/** Cyber: green phosphor, like an old monochrome monitor. Available from the start. */
+export const cyber: ITheme = {
   background: '#050c05',
   foreground: '#33ff66',
   cursor: '#66ff88',
@@ -289,9 +289,35 @@ export const grigio: ITheme = {
   brightWhite: '#f4f4f8',
 };
 
+/** Electric blue: neon on deep navy. Earned in the Observatory. */
+export const electricBlue: ITheme = {
+  background: '#03060f',
+  foreground: '#3cc8ff',
+  cursor: '#9be8ff',
+  cursorAccent: '#03060f',
+  selectionBackground: '#0b3a66',
+  selectionForeground: '#e6f9ff',
+  black: '#07101f',
+  red: '#ff5c8a',
+  green: '#3cffc8',
+  yellow: '#ffe066',
+  blue: '#2f7dff',
+  magenta: '#b27cff',
+  cyan: '#3cc8ff',
+  white: '#cfeeff',
+  brightBlack: '#2a4a70',
+  brightRed: '#ff86a8',
+  brightGreen: '#7affdc',
+  brightYellow: '#fff09a',
+  brightBlue: '#6aa4ff',
+  brightMagenta: '#cfa6ff',
+  brightCyan: '#9be8ff',
+  brightWhite: '#ffffff',
+};
+
 export const THEMES: Record<string, ITheme> = {
   candlelit,
-  'green-phosphor': greenPhosphor,
+  cyber,
   parchment,
   'high-contrast': highContrast,
   ember,
@@ -301,10 +327,17 @@ export const THEMES: Record<string, ITheme> = {
   frost,
   moss,
   grigio,
+  'electric-blue': electricBlue,
 };
 
 /** Themes every player has from the start (accessibility is never earned). */
-export const ALWAYS_AVAILABLE = ['candlelit', 'high-contrast'];
+export const ALWAYS_AVAILABLE = ['candlelit', 'cyber', 'high-contrast'];
+
+/** Old theme names, as saved in settings and saves, and what they are called now. */
+export const RENAMED_THEMES: Record<string, string> = {
+  // Green phosphor became cyber (free for all); whoever earned it gets electric blue instead.
+  'green-phosphor': 'electric-blue',
+};
 
 /** Each wing tints the path in the prompt (SGR codes, readable on every theme's background). */
 export const WING_TINTS: Record<string, string> = {

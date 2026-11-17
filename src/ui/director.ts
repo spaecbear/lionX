@@ -35,6 +35,8 @@ export interface DirectorOptions {
     set(next: Settings): void;
     themes: string[];
     alwaysAvailable: string[];
+    /** Old theme names found in saves, and their names now. */
+    renamed?: Record<string, string>;
     /** Every secret song. */
     songs?: string[];
   };
@@ -95,7 +97,8 @@ export class Director {
       const r = readSlot(this.opts.storage, i);
       if (r.status === 'ok') for (const t of r.data.progress.themes) earned.add(t);
     }
-    return [...earned];
+    // Themes saved under an old name count as what they are called now.
+    return [...earned].map((t) => s.renamed?.[t] ?? t);
   }
 
   /** Secret songs found in any save (or the session being played). */

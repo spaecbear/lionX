@@ -13,7 +13,7 @@ import { loadMusic, moodFor } from './audio/compose';
 import { LofiPlayer } from './audio/lofi';
 
 const TYPE_DELAY_MS = 18;
-import { ALWAYS_AVAILABLE, FONT_STACK, THEMES, WING_TINTS } from './theme';
+import { ALWAYS_AVAILABLE, FONT_STACK, RENAMED_THEMES, THEMES, WING_TINTS } from './theme';
 import { loadSettings, saveSettings } from './settings';
 import type { Settings } from '../engine/settings';
 import { KeyBar } from './mobile/KeyBar';
@@ -175,6 +175,7 @@ export function Game() {
         },
         themes: Object.keys(THEMES),
         alwaysAvailable: ALWAYS_AVAILABLE,
+        renamed: RENAMED_THEMES,
         songs: music.songs ?? [],
       },
       wingTints: WING_TINTS,
