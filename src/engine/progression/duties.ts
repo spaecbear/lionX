@@ -67,7 +67,8 @@ const MAX_TRIES = 60;
 
 export function instantiate(t: DutyTemplate, params: Params): Duty {
   const signature = `${t.id}:${Object.entries(params)
-    .filter(([k]) => k !== 'difficulty')
+    // Long texts (from variants) would make signatures unwieldy; the short names identify them.
+    .filter(([k, v]) => k !== 'difficulty' && !v.includes('\n') && v.length <= 60)
     .map(([k, v]) => `${k}=${v}`)
     .join(',')}`;
   const solution = substitute(t.solution, params);

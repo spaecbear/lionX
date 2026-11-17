@@ -478,7 +478,7 @@ function checkParams(c: Checker, v: unknown, path: string): Record<string, Param
     const d = c.obj(raw, p);
     const kinds = Object.keys(d);
     if (kinds.length !== 1)
-      c.fail(p, 'a parameter has exactly one kind: pick, int, byDifficulty, or text');
+      c.fail(p, 'a parameter has exactly one kind: pick, int, byDifficulty, text, or variants');
     const k = kinds[0];
     if (k === 'pick' || k === 'byDifficulty') {
       const list = c.arr(d[k], `${p}.${k}`);
@@ -496,6 +496,18 @@ function checkParams(c: Checker, v: unknown, path: string): Record<string, Param
       out[name] = { int: r as [number, number] };
     } else if (k === 'text') {
       out[name] = { text: c.str(d.text, `${p}.text`) };
+    } else if (k === 'variants') {
+      const list = c.arr(d.variants, `${p}.variants`);
+      if (list.length === 0) c.fail(`${p}.variants`, 'needs at least one variant');
+      out[name] = {
+        variants: list.map((x, i) => {
+          const o2 = c.obj(x, `${p}.variants[${i}]`);
+          for (const [k2, v2] of Object.entries(o2))
+            if (typeof v2 !== 'string' && typeof v2 !== 'number')
+              c.fail(`${p}.variants[${i}].${k2}`, 'expected text');
+          return Object.fromEntries(Object.entries(o2).map(([k2, v2]) => [k2, String(v2)]));
+        }),
+      };
     } else c.fail(p, `unknown parameter kind "${k}"`);
   }
   return out;

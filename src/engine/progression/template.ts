@@ -5,7 +5,13 @@ export type ParamDef =
   | { pick: (string | number)[] }
   | { int: [number, number] }
   | { byDifficulty: (string | number)[] }
-  | { text: string };
+  | { text: string }
+  /**
+   * One of several groups of values, chosen together: every key in the chosen
+   * group becomes a parameter (so a scroll's name and its own text travel as a
+   * pair). Values may use earlier parameters.
+   */
+  | { variants: Record<string, string>[] };
 
 export type Params = Record<string, string>;
 
@@ -35,6 +41,10 @@ export function chooseParams(defs: Record<string, ParamDef>, rng: Rng, difficult
     else if ('byDifficulty' in def) {
       const i = Math.min(difficulty, def.byDifficulty.length) - 1;
       params[name] = String(def.byDifficulty[i]);
+    } else if ('variants' in def) {
+      const chosen = rng.pick(def.variants);
+      for (const [k, v] of Object.entries(chosen)) params[k] = substitute(String(v), params);
+      params[name] ??= String(def.variants.indexOf(chosen) + 1);
     } else params[name] = substitute(def.text, params);
   }
   return params;
