@@ -10,8 +10,8 @@ SYNOPSIS
 DESCRIPTION
     With nothing after it, settings shows your preferences.
 
-    theme    candlelit (amber), cyber (green), high-contrast, and themes
-             you earn or find in play
+    theme    candlelit (amber), cyber (green), electric-blue, high-contrast,
+             and themes you earn or find in play
     motion   off stops Quill's typing and the drifting spirits; auto
              follows your device's reduced-motion setting
     reader   on is for screen readers: no ASCII art, no animation, and

@@ -207,27 +207,27 @@ describe('settings and tints in the director', () => {
         settings: {
           get: () => saved,
           set: (n) => (saved = n),
-          themes: ['candlelit', 'electric-blue', 'high-contrast'],
+          themes: ['candlelit', 'parchment', 'high-contrast'],
           alwaysAvailable: ['candlelit', 'high-contrast'],
-          renamed: { 'green-phosphor': 'electric-blue' },
+          renamed: { 'green-phosphor': 'parchment' },
         },
         wingTints: { 'lantern-hall': '\x1b[95m' },
       },
     );
     d.showTitle();
     await d.ready;
-    await d.handleData('settings theme electric-blue\r');
+    await d.handleData('settings theme parchment\r');
     expect(saved.theme).toBe('candlelit');
     await d.handleData('settings theme high-contrast\r');
     expect(saved.theme).toBe('high-contrast');
-    // A save that earned green phosphor (its old name) makes electric blue available.
+    // A save that earned green phosphor (under an old name) makes the renamed theme available.
     await d.handleData('play 1\r');
     await d.ready;
     d.session!.runner.progress.themes.push('green-phosphor');
     d.save();
-    await d.handleData('settings theme electric-blue\r');
+    await d.handleData('settings theme parchment\r');
     await d.ready;
-    expect(saved.theme).toBe('electric-blue');
+    expect(saved.theme).toBe('parchment');
     await Promise.all(writes);
     expect(writes.length).toBeGreaterThan(0);
   });

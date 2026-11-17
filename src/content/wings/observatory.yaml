@@ -198,10 +198,12 @@ rewards:
       text: |
         The comet was not a comet. It moved against the stars.
         It purred when it passed overhead.
-  - id: green-phosphor
+  - id: spare-lens
     afterDuties: 6
-    say: 'The Lexicon caught the starlight and learned to glow electric blue. `settings theme electric-blue`.'
-    theme: electric-blue
+    say: 'A spare lens from the great telescope turned up on your desk. It still holds a little starlight: `cat ~/spare-lens`'
+    decoration:
+      file: spare-lens
+      content: "    .---.\n   / * . \\\n  | .  *  |   Still full of starlight.\n   \\ . * /\n    '---'\n"
 
 outro:
   - 'The Aqueducts wait below: `cd /archive/aqueducts`. You will need pipes for those. The other kind.'

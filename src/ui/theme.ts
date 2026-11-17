@@ -289,7 +289,7 @@ export const grigio: ITheme = {
   brightWhite: '#f4f4f8',
 };
 
-/** Electric blue: neon on deep navy. Earned in the Observatory. */
+/** Electric blue: neon on deep navy. Available from the start. */
 export const electricBlue: ITheme = {
   background: '#03060f',
   foreground: '#3cc8ff',
@@ -331,12 +331,12 @@ export const THEMES: Record<string, ITheme> = {
 };
 
 /** Themes every player has from the start (accessibility is never earned). */
-export const ALWAYS_AVAILABLE = ['candlelit', 'cyber', 'high-contrast'];
+export const ALWAYS_AVAILABLE = ['candlelit', 'cyber', 'electric-blue', 'high-contrast'];
 
 /** Old theme names, as saved in settings and saves, and what they are called now. */
 export const RENAMED_THEMES: Record<string, string> = {
-  // Green phosphor became cyber (free for all); whoever earned it gets electric blue instead.
-  'green-phosphor': 'electric-blue',
+  // Green phosphor became cyber, free for all.
+  'green-phosphor': 'cyber',
 };
 
 /** Each wing tints the path in the prompt (SGR codes, readable on every theme's background). */
