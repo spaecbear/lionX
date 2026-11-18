@@ -53,7 +53,7 @@ templates:
         '/archive/root/workroom/{room}/roots/ash': "Ash.\n"
         '/archive/root/workroom/{room}/roots/yew': "Yew.\n"
     cleanup: ['/archive/root/workroom/{room}']
-    brief: 'Write the path of every root in /archive/root/workroom/{room}/roots into a book there called register, one per line, with a loop.'
+    brief: 'Write the path of every root in /archive/root/workroom/{room}/roots into a book called register, beside the roots room in /archive/root/workroom/{room}, one per line, with a loop.'
     hints:
       - 'Loop over the roots with a wildcard; append each name to the register.'
       - '`for r in .../roots/*; do echo $r >> .../register; done`'

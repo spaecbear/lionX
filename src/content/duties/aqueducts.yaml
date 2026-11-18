@@ -96,7 +96,7 @@ templates:
             seed: 5,
           }
     cleanup: ['/archive/aqueducts/workroom/{room}']
-    brief: 'How many readings are in /archive/aqueducts/workroom/{room}/readings? Write just the number into a book there called count.'
+    brief: 'How many readings are in /archive/aqueducts/workroom/{room}/readings? Write just the number into a book called count, in /archive/aqueducts/workroom/{room}.'
     hints:
       - 'Count the lines. Feeding the book in with `<` keeps its name out of the answer.'
       - '`wc -l < readings` prints only the number; `>` it into count.'
@@ -161,7 +161,7 @@ templates:
       files:
         '/archive/aqueducts/workroom/{room}/gauges': "gate 3\ngate 1\ngate 4\ngate 2\n"
     cleanup: ['/archive/aqueducts/workroom/{room}']
-    brief: 'Write the gauges from /archive/aqueducts/workroom/{room}/gauges, in order, into a book there called gauges-sorted.'
+    brief: 'Write the gauges from /archive/aqueducts/workroom/{room}/gauges, in order, into a book called gauges-sorted, beside it in /archive/aqueducts/workroom/{room}.'
     hints:
       - 'Order the lines, then send them into a book.'
       - '`sort` the gauges and `>` them into gauges-sorted.'
@@ -188,7 +188,7 @@ templates:
       files:
         '/archive/aqueducts/workroom/{room}/visitors': "eel\nfrog\neel\nheron\nfrog\neel\n"
     cleanup: ['/archive/aqueducts/workroom/{room}']
-    brief: 'Tally the visitors listed in /archive/aqueducts/workroom/{room}/visitors (how many of each) and write the tally into a book there called tally.'
+    brief: 'Tally the visitors listed in /archive/aqueducts/workroom/{room}/visitors (how many of each) and write the tally into a book called tally, beside it in /archive/aqueducts/workroom/{room}.'
     hints:
       - 'Put them in order, count each run, and write it down. One line, two pipes.'
       - '`sort` piped into `uniq -c`, then `>` into tally.'

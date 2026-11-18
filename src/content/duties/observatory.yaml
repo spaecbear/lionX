@@ -184,15 +184,20 @@ templates:
           plant:
             - { line: 'Signed, {word}.', files: ['{a}', '{b}'] }
     cleanup: ['/archive/observatory/workroom/{room}']
-    brief: 'Two of the letters in /archive/observatory/workroom/{room}/letters were signed by {word}. Gather them into a new room there called from-{word}.'
+    brief: 'Two of the letters in /archive/observatory/workroom/{room}/letters were signed by {word}. Gather them into a new room called from-{word}, beside the letters room (or inside it, if you prefer).'
     hints:
       - 'Search for the signature, listing only the letters. Then make a room and move them.'
       - '`grep -l` lists the letters; `mkdir` and `mv` gather them.'
       - 'Type: grep -l "Signed, {word}" -r /archive/observatory/workroom/{room}/letters   then: mkdir /archive/observatory/workroom/{room}/from-{word}   then: mv /archive/observatory/workroom/{room}/letters/letter-{a} /archive/observatory/workroom/{room}/letters/letter-{b} /archive/observatory/workroom/{room}/from-{word}/'
+    # Either reading of the brief is fine: from-{word} beside letters, or inside it.
     goal:
-      all:
-        - { isFile: '/archive/observatory/workroom/{room}/from-{word}/letter-{a}' }
-        - { isFile: '/archive/observatory/workroom/{room}/from-{word}/letter-{b}' }
+      any:
+        - all:
+            - { isFile: '/archive/observatory/workroom/{room}/from-{word}/letter-{a}' }
+            - { isFile: '/archive/observatory/workroom/{room}/from-{word}/letter-{b}' }
+        - all:
+            - { isFile: '/archive/observatory/workroom/{room}/letters/from-{word}/letter-{a}' }
+            - { isFile: '/archive/observatory/workroom/{room}/letters/from-{word}/letter-{b}' }
     solution:
       - 'grep -l "Signed, {word}" -r /archive/observatory/workroom/{room}/letters'
       - 'mkdir /archive/observatory/workroom/{room}/from-{word}'
