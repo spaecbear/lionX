@@ -315,6 +315,32 @@ export const electricBlue: ITheme = {
   brightWhite: '#ffffff',
 };
 
+/** Shadow: L'Ombra's. Black glass, soft white words, and a violet edge. */
+export const shadow: ITheme = {
+  background: '#000000',
+  foreground: '#ececec',
+  cursor: '#b48cff',
+  cursorAccent: '#000000',
+  selectionBackground: '#2a1f3d',
+  selectionForeground: '#ffffff',
+  black: '#0a0a0a',
+  red: '#c8c8c8',
+  green: '#d8d8d8',
+  yellow: '#f0f0f0',
+  blue: '#a8a8a8',
+  magenta: '#b48cff',
+  cyan: '#dcdcdc',
+  white: '#ececec',
+  brightBlack: '#5a5a5a',
+  brightRed: '#e0e0e0',
+  brightGreen: '#f0f0f0',
+  brightYellow: '#ffffff',
+  brightBlue: '#c8c8c8',
+  brightMagenta: '#cfb0ff',
+  brightCyan: '#f4f4f4',
+  brightWhite: '#ffffff',
+};
+
 export const THEMES: Record<string, ITheme> = {
   candlelit,
   cyber,
@@ -328,6 +354,7 @@ export const THEMES: Record<string, ITheme> = {
   moss,
   grigio,
   'electric-blue': electricBlue,
+  shadow,
 };
 
 /** Themes every player has from the start (accessibility is never earned). */

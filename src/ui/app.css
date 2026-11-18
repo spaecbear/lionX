@@ -218,6 +218,14 @@ body,
   --key-bg: #07101f;
   --key-bg-active: #0b3a66;
 }
+.game[data-theme='shadow'] {
+  --bg: #000000;
+  --amber: #ececec;
+  --amber-dim: #5a5a5a;
+  --amber-glow: #b48cff;
+  --key-bg: #0a0a0a;
+  --key-bg-active: #2a1f3d;
+}
 .game {
   background: var(--bg);
 }

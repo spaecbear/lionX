@@ -337,6 +337,10 @@ capstone:
       /archive/undercroft/sign: "THE UNDERCROFT. The Lexicon's foundations. Watch your step.\n"
 
 rewards:
+  - id: shadow-theme
+    afterDuties: 1
+    say: 'A shadow lingers in the corner of the Lexicon''s glass, and does not leave. Someone has left you a new look: `settings theme shadow`.'
+    theme: shadow
   - id: spirit-jar
     afterDuties: 2
     say: 'A little glass jar appeared in your cell, with a friendly glow inside. `cat ~/spirit-jar`'
