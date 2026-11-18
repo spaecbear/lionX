@@ -424,3 +424,37 @@ describe('next', () => {
     );
   });
 });
+
+describe('old saves meet changed content', () => {
+  it('resumes on a step with no instruction at the saved help level, and past a shortened lesson', async () => {
+    const { worldFor } = await import('./test-support');
+    const { LessonRunner } = await import('./narrative');
+    const content = loadGameContent();
+    const wing = content.wings.observatory;
+    const counting = wing.lessons.findIndex((l) => l.id === 'counting');
+    for (const stepIndex of [1, 99]) {
+      const runner = new LessonRunner(wing, {
+        ...content,
+        restore: {
+          vfs: worldFor('observatory').serialize(),
+          runner: {
+            wingId: 'observatory',
+            phase: 'lessons',
+            lessonIndex: counting,
+            stepIndex,
+            hintsUsed: 0,
+            struggled: false,
+            level: 'goal',
+            duty: null,
+            commands: [],
+            reads: [],
+          },
+        },
+      });
+      const said = [...runner.resume(), ...runner.hint(), ...runner.next()];
+      for (const n of said)
+        if (n.kind === 'quill' || n.kind === 'narrator') expect(typeof n.text).toBe('string');
+      expect(said.some((n) => n.kind === 'quill' && n.text.length > 10)).toBe(true);
+    }
+  });
+});

@@ -190,79 +190,87 @@ export class TerminalController {
     this.typedDuringSpeech = false;
     try {
       for (const item of items) {
-        if (item.kind === 'art') {
-          const art = this.opts.artFor?.(item.name, this.term.cols);
-          if (art) {
-            const lines = art.replace(/\n+$/, '').split('\n');
-            if (item.reward && delay > 0 && !this.skipSpeechFlag) {
-              // Reward art draws in line by line, like a lamp catching; a key finishes it.
-              this.term.write('\r\n');
-              for (let i = 0; i < lines.length; i++) {
-                if (this.skipSpeechFlag) {
-                  this.term.write(
-                    QUILL_SGR.reward + lines.slice(i).join('\r\n') + QUILL_SGR.reset + '\r\n',
-                  );
-                  break;
-                }
-                this.term.write(QUILL_SGR.reward + lines[i] + QUILL_SGR.reset + '\r\n');
-                await new Promise((r) => setTimeout(r, delay * 3));
-              }
-              this.term.write('\r\n');
-            } else {
-              const color = item.reward ? QUILL_SGR.reward : QUILL_SGR.art;
-              this.term.write(
-                (item.reward ? '\r\n' : '') +
-                  color +
-                  lines.join('\r\n') +
-                  QUILL_SGR.reset +
-                  '\r\n\r\n',
-              );
-            }
-          }
-        } else if (item.kind === 'achievement') {
-          // A small ribbon (art/ribbon) with the achievement beside it.
-          const S = QUILL_SGR;
-          const ribbon = (this.opts.artFor?.('ribbon', this.term.cols) ?? '')
-            .replace(/\n$/, '')
-            .split('\n')
-            .filter((l, k, all) => l || k < all.length - 1);
-          const width = Math.max(0, ...ribbon.map((l) => l.length)) + 2;
-          const text = [
-            `${S.reward}Achievement: ${item.title}${S.reset}`,
-            `${S.narrator}${item.says}${S.reset}`,
-          ];
-          const rows = Math.max(ribbon.length, text.length);
-          const lines: string[] = [];
-          for (let k = 0; k < rows; k++) {
-            const r = ribbon[k] ?? '';
-            const t = text[k - Math.max(0, Math.floor((ribbon.length - text.length) / 2))] ?? '';
-            lines.push(`${S.reward}${r.padEnd(width)}${S.reset}${t}`.trimEnd());
-          }
-          this.term.write('\r\n' + lines.join('\r\n') + '\r\n\r\n');
-        } else if (item.kind === 'breakdown') {
-          this.term.write(renderBreakdown(item.command, item.pieces, this.term.cols));
-        } else if (item.kind === 'quill' || item.kind === 'narrator') {
-          const pieces = renderQuill(
-            item.text,
-            this.term.cols,
-            item.kind === 'narrator' ? 'narrator' : (item.who ?? 'quill'),
-          );
-          if (delay <= 0 || this.skipSpeechFlag) {
-            this.term.write(pieces.join(''));
-          } else {
-            for (let i = 0; i < pieces.length; i++) {
-              if (this.skipSpeechFlag) {
-                this.term.write(pieces.slice(i).join(''));
-                break;
-              }
-              this.term.write(pieces[i]);
-              await new Promise((r) => setTimeout(r, delay));
-            }
-          }
+        // One bad line must never freeze the terminal: skip it and carry on.
+        try {
+          await this.presentOne(item, delay);
+        } catch (e) {
+          console.error('could not present', item, e);
         }
       }
     } finally {
       this.speaking = false;
+    }
+  }
+
+  /** Draw one narration item (art, speech, a breakdown, an achievement). */
+  private async presentOne(item: Narration, delay: number): Promise<void> {
+    if ((item.kind === 'quill' || item.kind === 'narrator') && typeof item.text !== 'string')
+      return;
+    if (item.kind === 'art') {
+      const art = this.opts.artFor?.(item.name, this.term.cols);
+      if (art) {
+        const lines = art.replace(/\n+$/, '').split('\n');
+        if (item.reward && delay > 0 && !this.skipSpeechFlag) {
+          // Reward art draws in line by line, like a lamp catching; a key finishes it.
+          this.term.write('\r\n');
+          for (let i = 0; i < lines.length; i++) {
+            if (this.skipSpeechFlag) {
+              this.term.write(
+                QUILL_SGR.reward + lines.slice(i).join('\r\n') + QUILL_SGR.reset + '\r\n',
+              );
+              break;
+            }
+            this.term.write(QUILL_SGR.reward + lines[i] + QUILL_SGR.reset + '\r\n');
+            await new Promise((r) => setTimeout(r, delay * 3));
+          }
+          this.term.write('\r\n');
+        } else {
+          const color = item.reward ? QUILL_SGR.reward : QUILL_SGR.art;
+          this.term.write(
+            (item.reward ? '\r\n' : '') + color + lines.join('\r\n') + QUILL_SGR.reset + '\r\n\r\n',
+          );
+        }
+      }
+    } else if (item.kind === 'achievement') {
+      // A small ribbon (art/ribbon) with the achievement beside it.
+      const S = QUILL_SGR;
+      const ribbon = (this.opts.artFor?.('ribbon', this.term.cols) ?? '')
+        .replace(/\n$/, '')
+        .split('\n')
+        .filter((l, k, all) => l || k < all.length - 1);
+      const width = Math.max(0, ...ribbon.map((l) => l.length)) + 2;
+      const text = [
+        `${S.reward}Achievement: ${item.title}${S.reset}`,
+        `${S.narrator}${item.says}${S.reset}`,
+      ];
+      const rows = Math.max(ribbon.length, text.length);
+      const lines: string[] = [];
+      for (let k = 0; k < rows; k++) {
+        const r = ribbon[k] ?? '';
+        const t = text[k - Math.max(0, Math.floor((ribbon.length - text.length) / 2))] ?? '';
+        lines.push(`${S.reward}${r.padEnd(width)}${S.reset}${t}`.trimEnd());
+      }
+      this.term.write('\r\n' + lines.join('\r\n') + '\r\n\r\n');
+    } else if (item.kind === 'breakdown') {
+      this.term.write(renderBreakdown(item.command, item.pieces, this.term.cols));
+    } else if (item.kind === 'quill' || item.kind === 'narrator') {
+      const pieces = renderQuill(
+        item.text,
+        this.term.cols,
+        item.kind === 'narrator' ? 'narrator' : (item.who ?? 'quill'),
+      );
+      if (delay <= 0 || this.skipSpeechFlag) {
+        this.term.write(pieces.join(''));
+      } else {
+        for (let i = 0; i < pieces.length; i++) {
+          if (this.skipSpeechFlag) {
+            this.term.write(pieces.slice(i).join(''));
+            break;
+          }
+          this.term.write(pieces[i]);
+          await new Promise((r) => setTimeout(r, delay));
+        }
+      }
     }
   }
 

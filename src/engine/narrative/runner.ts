@@ -191,6 +191,14 @@ export class LessonRunner {
       this.duty = r.duty;
       this.commands = [...r.commands];
       this.reads = new Set(r.reads);
+      // The wing's content may have changed since the save: never point past its end.
+      const lessons = this.wing.lessons;
+      if (this.phase === 'lessons' && lessons.length) {
+        this.lessonIndex = Math.min(this.lessonIndex, lessons.length - 1);
+        this.stepIndex = Math.min(this.stepIndex, lessons[this.lessonIndex].steps.length - 1);
+      }
+      if (this.phase === 'capstone' && this.wing.capstone)
+        this.stepIndex = Math.min(this.stepIndex, this.wing.capstone.steps.length - 1);
     }
   }
 
@@ -369,7 +377,7 @@ export class LessonRunner {
     this.hintsUsed = Math.min(this.hintsUsed + 1, 3);
     this.hintLog.set(cur.step.id, (this.hintLog.get(cur.step.id) ?? 0) + 1);
     // Restate the objective first, so a hint is never a riddle without its question.
-    const objective = cur.step.guidance[cur.level];
+    const objective = guidanceFor(cur.step, cur.level);
     const hint = cur.step.hints[i];
     return [
       ...(objective && objective !== hint ? [{ kind: 'quill' as const, text: objective }] : []),
@@ -517,7 +525,7 @@ export class LessonRunner {
   /** Repeat the current instruction. */
   repeat(): Narration[] {
     const cur = this.current;
-    return cur ? [{ kind: 'quill', text: cur.step.guidance[cur.level]! }] : [];
+    return cur ? [{ kind: 'quill', text: guidanceFor(cur.step, cur.level) }] : [];
   }
 
   /**
@@ -634,7 +642,7 @@ export class LessonRunner {
     const wanted = GUIDE_LEVELS.indexOf(step.guide);
     this.level = GUIDE_LEVELS[Math.max(0, wanted - (this.struggled ? 1 : 0))];
     this.hintsUsed = 0;
-    return [{ kind: 'quill', text: step.guidance[this.level]! }];
+    return [{ kind: 'quill', text: guidanceFor(step, this.level) }];
   }
 
   /** Spells cast successfully during this task. */
@@ -1072,4 +1080,16 @@ export function speech(text: string): Narration {
 
 function quill(lines: string[] | undefined): Narration[] {
   return (lines ?? []).map(speech);
+}
+
+/**
+ * The instruction for a step at a level of help, or the nearest one that
+ * exists, leaning toward more help. (A save can name a level that a step,
+ * added or rewritten since, does not have.)
+ */
+export function guidanceFor(step: Step, level: GuideLevel): string {
+  const order: GuideLevel[] =
+    level === 'problem' ? ['problem', 'goal', 'exact'] : level === 'goal' ? ['goal', 'exact', 'problem'] : ['exact', 'goal', 'problem'];
+  for (const l of order) if (step.guidance[l]) return step.guidance[l]!;
+  return step.hints.at(-1) ?? '';
 }
