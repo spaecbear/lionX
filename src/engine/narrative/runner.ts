@@ -378,6 +378,9 @@ export class LessonRunner {
       ...(cur.duty && i === 2 && this.lines.skipReminder
         ? [{ kind: 'quill' as const, text: this.lines.skipReminder }]
         : []),
+      ...(cur.kind === 'capstone' && i === 2 && this.lines.resetReminder
+        ? [{ kind: 'quill' as const, text: this.lines.resetReminder }]
+        : []),
     ];
   }
 
@@ -430,6 +433,57 @@ export class LessonRunner {
     const out: Narration[] = [{ kind: 'quill', text: this.lines.dutySkipped ?? 'Fair enough.' }];
     if (this.phase === 'free') return out;
     return [...out, ...this.assignDuty()];
+  }
+
+  /**
+   * `duty reset`: put back the current task's original materials that went
+   * missing (moved over each other, removed), so a mistake never leaves it
+   * unfinishable. Only files the goal names are restored, and only when no
+   * copy already sits where the goal wants it. Nothing the player made is touched.
+   */
+  resetTask(): Narration[] {
+    const cur = this.current;
+    if (!cur) return [{ kind: 'quill', text: this.lines.noSkip ?? this.lines.noDuty }];
+    const wanted: string[] = [];
+    const walk = (p: unknown) => {
+      if (!p || typeof p !== 'object') return;
+      const o = p as Record<string, unknown>;
+      for (const k of ['exists', 'isFile', 'read', 'missing'])
+        if (typeof o[k] === 'string') wanted.push(this.vfs.resolve(o[k] as string));
+      for (const k of ['all', 'any']) if (Array.isArray(o[k])) (o[k] as unknown[]).forEach(walk);
+      if (o.not) walk(o.not);
+      if (o.contains && typeof (o.contains as { path?: string }).path === 'string')
+        wanted.push(this.vfs.resolve((o.contains as { path: string }).path));
+    };
+    walk(cur.step.goal);
+    const base = (p: string) => p.slice(p.lastIndexOf('/') + 1);
+    const names = new Set(wanted.map(base));
+    const sources: Record<string, unknown> = {
+      ...(this.wing.setup?.files ?? {}),
+      ...(this.phase === 'capstone' ? (this.wing.capstone?.setup?.files ?? {}) : {}),
+      ...(cur.duty?.setup?.files ?? {}),
+    };
+    const restore: Record<string, unknown> = {};
+    asRoot(this.vfs, () => {
+      for (const [path, content] of Object.entries(sources)) {
+        if (!names.has(base(path)) || this.vfs.exists(path)) continue;
+        // Already where the goal wants it: leave well alone.
+        if (wanted.some((w) => base(w) === base(path) && this.vfs.exists(w))) continue;
+        restore[path] = content;
+      }
+    });
+    if (Object.keys(restore).length === 0)
+      return [{ kind: 'quill', text: this.lines.resetNothing ?? 'Nothing is missing.' }];
+    this.patch({ files: restore as WorldPatch['files'] }, { ownedByPlayer: !!cur.duty });
+    const list = Object.keys(restore)
+      .map((p) => `\`${p}\``)
+      .join(', ');
+    return [
+      {
+        kind: 'quill',
+        text: (this.lines.resetDone ?? 'Put back: {files}.').replace('{files}', list),
+      },
+    ];
   }
 
   /** The `duty` spell: ask for restoration work during free play. */

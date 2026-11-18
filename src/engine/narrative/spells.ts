@@ -51,11 +51,18 @@ export function createDutyCommand(getRunner: () => LessonRunner | null) {
     run(o, io) {
       const runner = getRunner();
       const [what] = o.operands;
-      if (what && what !== 'skip') {
-        io.stderr.write(`duty: unknown request '${what}' (try duty, or duty skip)\n`);
+      if (what && what !== 'skip' && what !== 'reset') {
+        io.stderr.write(`duty: unknown request '${what}' (try duty, duty reset, or duty skip)\n`);
         return 1;
       }
-      if (runner) runner.queue(what === 'skip' ? runner.skipDuty() : runner.requestDuty());
+      if (runner)
+        runner.queue(
+          what === 'skip'
+            ? runner.skipDuty()
+            : what === 'reset'
+              ? runner.resetTask()
+              : runner.requestDuty(),
+        );
       return 0;
     },
   });

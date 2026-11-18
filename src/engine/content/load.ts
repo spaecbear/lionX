@@ -612,6 +612,9 @@ export function loadQuillLines(yamlText: string, source = 'quill.yaml'): QuillLi
     dutySkipped: o.dutySkipped === undefined ? undefined : one('dutySkipped'),
     noSkip: o.noSkip === undefined ? undefined : one('noSkip'),
     skipReminder: o.skipReminder === undefined ? undefined : one('skipReminder'),
+    resetDone: o.resetDone === undefined ? undefined : one('resetDone'),
+    resetNothing: o.resetNothing === undefined ? undefined : one('resetNothing'),
+    resetReminder: o.resetReminder === undefined ? undefined : one('resetReminder'),
   };
 }
 

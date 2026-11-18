@@ -235,16 +235,17 @@ practice:
 
 capstone:
   intro:
-    - "The great shelf in the Bindery collapsed when lionX passed through. Its pages are in loose-pages, along with three of lionX's own fragments."
+    - "The great shelf in the Bindery collapsed when lionX passed through. Its pages are scattered in /archive/bindery/loose-pages: tales (named tale-...), poems (poem-...), and three of lionX's own fragments (ending .lx)."
+    - 'The pages are books. Your job is to make rooms for them and move each page into its room. Make the rooms first: `mv` into a room that does not exist yet renames the page instead, and the next page you move there writes over it.'
   steps:
     - id: rebuild-shelf
       guide: problem
       guidance:
         exact: 'Type `mkdir -p /archive/bindery/shelf/fiction/tales /archive/bindery/shelf/poetry`, then `mv /archive/bindery/loose-pages/tale-* /archive/bindery/shelf/fiction/tales/`, then `mv /archive/bindery/loose-pages/poem-* /archive/bindery/shelf/poetry/`.'
-        goal: 'Rebuild the shelf: tales go in /archive/bindery/shelf/fiction/tales, poems in /archive/bindery/shelf/poetry.'
-        problem: 'Rebuild the shelf at /archive/bindery/shelf. Tales belong under fiction/tales, poems under poetry.'
+        goal: 'Rebuild the shelf: make the rooms /archive/bindery/shelf/fiction/tales and /archive/bindery/shelf/poetry, then move the tale- pages and the poem- pages from /archive/bindery/loose-pages into them.'
+        problem: 'Rebuild the shelf at /archive/bindery/shelf: the tale- pages from loose-pages go in the room fiction/tales, the poem- pages in the room poetry.'
       hints:
-        - "Make the shelf's rooms first, then move the pages by kind. Wildcards help."
+        - "Make the shelf's rooms first (rooms, not books), then move the pages from loose-pages by kind. Wildcards help."
         - '`mkdir -p` the rooms, then `mv` with `tale-*` and `poem-*`.'
         - 'Type: mkdir -p /archive/bindery/shelf/fiction/tales /archive/bindery/shelf/poetry   then: mv /archive/bindery/loose-pages/tale-* /archive/bindery/shelf/fiction/tales/   then: mv /archive/bindery/loose-pages/poem-* /archive/bindery/shelf/poetry/'
       goal:

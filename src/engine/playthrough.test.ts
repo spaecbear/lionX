@@ -369,3 +369,32 @@ describe('story mode and secrets', () => {
     expect(s.runner.vfs.readFile('/home/apprentice/.psst-type-story-on')).toContain('story on');
   });
 });
+
+describe('duty reset', () => {
+  it('puts back trial pages that were overwritten, and leaves pages already shelved alone', async () => {
+    const { atCapstone } = await import('./test-support');
+    const g = atCapstone('bindery');
+    const vfs = g.runner.vfs;
+    for (const l of [
+      'mkdir -p /archive/bindery/shelf/fiction',
+      'mv /archive/bindery/loose-pages/tale-of-the-bell /archive/bindery/shelf/tales',
+      'mv /archive/bindery/loose-pages/tale-of-the-moth /archive/bindery/shelf/tales',
+      'mkdir -p /archive/bindery/shelf/poetry',
+      'mv /archive/bindery/loose-pages/poem-of-ink /archive/bindery/shelf/poetry/',
+    ])
+      await g.type(l);
+    expect(vfs.exists('/archive/bindery/loose-pages/tale-of-the-bell')).toBe(false);
+    const said = g.runner.resetTask();
+    expect(said.some((n) => n.kind === 'quill' && n.text.includes('tale-of-the-bell'))).toBe(true);
+    expect(vfs.exists('/archive/bindery/loose-pages/tale-of-the-bell')).toBe(true);
+    expect(vfs.exists('/archive/bindery/loose-pages/tale-of-the-moth')).toBe(true);
+    // Already shelved: not put back into loose-pages.
+    expect(vfs.exists('/archive/bindery/loose-pages/poem-of-ink')).toBe(false);
+    // And the trial can now be finished.
+    await g.type('rm /archive/bindery/shelf/tales');
+    await g.type('mkdir -p /archive/bindery/shelf/fiction/tales');
+    await g.type('mv /archive/bindery/loose-pages/tale-* /archive/bindery/shelf/fiction/tales/');
+    await g.type('mv /archive/bindery/loose-pages/poem-* /archive/bindery/shelf/poetry/');
+    expect(g.runner.current?.step.id).toBe('quarantine');
+  });
+});

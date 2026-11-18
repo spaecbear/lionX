@@ -189,6 +189,12 @@ export interface QuillLines {
   noSkip?: string;
   /** Added to hints on a duty once the last hint is reached. */
   skipReminder?: string;
+  /** `duty reset` put things back ({files}). */
+  resetDone?: string;
+  /** `duty reset` found nothing missing. */
+  resetNothing?: string;
+  /** The last hint on a trial step: the way back from a mistake. */
+  resetReminder?: string;
   /** status, while practicing: {n} duties until the trial ({s}: y/ies). */
   untilTrial?: string;
   /** The same, in easy mode (hints count). */

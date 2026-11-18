@@ -1,3 +1,4 @@
-Usage: duty [skip]
+Usage: duty [reset|skip]
 Ask Quill for restoration work, or repeat the current task.
-duty skip sets aside a duty that can no longer be finished and gives you a fresh one.
+duty reset  puts back the task's original pages if they were lost or overwritten.
+duty skip   sets aside a duty that can no longer be finished, for a fresh one.
