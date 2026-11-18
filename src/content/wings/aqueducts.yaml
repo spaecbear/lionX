@@ -70,7 +70,7 @@ lessons:
   - id: channels
     spells: ['|']
     intro:
-      - "The pipe, `|`, is the true aqueduct: it carries one spell's output into the next spell's input."
+      - "You met the pipe, `|`, in the Observatory, when you poured sort into uniq. Here is what it really is: the true aqueduct. It carries one spell's output into the next spell's input, and you can chain as many as you like."
     steps:
       - id: pipe
         art: faucet

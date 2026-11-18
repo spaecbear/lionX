@@ -130,15 +130,26 @@ lessons:
         goal: { all: [{ ran: wc }, { read: /archive/observatory/sightings }] }
         success:
           - 'Nine sightings. But nine of what?'
+      - id: sort
+        guide: exact
+        guidance:
+          exact: 'Type `sort /archive/observatory/sightings`. `sort` prints a book''s lines in order, so the same creatures end up side by side.'
+        hints:
+          - 'Put the sightings in order.'
+          - 'The spell is `sort`, then the book.'
+          - 'Type exactly: sort /archive/observatory/sightings'
+        goal: { ran: sort }
+        success:
+          - 'Owls with owls, moths with moths. Now they can be counted.'
       - id: tally
         art: owl
-        guide: goal
+        guide: exact
         guidance:
-          exact: 'Type `sort /archive/observatory/sightings | uniq -c`. `sort` gathers equal lines together; `uniq -c` counts each run.'
-          goal: 'Tally the sightings: how many owls, moths, and the rest? `sort` then `uniq -c`, joined by a pipe.'
+          exact: '`uniq -c` folds lines that repeat one after another into one, and counts them. It needs sorted lines, so pour sort''s output straight into it with a pipe: the `|` key, a straight bar. Type `sort /archive/observatory/sightings | uniq -c`. (Pipes are the heart of the Aqueducts; this is your first taste.)'
+          goal: 'Tally the sightings: how many owls, moths, and the rest? `sort` them, then pour that into `uniq -c` with a pipe, `|`.'
         hints:
-          - '`uniq` only folds lines that are next to each other. Put them in order first.'
-          - '`sort` the sightings, then pipe them through `uniq -c`.'
+          - '`uniq` only folds lines that are next to each other. Put them in order first, then count.'
+          - '`sort` the sightings, then add `| uniq -c` after it, on the same line.'
           - 'Type exactly: sort /archive/observatory/sightings | uniq -c'
         goal: { all: [{ ran: sort }, { ran: { command: uniq, args: ['-c'] } }] }
         success:
