@@ -193,6 +193,10 @@ export interface QuillLines {
   resetDone?: string;
   /** Before a mended wing's directions onward (duty, next). */
   storyOnward?: string;
+  /** After a duty, sometimes: a flag of a spell it used ({spell}, {flag}, {says}). */
+  tipFlag?: string[];
+  /** After a duty, sometimes: what a spell it used does ({spell}, {says}). */
+  tipSpell?: string[];
   /** `next` after the last wing. */
   storyDone?: string;
   /** `duty reset` found nothing missing. */

@@ -734,8 +734,9 @@ export class LessonRunner {
     if (swift) this.progress.swift = (this.progress.swift ?? 0) + 1;
     const out: Narration[] = [
       ...this.reward(duty.art),
-      { kind: 'quill', text: duty.success ?? this.rng.pick(this.lines.dutyDone) },
-      ...(swift ? [{ kind: 'quill' as const, text: this.rng.pick(this.lines.swift) }] : []),
+      { kind: 'quill', text: duty.success ?? this.pickFresh(this.lines.dutyDone) },
+      ...(swift ? [{ kind: 'quill' as const, text: this.pickFresh(this.lines.swift) }] : []),
+      ...this.spellTip(duty.spells),
       { kind: 'event', event: 'duty-complete', id: duty.signature },
       ...this.giveRewards(),
     ];
@@ -765,6 +766,47 @@ export class LessonRunner {
       }
       return !setup.some((p) => this.vfs.exists(p));
     });
+  }
+
+  private lastSaid = new Set<string>();
+
+  /** A random line from a list, but never the one Quill said last time from it. */
+  private pickFresh(lines: string[]): string {
+    const fresh = lines.filter((l) => !this.lastSaid.has(l));
+    const line = this.rng.pick(fresh.length ? fresh : lines);
+    for (const l of lines) this.lastSaid.delete(l);
+    this.lastSaid.add(line);
+    return line;
+  }
+
+  /**
+   * Now and then after a duty, a tip about one of its spells: a flag worth
+   * trying, or a reminder of what the spell does (from the glossary).
+   */
+  private spellTip(spells: string[]): Narration[] {
+    const g = this.opts.glossary;
+    if (!g || !this.rng.chance(0.6)) return [];
+    const known = spells.filter((s) => g.commands[s]);
+    if (known.length === 0) return [];
+    const spell = this.rng.pick(known);
+    const entry = g.commands[spell];
+    const flags = Object.entries(entry.flags ?? {}).filter(
+      ([f, info]) => f !== '-' && (typeof info === 'string' || !info.takes),
+    );
+    const says = (info: string | { says: string }) => (typeof info === 'string' ? info : info.says);
+    if (flags.length && this.lines.tipFlag?.length && this.rng.chance(0.75)) {
+      const [flag, info] = this.rng.pick(flags);
+      const text = this.pickFresh(this.lines.tipFlag)
+        .replace(/\{spell\}/g, spell)
+        .replace('{flag}', flag)
+        .replace('{says}', says(info));
+      return [{ kind: 'quill', text }];
+    }
+    if (!this.lines.tipSpell?.length) return [];
+    const text = this.pickFresh(this.lines.tipSpell)
+      .replace(/\{spell\}/g, spell)
+      .replace('{says}', entry.says);
+    return [{ kind: 'quill', text }];
   }
 
   private cleanup(duty: Duty) {

@@ -110,6 +110,24 @@ describe('sample wing: lessons', () => {
     expect(easy).toBe(15);
   });
 
+  it('varies what Quill says after duties, and sometimes adds a tip about a spell used', () => {
+    const { runner } = play(sample(), { seed: 3 });
+    const r = runner as unknown as {
+      opts: { glossary: unknown };
+      pickFresh(l: string[]): string;
+      spellTip(spells: string[]): { text: string }[];
+    };
+    r.opts.glossary = loadGlossary(glossarySource);
+    const done = loadQuillLines(quillSource).dutyDone;
+    const said = Array.from({ length: 50 }, () => r.pickFresh(done));
+    for (let k = 1; k < said.length; k++) expect(said[k]).not.toBe(said[k - 1]);
+    expect(new Set(said).size).toBeGreaterThan(15);
+    const tips = Array.from({ length: 100 }, () => r.spellTip(['ls', 'grep', 'kill', 'cd'])).flat();
+    expect(tips.length).toBeGreaterThan(30);
+    expect(tips.some((t) => t.text.includes('`ls -a`') || t.text.includes('`-a`'))).toBe(true);
+    for (const t of tips) expect(t.text).not.toMatch(/\{\w+\}/);
+  });
+
   it('duty skip sets aside a duty that can no longer be done and gives a fresh one', async () => {
     const { runner, lessons, type } = play(sample());
     await lessons();

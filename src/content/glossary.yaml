@@ -6,7 +6,7 @@ commands:
     says: 'lists what a room holds'
     flags:
       -a: 'shows all, even hidden names that start with a dot'
-      -l: 'the long listing: wards, owner, size, date'
+      -l: 'gives the long listing: wards, owner, size, date'
   cd: { says: 'walks you into another room' }
   cat: { says: 'reads books out in full' }
   less: { says: 'reads a book one screen at a time (q to leave)' }
@@ -36,7 +36,7 @@ commands:
     flags:
       -name: { says: 'match by name', takes: true }
       -type: { says: 'match by kind: d for rooms, f for books', takes: true }
-      -empty: 'match only empty books and rooms'
+      -empty: 'matches only empty books and rooms'
   grep:
     says: 'finds lines that contain a word'
     flags:
@@ -71,24 +71,24 @@ commands:
   kill:
     says: 'sends a signal to a spirit, by PID or %job'
     flags:
-      -9: 'KILL: the signal no spirit can refuse'
-      -STOP: 'STOP: freezes the spirit where it stands'
+      -9: 'sends KILL, the signal no spirit can refuse'
+      -STOP: 'sends STOP, which freezes the spirit where it stands'
   pgrep:
     says: 'finds spirits by name and prints their PIDs'
     flags:
       -l: 'shows each name beside its PID'
-      -x: 'the whole name must match exactly'
+      -x: 'makes the whole name match exactly'
   pkill:
     says: 'sends a signal to spirits by name'
     flags:
-      -9: 'KILL: the signal no spirit can refuse'
-      -STOP: 'STOP: freezes the spirit where it stands'
-      -x: 'the whole name must match exactly'
+      -9: 'sends KILL, the signal no spirit can refuse'
+      -STOP: 'sends STOP, which freezes the spirit where it stands'
+      -x: 'makes the whole name match exactly'
   renice:
     says: "makes a spirit nicer, so it takes less of the Archive's strength"
     flags:
       -n: { says: 'the new niceness, -20 greedy to 19 generous', takes: true }
-      -p: 'the numbers that follow are PIDs'
+      -p: 'treats the numbers that follow as PIDs'
   sleep: { says: 'waits for a number of seconds' }
   jobs: { says: 'lists the jobs started from this terminal' }
   bg: { says: 'lets a stopped job run on in the background' }
