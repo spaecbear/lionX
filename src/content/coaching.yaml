@@ -2,6 +2,11 @@
 # Each rule matches the typed line (`line`) and/or the error output (`stderr`), as regexes.
 # The first matching rule speaks. `failed: true` means only when the command failed.
 rules:
+  - line: '^\s*grep\b[^''"]*\s\.\*(\s|$)'
+    say: 'Careful: the shell reads an unquoted `.*` first, and swaps in the names of the hidden files where you stand, before grep ever sees it. Put it in quotes, `''.*''`, so grep gets the pattern itself.'
+  - line: '^\s*grep\b.*\s-\w*r'
+    stderr: 'Permission denied'
+    say: 'Some rooms are sealed, and grep says so as it passes them. Add `2> /dev/null` to send those complaints away, or borrow authority with `sudo` once you have it.'
   - line: '^\s*dir\b'
     say: '`dir` is a spell from another land. Here we say `ls`.'
   - line: '^\s*cd\.\.'
