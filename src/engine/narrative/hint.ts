@@ -28,3 +28,17 @@ export function createSolutionCommand(getRunner: () => LessonRunner | null) {
     },
   });
 }
+
+/** `next`: what to do now, for the story: the current objective, or the way to the next wing. */
+export function createNextCommand(getRunner: () => LessonRunner | null) {
+  return defineCommand({
+    name: 'next',
+    unlockedInAct: 0,
+    options: {},
+    run() {
+      const runner = getRunner();
+      if (runner) runner.queue(runner.next());
+      return 0;
+    },
+  });
+}

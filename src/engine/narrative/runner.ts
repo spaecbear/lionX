@@ -355,7 +355,7 @@ export class LessonRunner {
       out.push(...this.completeTask());
       return out;
     }
-    if (/^\s*(hint|solution|status|duty)\b/.test(line)) return out;
+    if (/^\s*(hint|solution|next|status|duty)\b/.test(line)) return out;
     const advice = this.coach(cur.step, line, status, stderr) ?? this.nearMiss(cur.step);
     if (advice) out.push(speech(advice));
     return out;
@@ -489,7 +489,24 @@ export class LessonRunner {
   /** The `duty` spell: ask for restoration work during free play. */
   requestDuty(): Narration[] {
     if (this.current) return this.repeat();
-    return this.assignDuty();
+    // The wing is mended and the story has moved on: say where, before more chores.
+    const onward = this.wing.next ? this.onward() : [];
+    return [...onward, ...this.assignDuty()];
+  }
+
+  /** Where the story goes from a mended wing: the wing's own parting directions. */
+  private onward(): Narration[] {
+    return [
+      ...(this.lines.storyOnward ? [{ kind: 'quill' as const, text: this.lines.storyOnward }] : []),
+      ...quill(this.wing.outro),
+    ];
+  }
+
+  /** The `next` spell: what to do now, for the story. */
+  next(): Narration[] {
+    if (this.current) return this.repeat();
+    if (this.wing.next) return this.onward();
+    return [{ kind: 'quill', text: this.lines.storyDone ?? this.lines.noDuty }];
   }
 
   /** Queue narration to be returned by the next afterCommand (used by in-world spells). */

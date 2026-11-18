@@ -23,3 +23,5 @@ untilTrialEasy: 'Next trial: about {n} more dut{s}. Hints are fine. Each one mov
 resetDone: 'I found what went missing and put it back where it started: {files}. Try again. Make the rooms first this time.'
 resetNothing: 'Nothing has gone missing. Everything you need is still somewhere in the Archive.'
 resetReminder: 'If a page was lost or overwritten, `duty reset` puts the originals back where they started.'
+storyOnward: 'This wing is mended. The story goes on from here:'
+storyDone: 'The story is told, and the Archive is yours. Cast `duty` for work, or wander and read.'

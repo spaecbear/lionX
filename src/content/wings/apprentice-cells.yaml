@@ -210,7 +210,7 @@ lessons:
 
 practice:
   intro:
-    - 'Now, chores. The Corruption scrambles the halls and the Lexicon forgets where things are. Small repairs keep it honest. Cast `status` to see how your spells are coming along, `help` to list your spells, `hint` if you are stuck, and `solution` if you want me to explain a whole command.'
+    - 'Now, chores. The Corruption scrambles the halls and the Lexicon forgets where things are. Small repairs keep it honest. Cast `status` to see how your spells are coming along, `next` if you forget what you were doing, `help` to list your spells, `hint` if you are stuck, and `solution` if you want me to explain a whole command.'
   gateOpens:
     - 'Your feet know the Archive now. Good, because I need you to go somewhere for me.'
 

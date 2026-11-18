@@ -613,6 +613,8 @@ export function loadQuillLines(yamlText: string, source = 'quill.yaml'): QuillLi
     noSkip: o.noSkip === undefined ? undefined : one('noSkip'),
     skipReminder: o.skipReminder === undefined ? undefined : one('skipReminder'),
     resetDone: o.resetDone === undefined ? undefined : one('resetDone'),
+    storyOnward: o.storyOnward === undefined ? undefined : one('storyOnward'),
+    storyDone: o.storyDone === undefined ? undefined : one('storyDone'),
     resetNothing: o.resetNothing === undefined ? undefined : one('resetNothing'),
     resetReminder: o.resetReminder === undefined ? undefined : one('resetReminder'),
   };

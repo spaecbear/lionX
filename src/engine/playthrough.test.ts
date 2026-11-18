@@ -398,3 +398,29 @@ describe('duty reset', () => {
     expect(g.runner.current?.step.id).toBe('quarantine');
   });
 });
+
+describe('next', () => {
+  it('repeats the objective mid-task, and points to the next wing once one is mended', async () => {
+    const s: GameSession = createSession({ content: loadGameContent(), seed: 1 });
+    s.opening();
+    expect(s.runner.next()).toEqual(s.runner.repeat());
+    // A mended wing: next points the way on.
+    const { atCapstone } = await import('./test-support');
+    const g = atCapstone('bindery');
+    const r = g.runner as unknown as { finishWing(): unknown };
+    r.finishWing();
+    const said = g.runner.next();
+    expect(said.some((n) => n.kind === 'quill' && n.text.includes('cd /archive/observatory'))).toBe(
+      true,
+    );
+    // duty also points onward first, then still gives work.
+    const duty = g.runner.requestDuty();
+    expect(duty[0]).toMatchObject({
+      kind: 'quill',
+      text: expect.stringContaining('story goes on'),
+    });
+    expect(duty.some((n) => n.kind === 'quill' && n.text.includes('cd /archive/observatory'))).toBe(
+      true,
+    );
+  });
+});

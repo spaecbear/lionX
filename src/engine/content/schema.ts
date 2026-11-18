@@ -191,6 +191,10 @@ export interface QuillLines {
   skipReminder?: string;
   /** `duty reset` put things back ({files}). */
   resetDone?: string;
+  /** Before a mended wing's directions onward (duty, next). */
+  storyOnward?: string;
+  /** `next` after the last wing. */
+  storyDone?: string;
   /** `duty reset` found nothing missing. */
   resetNothing?: string;
   /** The last hint on a trial step: the way back from a mistake. */

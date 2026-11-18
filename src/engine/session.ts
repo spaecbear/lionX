@@ -5,6 +5,7 @@ import {
   createQuestsCommand,
   createHintCommand,
   createSolutionCommand,
+  createNextCommand,
   createHelpCommand,
   createAchievementsCommand,
   type Glossary,
@@ -184,6 +185,7 @@ export function createSession(o: SessionOptions): GameSession {
     registry: createRegistry().register(
       createHintCommand(() => runner),
       createSolutionCommand(() => runner),
+      createNextCommand(() => runner),
       createHelpCommand(() => runner, content.glossary),
       createAchievementsCommand(() => runner, content.achievements ?? []),
       createStatusCommand(() => runner),

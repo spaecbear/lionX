@@ -103,7 +103,7 @@ export function createQuestsCommand(getRunner: () => LessonRunner | null, text: 
 }
 
 /** Spells every apprentice has from the start, for help's last line. */
-const HELPERS = ['hint', 'solution', 'status', 'duty', 'achievements', 'help', 'settings'];
+const HELPERS = ['next', 'hint', 'solution', 'status', 'duty', 'achievements', 'help', 'settings'];
 
 /**
  * `help`: an index of the spells you know, one line each. The Grimoire (`man`)
